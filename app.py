@@ -246,7 +246,9 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     def component_edit(component_id: int):
         component = get_component_or_404(component_id)
         if request.method == "POST":
-            values, error = validate_component_form(request.form)
+            form_data = request.form.copy()
+            form_data["quantity"] = str(component["quantity"])
+            values, error = validate_component_form(form_data)
             if error:
                 flash(error, "error")
             else:
