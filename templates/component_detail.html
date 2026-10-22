@@ -5,7 +5,24 @@
 <section class="detail-heading">
   <div class="component-monogram">{{ component['name'][:1]|upper }}</div>
   <div class="detail-heading-text"><div class="eyebrow">COMPONENT / {{ component['sku'] }}</div><h1>{{ component['name'] }}</h1><p>{{ component['description'] or 'No description has been added.' }}</p></div>
-  <div class="detail-heading-actions">{% if g.user['role'] == 'Admin' %}<a class="button button-secondary" href="{{ url_for('component_edit', component_id=component['id']) }}">Edit details</a>{% endif %}</div>
+
+<div class="detail-heading-actions">
+  {% if g.user['role'] == 'Admin' %}
+    <a class="button button-secondary"
+       href="{{ url_for('component_edit', component_id=component['id']) }}">
+      Edit details
+    </a>
+
+    <form method="post"
+          action="{{ url_for('component_delete', component_id=component['id']) }}"
+          onsubmit="return confirm('Soft-delete this component from active inventory?');">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <button class="button button-secondary" type="submit">
+        Delete component
+      </button>
+    </form>
+  {% endif %}
+</div>
 </section>
 {% set status = availability_status(component['quantity'], component['reorder_level']) %}
 <div class="detail-stats-grid">
