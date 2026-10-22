@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+{% block content %}
+<div class="breadcrumbs"><a href="{{ url_for('components') }}">Inventory</a><span>/</span><span>{{ page_title }}</span></div>
+<section class="page-heading compact-heading"><div><div class="eyebrow">CATALOGUE MANAGEMENT</div><h1>{{ page_title }}</h1><p>Set the details and stock threshold used for availability classification.</p></div></section>
+<form method="post" class="panel form-panel">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <div class="form-section-heading"><span class="section-number">01</span><div><h2>Component details</h2><p class="muted">The SKU must be unique within this inventory.</p></div></div>
+  <div class="form-grid">
+    <div class="field"><label for="sku">SKU <span class="required">*</span></label><input id="sku" name="sku" value="{{ request.form.get('sku', component['sku'] if component else '') }}" required maxlength="40" placeholder="e.g. MCU-ESP-032"><small>Letters, numbers, dot, underscore, slash and hyphen.</small></div>
+    <div class="field"><label for="name">Component name <span class="required">*</span></label><input id="name" name="name" value="{{ request.form.get('name', component['name'] if component else '') }}" required maxlength="120" placeholder="Enter component name"></div>
+    <div class="field"><label for="category">Category</label><input id="category" name="category" value="{{ request.form.get('category', component['category'] if component else '') }}" maxlength="80" placeholder="e.g. Microcontrollers"></div>
+    <div class="field"><label for="supplier">Supplier</label><input id="supplier" name="supplier" value="{{ request.form.get('supplier', component['supplier'] if component else '') }}" maxlength="120" placeholder="Supplier or vendor"></div>
+    <div class="field field-wide"><label for="description">Description</label><textarea id="description" name="description" rows="3" maxlength="1000" placeholder="Optional component details">{{ request.form.get('description', component['description'] if component else '') }}</textarea></div>
+  </div>
+  <div class="form-divider"></div>
+  <div class="form-section-heading"><span class="section-number">02</span><div><h2>Stock & availability</h2><p class="muted">Availability is recalculated whenever stock or threshold values change.</p></div></div>
+  <div class="form-grid form-grid-stock">
+    <div class="field"><label for="quantity">Current quantity <span class="required">*</span></label><input id="quantity" name="quantity" type="number" min="0" step="1" required value="{{ request.form.get('quantity', component['quantity'] if component else '0') }}"><small>Must be zero or a positive whole number.</small></div>
+    <div class="field"><label for="reorder_level">Reorder threshold <span class="required">*</span></label><input id="reorder_level" name="reorder_level" type="number" min="0" step="1" required value="{{ request.form.get('reorder_level', component['reorder_level'] if component else '5') }}"><small>Positive stock at or below this number is Low Stock.</small></div>
+    <div class="field"><label for="unit_price">Unit price (₹)</label><input id="unit_price" name="unit_price" type="number" min="0" step="0.01" value="{{ request.form.get('unit_price', component['unit_price'] if component else '0.00') }}"></div>
+  </div>
+  <div class="form-actions"><a class="button button-secondary" href="{{ url_for('component_detail', component_id=component['id']) if component else url_for('components') }}">Cancel</a><button class="button button-primary" type="submit">Save component</button></div>
+</form>
+{% endblock %}

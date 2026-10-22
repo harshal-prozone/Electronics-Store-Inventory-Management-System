@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#102338">
+  <title>{% block title %}Inventory{% endblock %} · ESIMS</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="{{ url_for('index') }}" aria-label="ESIMS home">
+      <span class="brand-mark">E</span><span>ESIMS<span class="brand-sub">Inventory management</span></span>
+    </a>
+    {% if g.user %}
+    <nav class="topnav" aria-label="Main navigation">
+      <a href="{{ url_for('components') }}" class="{{ 'active' if request.endpoint in ['components', 'component_detail', 'component_edit', 'component_new'] else '' }}">Inventory</a>
+      <a href="{{ url_for('export_components_csv') }}">Export CSV</a>
+    </nav>
+    <div class="account-area">
+      <div class="account-label"><strong>{{ g.user['username'] }}</strong><span>{{ g.user['role'] }}</span></div>
+      <form method="post" action="{{ url_for('logout') }}" class="inline-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <button class="button button-quiet button-small" type="submit">Sign out</button>
+      </form>
+    </div>
+    {% endif %}
+  </header>
+
+  <main class="page-shell {% if not g.user %}page-shell-narrow{% endif %}">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+      {% if messages %}<div class="flash-stack" role="status">
+        {% for category, message in messages %}<div class="flash flash-{{ category }}">{{ message }}</div>{% endfor %}
+      </div>{% endif %}
+    {% endwith %}
+    {% block content %}{% endblock %}
+    <footer class="footer">Electronics Store Inventory Management System <span>·</span> Sprint 1 build</footer>
+  </main>
+</body>
+</html>
