@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% block title %}Sign in{% endblock %}
+{% block content %}
+<section class="login-layout">
+  <div class="login-intro">
+    <div class="eyebrow">INVENTORY CONTROL</div>
+    <h1>Know what you have.<br><span>Restock before you run out.</span></h1>
+    <p>A clear view of electronic components, stock quantities, reorder thresholds and recent stock movements.</p>
+    <div class="feature-points"><div><span class="point point-blue"></span>Live stock availability</div><div><span class="point point-amber"></span>Low-stock visibility</div><div><span class="point point-green"></span>Traceable adjustments</div></div>
+  </div>
+  <div class="panel login-panel">
+    <div class="panel-kicker">WELCOME BACK</div>
+    <h2>Sign in to ESIMS</h2>
+    <p class="muted">Use your username or email address.</p>
+    <form method="post" class="stack-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="identity">Username or email</label>
+      <input id="identity" name="identity" type="text" autocomplete="username" required autofocus maxlength="120" placeholder="e.g. admin">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required>
+      <button class="button button-primary button-full" type="submit">Sign in <span aria-hidden="true">→</span></button>
+    </form>
+    <div class="demo-note"><strong>Local demo account</strong><span>Username: <code>admin</code> · Password: <code>ChangeMe123!</code></span><small>For local coursework/demo use only. Set your own credentials before deployment.</small></div>
+  </div>
+</section>
+{% endblock %}

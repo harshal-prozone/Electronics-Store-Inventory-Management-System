@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+{% block title %}{{ component['name'] }}{% endblock %}
+{% block content %}
+<div class="breadcrumbs"><a href="{{ url_for('components') }}">Inventory</a><span>/</span><span>{{ component['sku'] }}</span></div>
+<section class="detail-heading">
+  <div class="component-monogram">{{ component['name'][:1]|upper }}</div>
+  <div class="detail-heading-text"><div class="eyebrow">COMPONENT / {{ component['sku'] }}</div><h1>{{ component['name'] }}</h1><p>{{ component['description'] or 'No description has been added.' }}</p></div>
+  <div class="detail-heading-actions">{% if g.user['role'] == 'Admin' %}<a class="button button-secondary" href="{{ url_for('component_edit', component_id=component['id']) }}">Edit details</a>{% endif %}</div>
+</section>
+{% set status = availability_status(component['quantity'], component['reorder_level']) %}
+<div class="detail-stats-grid">
+  <div class="detail-stat"><span>Current quantity</span><strong>{{ component['quantity'] }} <small>units</small></strong><span class="muted">Physical quantity on record</span></div>
+  <div class="detail-stat"><span>Reorder threshold</span><strong>{{ component['reorder_level'] }} <small>units</small></strong><span class="muted">Configured minimum stock level</span></div>
+  <div class="detail-stat detail-stat-status"><span>Availability status</span><strong><span class="status-pill status-{{ status|replace(' ', '-')|lower }}"><span class="status-dot"></span>{{ status }}</span></strong><span class="muted">Calculated from quantity and threshold</span></div>
+  <div class="detail-stat"><span>Unit price</span><strong>₹{{ '%.2f'|format(component['unit_price']) }}</strong><span class="muted">Estimated inventory value ₹{{ '%.2f'|format(component['unit_price'] * component['quantity']) }}</span></div>
+</div>
+<div class="detail-columns">
+  <section class="panel stock-panel">
+    <div class="panel-header"><div><h2>Adjust stock</h2><p class="muted">Record a stock-in or stock-out operation.</p></div></div>
+    <form method="post" action="{{ url_for('component_stock', component_id=component['id']) }}" class="stock-adjust-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="adjustment">Movement type</label><select id="adjustment" name="adjustment" required><option value="stock-in">Stock In · Received</option><option value="stock-out">Stock Out · Issued</option></select>
+      <label for="stock-quantity">Quantity</label><input id="stock-quantity" name="quantity" type="number" min="1" step="1" required placeholder="Whole number of units">
+      <label for="note">Note (optional)</label><input id="note" name="note" maxlength="250" placeholder="e.g. Supplier delivery">
+      <button class="button button-primary button-full" type="submit">Save stock movement</button>
+      <small class="muted">Stock-out cannot exceed the quantity currently available.</small>
+    </form>
+  </section>
+  <section class="panel history-panel">
+    <div class="panel-header"><div><h2>Recent stock movements</h2><p class="muted">Latest 20 recorded adjustments for this component.</p></div></div>
+    {% if transactions %}
+      <div class="history-list">{% for item in transactions %}<div class="history-item"><div class="history-symbol {{ 'history-in' if item['transaction_type'] == 'stock-in' else 'history-out' }}">{{ '＋' if item['transaction_type'] == 'stock-in' else '−' }}</div><div class="history-main"><strong>{{ 'Stock in' if item['transaction_type'] == 'stock-in' else 'Stock out' }}</strong><span>{{ item['username'] }}{% if item['note'] %} · {{ item['note'] }}{% endif %}</span><small>{{ item['created_at'] }}</small></div><div class="history-quantity"><strong>{{ '+' if item['transaction_type'] == 'stock-in' else '−' }}{{ item['quantity'] }}</strong><span>{{ item['previous_quantity'] }} → {{ item['new_quantity'] }}</span></div></div>{% endfor %}</div>
+    {% else %}<div class="history-empty"><div class="empty-symbol">↔</div><strong>No movements recorded yet</strong><p>Use the stock form to record the first stock-in or stock-out.</p></div>{% endif %}
+  </section>
+</div>
+<div class="rule-note"><span class="rule-note-icon">i</span><div><strong>Availability rule</strong><p>Quantity <b>0</b> is Out of Stock. Positive quantity <b>≤ {{ component['reorder_level'] }}</b> is Low Stock. Quantity <b>&gt; {{ component['reorder_level'] }}</b> is In Stock.</p></div></div>
+{% endblock %}
