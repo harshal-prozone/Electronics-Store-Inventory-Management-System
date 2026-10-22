@@ -134,3 +134,112 @@ def test_search_is_parameterized_and_handles_special_characters(client):
     response = client.get("/components?q=%25%27%20OR%201%3D1--")
     assert response.status_code == 200
     assert "Arduino Uno R3" not in response.get_data(as_text=True)
+
+def test_admin_can_access_user_management(client):
+    sign_in(client)
+
+    response = client.get("/admin/users")
+
+    assert response.status_code == 200
+    page = response.get_data(as_text=True)
+    assert "User Management" in page
+    assert "admin" in page
+
+
+def test_admin_can_create_staff_user(client, app):
+    sign_in(client)
+
+    response = client.post(
+        "/admin/users",
+        data={
+            "username": "newstaff",
+            "email": "newstaff@example.com",
+            "password": "SecureStaff123!",
+            "role": "Staff",
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert "User account created successfully." in response.get_data(as_text=True)
+
+    with app.app_context():
+        from flask import current_app
+
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        user = db.execute(
+            "SELECT username, email, password_hash, role "
+            "FROM users WHERE username = ?",
+            ("newstaff",),
+        ).fetchone()
+        db.close()
+
+    assert user is not None
+    assert user[0] == "newstaff"
+    assert user[1] == "newstaff@example.com"
+    assert user[2] != "SecureStaff123!"
+    assert user[3] == "Staff"
+
+
+def test_duplicate_username_is_rejected(client, app):
+    sign_in(client)
+
+    response = client.post(
+        "/admin/users",
+        data={
+            "username": "admin",
+            "email": "different@example.com",
+            "password": "SecureStaff123!",
+            "role": "Staff",
+        },
+        follow_redirects=True,
+    )
+
+    assert response.status_code == 200
+    assert "already registered" in response.get_data(as_text=True)
+
+    with app.app_context():
+        from flask import current_app
+
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        count = db.execute(
+            "SELECT COUNT(*) FROM users WHERE email = ?",
+            ("different@example.com",),
+        ).fetchone()[0]
+        db.close()
+
+    assert count == 0
+
+
+def test_staff_cannot_access_user_management(client, app):
+    from werkzeug.security import generate_password_hash
+
+    with app.app_context():
+        from flask import current_app
+
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        db.execute(
+            "INSERT INTO users (username, email, password_hash, role) "
+            "VALUES (?, ?, ?, ?)",
+            (
+                "teststaff",
+                "teststaff@example.com",
+                generate_password_hash("SecureStaff123!"),
+                "Staff",
+            ),
+        )
+        db.commit()
+        db.close()
+
+    client.post(
+        "/login",
+        data={
+            "identity": "teststaff",
+            "password": "SecureStaff123!",
+        },
+    )
+
+    response = client.get("/admin/users")
+
+    assert response.status_code == 403
+
