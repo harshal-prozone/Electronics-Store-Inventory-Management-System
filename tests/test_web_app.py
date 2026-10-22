@@ -243,3 +243,63 @@ def test_staff_cannot_access_user_management(client, app):
 
     assert response.status_code == 403
 
+def test_edit_cannot_change_quantity_without_transaction(client, app):
+    import sqlite3
+    from flask import current_app
+
+    sign_in(client)
+
+    with app.app_context():
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        db.row_factory = sqlite3.Row
+        component = db.execute(
+            "SELECT * FROM components WHERE sku = ?",
+            ("MCU-ARD-001",),
+        ).fetchone()
+        assert component is not None
+
+        component_id = component["id"]
+        original_quantity = component["quantity"]
+        original_transactions = db.execute(
+            "SELECT COUNT(*) FROM inventory_transactions WHERE component_id = ?",
+            (component_id,),
+        ).fetchone()[0]
+
+        payload = {
+            "sku": component["sku"],
+            "name": component["name"],
+            "description": component["description"] or "",
+            "category": component["category"],
+            "supplier": component["supplier"],
+            "quantity": "999",
+            "reorder_level": str(component["reorder_level"]),
+            "unit_price": str(component["unit_price"]),
+        }
+        db.close()
+
+    edit_page = client.get(f"/components/{component_id}/edit")
+    assert edit_page.status_code == 200
+    assert b"readonly" in edit_page.data
+
+    response = client.post(
+        f"/components/{component_id}/edit",
+        data=payload,
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+
+    with app.app_context():
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        new_quantity = db.execute(
+            "SELECT quantity FROM components WHERE id = ?",
+            (component_id,),
+        ).fetchone()[0]
+        new_transactions = db.execute(
+            "SELECT COUNT(*) FROM inventory_transactions WHERE component_id = ?",
+            (component_id,),
+        ).fetchone()[0]
+        db.close()
+
+    assert new_quantity == original_quantity
+    assert new_transactions == original_transactions
+

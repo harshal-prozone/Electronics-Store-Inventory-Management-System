@@ -16,7 +16,18 @@
   <div class="form-divider"></div>
   <div class="form-section-heading"><span class="section-number">02</span><div><h2>Stock & availability</h2><p class="muted">Availability is recalculated whenever stock or threshold values change.</p></div></div>
   <div class="form-grid form-grid-stock">
-    <div class="field"><label for="quantity">Current quantity <span class="required">*</span></label><input id="quantity" name="quantity" type="number" min="0" step="1" required value="{{ request.form.get('quantity', component['quantity'] if component else '0') }}"><small>Must be zero or a positive whole number.</small></div>
+    <div class="field">
+  <label for="quantity">Current quantity <span class="required">*</span></label>
+  {% if component %}
+    <input id="quantity" name="quantity" type="number" min="0" step="1"
+           required value="{{ component['quantity'] }}" readonly>
+    <small>To change stock, open component details and use Adjust stock so the movement is recorded.</small>
+  {% else %}
+    <input id="quantity" name="quantity" type="number" min="0" step="1"
+           required value="{{ request.form.get('quantity', '0') }}">
+    <small>Initial quantity for the new component.</small>
+  {% endif %}
+</div>
     <div class="field"><label for="reorder_level">Reorder threshold <span class="required">*</span></label><input id="reorder_level" name="reorder_level" type="number" min="0" step="1" required value="{{ request.form.get('reorder_level', component['reorder_level'] if component else '5') }}"><small>Positive stock at or below this number is Low Stock.</small></div>
     <div class="field"><label for="unit_price">Unit price (₹)</label><input id="unit_price" name="unit_price" type="number" min="0" step="0.01" value="{{ request.form.get('unit_price', component['unit_price'] if component else '0.00') }}"></div>
   </div>
