@@ -1,0 +1,103 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>User Management - ESIMS</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 40px auto;
+            padding: 0 20px;
+            color: #222;
+        }
+        form, .panel {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        label { display: block; margin-top: 12px; }
+        input, select, button {
+            box-sizing: border-box;
+            width: 100%;
+            padding: 10px;
+            margin-top: 5px;
+        }
+        button { cursor: pointer; margin-top: 18px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td {
+            text-align: left;
+            padding: 10px;
+            border-bottom: 1px solid #ddd;
+        }
+        .message { padding: 10px; background: #f1f1f1; }
+    </style>
+</head>
+<body>
+    <h1>User Management</h1>
+    <p>Signed in as {{ g.user["username"] }} ({{ g.user["role"] }})</p>
+    <p><a href="{{ url_for('components') }}">Back to inventory</a></p>
+
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for category, message in messages %}
+            <p class="message" role="status">{{ message }}</p>
+        {% endfor %}
+    {% endwith %}
+
+    <section class="panel">
+        <h2>Create a user account</h2>
+        <form method="post">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <label for="username">Username</label>
+            <input id="username" name="username" maxlength="80"
+                   required autocomplete="username">
+
+            <label for="email">Email</label>
+            <input id="email" name="email" type="email" maxlength="254"
+                   required autocomplete="email">
+
+            <label for="password">Password (minimum 10 characters)</label>
+            <input id="password" name="password" type="password"
+                   minlength="10" required autocomplete="new-password">
+
+            <label for="role">Role</label>
+            <select id="role" name="role" required>
+                <option value="Staff">Staff</option>
+                <option value="Admin">Admin</option>
+            </select>
+
+            <button type="submit">Create account</button>
+        </form>
+    </section>
+
+    <section>
+        <h2>Existing users</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th>Username</th>
+                    <th>Email</th>
+                    <th>Role</th>
+                    <th>Created</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user["username"] }}</td>
+                    <td>{{ user["email"] }}</td>
+                    <td>{{ user["role"] }}</td>
+                    <td>{{ user["created_at"] }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4">No users found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </section>
+</body>
+</html>

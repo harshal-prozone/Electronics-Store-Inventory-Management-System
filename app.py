@@ -106,6 +106,66 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         flash("You have been signed out.", "success")
         return redirect(url_for("login"))
 
+    @app.route("/admin/users", methods=("GET", "POST"))
+    @login_required
+    @admin_required
+    def manage_users():
+        db = get_db()
+
+        if request.method == "POST":
+            username = request.form.get("username", "").strip()
+            email = request.form.get("email", "").strip()
+            password = request.form.get("password", "")
+            role = request.form.get("role", "Staff").strip()
+
+            if (
+                not username
+                or len(username) > 80
+                or not email
+                or len(email) > 254
+                or "@" not in email
+                or len(password) < 10
+                or role not in ("Admin", "Staff")
+            ):
+                flash(
+                    "Enter a valid username, email, role, and password "
+                    "of at least 10 characters.",
+                    "error",
+                )
+            else:
+                try:
+                    cursor = db.execute(
+                        """INSERT INTO users
+                           (username, email, password_hash, role)
+                           VALUES (?, ?, ?, ?)""",
+                        (
+                            username,
+                            email,
+                            generate_password_hash(password),
+                            role,
+                        ),
+                    )
+                    db.commit()
+                    write_audit(
+                        g.user["id"],
+                        "user-created",
+                        f"user_id={cursor.lastrowid}; role={role}",
+                    )
+                    flash("User account created successfully.", "success")
+                    return redirect(url_for("manage_users"))
+                except sqlite3.IntegrityError:
+                    db.rollback()
+                    flash(
+                        "That username or email is already registered.",
+                        "error",
+                    )
+
+        users = db.execute(
+            """SELECT id, username, email, role, created_at
+               FROM users ORDER BY username COLLATE NOCASE"""
+        ).fetchall()
+
+        return render_template("user_management.html", users=users)
     @app.get("/components")
     @login_required
     def components():
