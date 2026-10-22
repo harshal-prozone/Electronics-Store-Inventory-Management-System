@@ -176,7 +176,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         supplier_filter = request.args.get("supplier", "").strip()[:80]
         page = max(request.args.get("page", 1, type=int) or 1, 1)
         per_page = 10
-        where: list[str] = []
+        where: list[str] = ["deleted_at IS NULL"]
         params: list[Any] = []
         if query:
             where.append("(name LIKE ? OR sku LIKE ? OR description LIKE ?)")
@@ -203,10 +203,10 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             (*params, per_page, (page - 1) * per_page),
         ).fetchall()
         categories = [r[0] for r in db.execute(
-            "SELECT DISTINCT category FROM components WHERE category <> '' ORDER BY category"
+            "SELECT DISTINCT category FROM components WHERE deleted_at IS NULL AND category <> '' ORDER BY category"
         ).fetchall()]
         suppliers = [r[0] for r in db.execute(
-            "SELECT DISTINCT supplier FROM components WHERE supplier <> '' ORDER BY supplier"
+            "SELECT DISTINCT supplier FROM components WHERE deleted_at IS NULL AND supplier <> '' ORDER BY supplier"
         ).fetchall()]
         return render_template(
             "components.html", components=rows, q=query, status_filter=status_filter,
@@ -265,7 +265,48 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                     flash("That SKU is already in use by another component.", "error")
         return render_template("component_form.html", component=component, page_title="Edit component")
 
+    
     @app.get("/components/<int:component_id>")
+    @login_required
+    def component_detail(component_id: int):
+        component = get_component_or_404(component_id)
+        transactions = get_db().execute(
+            """SELECT t.*, u.username FROM inventory_transactions t
+               JOIN users u ON u.id = t.user_id
+               WHERE t.component_id = ? ORDER BY t.id DESC LIMIT 20""",
+            (component_id,),
+        ).fetchall()
+        return render_template(
+            "component_detail.html",
+            component=component,
+            transactions=transactions,
+        )
+
+    @app.post("/components/<int:component_id>/delete")
+    @login_required
+    @admin_required
+    def component_delete(component_id: int):
+        db = get_db()
+        component = get_component_or_404(component_id)
+
+        db.execute(
+            """UPDATE components
+               SET deleted_at = CURRENT_TIMESTAMP,
+                   updated_at = CURRENT_TIMESTAMP
+               WHERE id = ? AND deleted_at IS NULL""",
+            (component_id,),
+        )
+        db.commit()
+
+        write_audit(
+            g.user["id"],
+            "component-deleted",
+            f"component_id={component_id}; sku={component['sku']}",
+        )
+
+        flash("Component moved out of active inventory.", "success")
+        return redirect(url_for("components"))
+
     @login_required
     def component_detail(component_id: int):
         component = get_component_or_404(component_id)
@@ -369,13 +410,23 @@ def close_db(_error: BaseException | None = None) -> None:
     db = g.pop("db", None)
     if db is not None:
         db.close()
-
-
+        
 def init_db() -> None:
     from flask import current_app
+
     db = get_db()
+
     with open(ROOT / "schema.sql", encoding="utf-8") as schema_file:
         db.executescript(schema_file.read())
+
+    # Safely migrate databases created before soft deletion was introduced.
+    columns = {
+        row["name"]
+        for row in db.execute("PRAGMA table_info(components)").fetchall()
+    }
+    if "deleted_at" not in columns:
+        db.execute("ALTER TABLE components ADD COLUMN deleted_at TEXT DEFAULT NULL")
+
     user_count = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
     if user_count == 0:
         admin_username = os.environ.get("ADMIN_USERNAME", "admin").strip() or "admin"
@@ -385,6 +436,7 @@ def init_db() -> None:
             "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, 'Admin')",
             (admin_username, admin_email, generate_password_hash(admin_password)),
         )
+
     component_count = db.execute("SELECT COUNT(*) FROM components").fetchone()[0]
     if component_count == 0:
         db.executemany(
@@ -398,7 +450,9 @@ def init_db() -> None:
                 ("SEN-DHT-022", "DHT22 Sensor", "Temperature and humidity sensor", "Sensors", "Maker Supplies", 8, 4, 280.00),
             ],
         )
+
     db.commit()
+
 
 
 def write_audit(user_id: int | None, event_type: str, details: str) -> None:
@@ -434,7 +488,10 @@ def validate_component_form(form) -> tuple[tuple[Any, ...] | None, str | None]:
 
 
 def get_component_or_404(component_id: int):
-    component = get_db().execute("SELECT * FROM components WHERE id = ?", (component_id,)).fetchone()
+    component = get_db().execute(
+        "SELECT * FROM components WHERE id = ? AND deleted_at IS NULL",
+        (component_id,)
+    ).fetchone()
     if component is None:
         abort(404)
     return component
