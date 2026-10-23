@@ -1,82 +1,59 @@
 # Electronics Store Inventory Management System (ESIMS)
 
-A small, runnable Flask + SQLite coursework application scaffold, with its first implementation focused on Sprint 1 Issue [#11 — Availability Classification and Low-Stock Alerts](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/11).
+A Flask + SQLite inventory management application for electronics components. The repository is developed against the linked functional and non-functional backlog; features should be considered complete only after their acceptance criteria, tests, and review are satisfied.
 
-> **Scope note:** The repository initially contained specification PDFs but no application source. Flask + SQLite is therefore a pragmatic implementation baseline, not a claim that the original PDFs prescribed this stack. This version intentionally does not mark the other Sprint 1 issues as complete. Features such as full role administration, category/supplier CRUD, bulk CSV import, PDF reports, high-load benchmarking, and complete deployment monitoring remain for their own backlog items.
+## Implemented functionality
 
-## Implemented in this starter
+- Username/email login, Admin and Staff roles, password hashing, session expiry, and CSRF protection.
+- Searchable, filtered and paginated component inventory.
+- Admin-only component creation, editing, duplicate-SKU validation, and soft deletion.
+- Atomic stock-in/stock-out operations with transaction history; stock-out cannot reduce stock below zero.
+- Availability classification derived from quantity and reorder level: zero is **Out of Stock**; positive quantity at or below the threshold is **Low Stock**; quantity above the threshold is **In Stock**.
+- Component catalogue CSV export and an Admin-only availability report with category, supplier, and status filters and CSV/PDF export.
+- Audit events for authentication and inventory-changing actions, a `/health` endpoint, and automated tests in GitHub Actions.
 
-- Component catalogue with name/SKU search, category/supplier/status filters, and pagination.
-- Admin-only create/edit forms for catalogue records.
-- Availability classification recalculated from current quantity and reorder level:
-  - `quantity == 0` → **Out of Stock**.
-  - `quantity > 0 and quantity <= reorder_level` → **Low Stock**.
-  - `quantity > reorder_level` → **In Stock**.
-- Stock-in and stock-out operations; stock-out beyond available quantity is rejected.
-- Stock adjustments are performed together with their movement and audit-log records inside a SQLite `BEGIN IMMEDIATE` transaction.
-- User login using username or email; password hashes use Werkzeug's password hashing; Admin and Staff roles are represented in the schema.
-- Parameterized SQL, server-side validation, Jinja auto-escaping, session-cookie settings, CSRF protection on forms, and a basic `/health` endpoint.
-- CSV export of the component catalogue.
-- Seed data designed to demonstrate all three statuses.
-- Automated unit and Flask integration tests; GitHub Actions workflow runs `pytest` on pushes and pull requests.
+## Local setup (macOS/Linux)
 
-## Run locally (macOS / Linux)
-
-Python 3.10+ is recommended. From this directory:
+Python 3.10+ is recommended. From the repository directory:
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
-pip install -r requirements.txt
+python -m pip install -r requirements.txt
 
-# Development-only settings. Use your own strong values outside local demos.
+export APP_ENV=development
 export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_hex(32))')"
-export ADMIN_USERNAME="admin"
-export ADMIN_EMAIL="admin@example.local"
-export ADMIN_PASSWORD="ChangeMe123!"
 export DATABASE_PATH="instance/inventory.db"
 
+# Initialize the database, then create a real administrator interactively.
+flask --app app init-db
+flask --app app create-admin
 flask --app app run --debug
 ```
 
-Open <http://127.0.0.1:5000>. The starter seeds an administrator account and demonstration components on first initialization. The demo credentials above are for local evaluation only; change them before using the app with real data. `SECRET_KEY` and `ADMIN_PASSWORD` are read when the database is first seeded; changing `ADMIN_PASSWORD` later does not automatically change an existing user's password.
+Open <http://127.0.0.1:5000>. No known default administrator password is created for a normal installation. The `create-admin` command prompts for a username, email, and password (minimum 10 characters). If `ADMIN_PASSWORD` is deliberately configured before the first initialization, the app can seed an administrator using `ADMIN_USERNAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD`; use a unique strong password and do not commit it.
 
-To use a separate fresh database, set `DATABASE_PATH` to a new path and restart the application.
+`SECRET_KEY` should be set persistently. Development will generate an ephemeral random key if one is absent, which invalidates sessions on restart. When `APP_ENV=production`, a configured `SECRET_KEY` is mandatory. Set `COOKIE_SECURE=1` when the app is served over HTTPS. Do not use Flask's development server for production deployments.
+
+For a fresh local database, set `DATABASE_PATH` to a new path before initializing. Existing administrator passwords are not changed by later environment-variable changes; use the user-management workflow to create a new account or change credentials as appropriate.
 
 ## Run tests
 
 ```bash
 source .venv/bin/activate
 pytest -q
+git diff --check
 ```
 
-Tests cover the status boundary rules, invalid negative/non-integer values, rendering of each availability state, stock-out status transitions, protection against negative stock, threshold edits, search input handling, and the health endpoint.
+The tests cover availability boundary rules, component CRUD and input validation, authentication and role restrictions, stock transaction integrity/rollback/concurrency, report filters, exports, and CSV formula-injection handling. CI runs `pytest -q` on pushes and pull requests.
 
-## Create an additional administrator
+## Data and integrity
 
-```bash
-flask --app app create-admin
-```
+The SQLite schema includes unique usernames, emails and SKUs, non-negative checks for quantity/reorder levels/prices, foreign-key relationships, transaction records, and audit events. Stock changes are recorded transactionally with `BEGIN IMMEDIATE`.
 
-The CLI prompts for a username, email, and password. Passwords must be at least 10 characters.
+SQLite is suitable for local coursework and light single-instance use. The requirement for at least 5,000 components and 10 concurrent users still requires a repeatable load-test run and documented response-time measurements before claiming the performance target is met. Production use also requires HTTPS, a strong secret, non-demo credentials, backups, deployment monitoring, and an appropriate database strategy.
 
-## Data model
+## Contributor workflow
 
-- `users` — username/email, password hash, and role.
-- `components` — SKU, description, category, supplier, quantity, reorder threshold, and unit price.
-- `inventory_transactions` — movement type, moved quantity, before/after quantity, user, note and timestamp.
-- `audit_log` — selected security and inventory actions.
-
-The `schema.sql` file sets non-negative constraints on quantity, reorder levels, and unit price, plus an index for recent per-component stock history.
-
-## Important implementation notes
-
-- Availability status is computed at read time from `quantity` and `reorder_level`, so it cannot become stale as stock changes.
-- `BEGIN IMMEDIATE` serializes stock-changing transactions before they read the current quantity. The operation is rolled back if stock-out would take inventory below zero.
-- SQLite is appropriate for local coursework and light single-instance use. The stated 5,000-component/10-user performance requirement still needs a repeatable load-test run before any performance claim is made.
-- For a production deployment, set a strong secret, use non-demo credentials, enforce HTTPS (`COOKIE_SECURE=1`), restrict access, and select a database and backup strategy appropriate to the deployment.
-
-## Git workflow for Issue #11
-
-The intended feature branch is `feature/issue-11-availability-classification`. Put these source files in the checked-out repository while on that branch, review the diff, run the tests, and raise a pull request to `main`. Do not close Issue #11 until your team has run and reviewed the app and test suite.
+Work on a feature branch, add tests for the issue's acceptance criteria, run the full test suite and `git diff --check`, and submit a pull request to `main`. Keep issue closure tied to a merged and verified implementation rather than code presence alone.

@@ -13,6 +13,7 @@ import io
 import math
 import os
 import re
+import secrets
 import sqlite3
 from functools import wraps
 from pathlib import Path
@@ -39,14 +40,34 @@ DEFAULT_DB = ROOT / "instance" / "inventory.db"
 csrf = CSRFProtect()
 
 
+def safe_csv_cell(value: Any) -> Any:
+    """Keep untrusted text from being evaluated as a spreadsheet formula."""
+    if not isinstance(value, str):
+        return value
+    significant = value.lstrip(" \t\r\n")
+    if value.startswith(("\t", "\r")) or significant.startswith(("=", "+", "-", "@")):
+        return "'" + value
+    return value
+
+
 def create_app(test_config: dict[str, Any] | None = None) -> Flask:
+    environment = os.environ.get("APP_ENV", "development").strip().lower()
+    secret_key = os.environ.get("SECRET_KEY")
+    if not secret_key:
+        if environment == "production":
+            raise RuntimeError("SECRET_KEY must be set when APP_ENV=production.")
+        # A random development key avoids a predictable, forgeable session key.
+        # Configure a persistent SECRET_KEY when sessions must survive restarts.
+        secret_key = secrets.token_hex(32)
+
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
-        SECRET_KEY=os.environ.get("SECRET_KEY", "local-development-key-change-before-deployment"),
+        SECRET_KEY=secret_key,
+        APP_ENV=environment,
         DATABASE=os.environ.get("DATABASE_PATH", str(DEFAULT_DB)),
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
-        SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "0") == "1",
+        SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "1" if environment == "production" else "0") == "1",
         PERMANENT_SESSION_LIFETIME=60 * 60,
         WTF_CSRF_TIME_LIMIT=None,
     )
@@ -315,17 +336,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         flash("Component moved out of active inventory.", "success")
         return redirect(url_for("components"))
 
-    @login_required
-    def component_detail(component_id: int):
-        component = get_component_or_404(component_id)
-        transactions = get_db().execute(
-            """SELECT t.*, u.username FROM inventory_transactions t
-               JOIN users u ON u.id = t.user_id
-               WHERE t.component_id = ? ORDER BY t.id DESC LIMIT 20""",
-            (component_id,),
-        ).fetchall()
-        return render_template("component_detail.html", component=component, transactions=transactions)
-
     @app.post("/components/<int:component_id>/stock")
     @login_required
     def component_stock(component_id: int):
@@ -403,7 +413,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             "SKU", "Component", "Category", "Supplier", "Quantity",
             "Reorder Level", "Availability", "Unit Price (INR)",
         ])
-        writer.writerows(availability_report_data(rows))
+        writer.writerows([[safe_csv_cell(value) for value in record] for record in availability_report_data(rows)])
         response = make_response(buffer.getvalue())
         response.headers["Content-Type"] = "text/csv; charset=utf-8"
         response.headers["Content-Disposition"] = (
@@ -488,12 +498,17 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     @app.get("/export/components.csv")
     @login_required
     def export_components_csv():
-        rows = get_db().execute("SELECT * FROM components ORDER BY name COLLATE NOCASE").fetchall()
+        rows = get_db().execute("SELECT * FROM components WHERE deleted_at IS NULL ORDER BY name COLLATE NOCASE").fetchall()
         buffer = io.StringIO(newline="")
         writer = csv.writer(buffer)
         writer.writerow(["SKU", "Name", "Description", "Category", "Supplier", "Quantity", "Reorder Level", "Availability", "Unit Price"])
         for row in rows:
-            writer.writerow([row["sku"], row["name"], row["description"], row["category"], row["supplier"], row["quantity"], row["reorder_level"], availability_status(row["quantity"], row["reorder_level"]), f"{row['unit_price']:.2f}"])
+            writer.writerow([safe_csv_cell(value) for value in [
+                row["sku"], row["name"], row["description"], row["category"],
+                row["supplier"], row["quantity"], row["reorder_level"],
+                availability_status(row["quantity"], row["reorder_level"]),
+                f"{row['unit_price']:.2f}",
+            ]])
         response = make_response(buffer.getvalue())
         response.headers["Content-Type"] = "text/csv; charset=utf-8"
         response.headers["Content-Disposition"] = "attachment; filename=inventory.csv"
@@ -503,7 +518,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     def init_db_command():
         """Create tables and seed a demo administrator and sample inventory."""
         init_db()
-        click.echo("Database initialized. Demo login: admin / ChangeMe123! (change for real use).")
+        click.echo("Database initialized. If no administrator exists, run: flask --app app create-admin")
 
     @app.cli.command("create-admin")
     @click.option("--username", prompt=True)
@@ -565,13 +580,26 @@ def init_db() -> None:
 
     user_count = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
     if user_count == 0:
-        admin_username = os.environ.get("ADMIN_USERNAME", "admin").strip() or "admin"
-        admin_email = os.environ.get("ADMIN_EMAIL", "admin@example.local").strip() or "admin@example.local"
-        admin_password = os.environ.get("ADMIN_PASSWORD", "ChangeMe123!")
-        db.execute(
-            "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, 'Admin')",
-            (admin_username, admin_email, generate_password_hash(admin_password)),
-        )
+        # Tests use a deterministic test-only account; normal installs never get
+        # a known default password. Without ADMIN_PASSWORD, use create-admin CLI.
+        if current_app.config.get("TESTING"):
+            admin_password = "ChangeMe123!"
+        else:
+            admin_password = os.environ.get("ADMIN_PASSWORD", "")
+
+        if admin_password:
+            if len(admin_password) < 10:
+                raise RuntimeError("ADMIN_PASSWORD must be at least 10 characters long.")
+            admin_username = os.environ.get("ADMIN_USERNAME", "admin").strip() or "admin"
+            admin_email = os.environ.get("ADMIN_EMAIL", "admin@example.local").strip() or "admin@example.local"
+            db.execute(
+                "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, 'Admin')",
+                (admin_username, admin_email, generate_password_hash(admin_password)),
+            )
+        elif not current_app.config.get("TESTING"):
+            current_app.logger.warning(
+                "No administrator was seeded. Run 'flask --app app create-admin' to create one."
+            )
 
     component_count = db.execute("SELECT COUNT(*) FROM components").fetchone()[0]
     if component_count == 0:
