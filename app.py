@@ -24,6 +24,12 @@ from flask import (
     request, session, url_for,
 )
 from flask_wtf.csrf import CSRFProtect
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import landscape, letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from xml.sax.saxutils import escape
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from inventory_service import adjust_stock, availability_status
@@ -351,6 +357,134 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         except sqlite3.Error:
             return jsonify(status="error", database="unavailable"), 503
 
+    @app.get("/reports/availability")
+    @login_required
+    @admin_required
+    def availability_report():
+        category_filter, supplier_filter, status_filter = get_availability_report_filters()
+        db = get_db()
+        rows = get_availability_report_rows(
+            db, category_filter, supplier_filter, status_filter
+        )
+        categories = [
+            row[0] for row in db.execute(
+                """SELECT DISTINCT category FROM components
+                   WHERE deleted_at IS NULL AND category <> ''
+                   ORDER BY category COLLATE NOCASE"""
+            ).fetchall()
+        ]
+        suppliers = [
+            row[0] for row in db.execute(
+                """SELECT DISTINCT supplier FROM components
+                   WHERE deleted_at IS NULL AND supplier <> ''
+                   ORDER BY supplier COLLATE NOCASE"""
+            ).fetchall()
+        ]
+        return render_template(
+            "availability_report.html",
+            components=rows,
+            categories=categories,
+            suppliers=suppliers,
+            category_filter=category_filter,
+            supplier_filter=supplier_filter,
+            status_filter=status_filter,
+            report_data=availability_report_data(rows),
+        )
+
+    @app.get("/reports/availability.csv")
+    @login_required
+    @admin_required
+    def export_availability_report_csv():
+        category, supplier, status = get_availability_report_filters()
+        rows = get_availability_report_rows(get_db(), category, supplier, status)
+        buffer = io.StringIO(newline="")
+        writer = csv.writer(buffer)
+        writer.writerow([
+            "SKU", "Component", "Category", "Supplier", "Quantity",
+            "Reorder Level", "Availability", "Unit Price (INR)",
+        ])
+        writer.writerows(availability_report_data(rows))
+        response = make_response(buffer.getvalue())
+        response.headers["Content-Type"] = "text/csv; charset=utf-8"
+        response.headers["Content-Disposition"] = (
+            'attachment; filename="availability-report.csv"'
+        )
+        return response
+
+    @app.get("/reports/availability.pdf")
+    @login_required
+    @admin_required
+    def export_availability_report_pdf():
+        category, supplier, status = get_availability_report_filters()
+        rows = get_availability_report_rows(get_db(), category, supplier, status)
+        records = availability_report_data(rows)
+
+        buffer = io.BytesIO()
+        document = SimpleDocTemplate(
+            buffer,
+            pagesize=landscape(letter),
+            rightMargin=0.45 * inch,
+            leftMargin=0.45 * inch,
+            topMargin=0.45 * inch,
+            bottomMargin=0.45 * inch,
+            title="Inventory Availability Report",
+        )
+        styles = getSampleStyleSheet()
+        filter_text = (
+            f"Category: {category or 'All'} | "
+            f"Supplier: {supplier or 'All'} | "
+            f"Status: {status or 'All'}"
+        )
+        story = [
+            Paragraph("Inventory Availability Report", styles["Title"]),
+            Paragraph(escape(filter_text), styles["Normal"]),
+            Spacer(1, 0.18 * inch),
+        ]
+        headers = [
+            "SKU", "Component", "Category", "Supplier", "Quantity",
+            "Reorder Level", "Status", "Unit Price (INR)",
+        ]
+        table_data = [
+            [Paragraph(escape(value), styles["BodyText"]) for value in headers]
+        ]
+        for record in records:
+            table_data.append([
+                Paragraph(escape(str(value)), styles["BodyText"])
+                for value in record
+            ])
+
+        table = Table(
+            table_data,
+            repeatRows=1,
+            colWidths=[
+                0.85 * inch, 1.55 * inch, 1.20 * inch, 1.45 * inch,
+                0.70 * inch, 0.95 * inch, 0.95 * inch, 1.20 * inch,
+            ],
+        )
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#18324A")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#D7E0E8")),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1),
+             [colors.white, colors.HexColor("#F3F6F9")]),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("ALIGN", (4, 1), (-1, -1), "RIGHT"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 5),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]))
+        story.append(table)
+        document.build(story)
+
+        response = make_response(buffer.getvalue())
+        response.headers["Content-Type"] = "application/pdf"
+        response.headers["Content-Disposition"] = (
+            'attachment; filename="availability-report.pdf"'
+        )
+        return response
+
     @app.get("/export/components.csv")
     @login_required
     def export_components_csv():
@@ -455,6 +589,62 @@ def init_db() -> None:
 
     db.commit()
 
+
+
+def get_availability_report_filters():
+    """Read and normalize report filters from the query string."""
+    category = request.args.get("category", "").strip()[:80]
+    supplier = request.args.get("supplier", "").strip()[:120]
+    status = request.args.get("status", "").strip()
+    valid_statuses = {"", "In Stock", "Low Stock", "Out of Stock"}
+    if status not in valid_statuses:
+        status = ""
+    return category, supplier, status
+
+
+def get_availability_report_rows(db, category="", supplier="", status=""):
+    """Return active inventory rows matching the selected report filters."""
+    conditions = ["deleted_at IS NULL"]
+    params = []
+
+    if category:
+        conditions.append("category = ?")
+        params.append(category)
+    if supplier:
+        conditions.append("supplier = ?")
+        params.append(supplier)
+
+    if status == "Out of Stock":
+        conditions.append("quantity = 0")
+    elif status == "Low Stock":
+        conditions.append("quantity > 0 AND quantity <= reorder_level")
+    elif status == "In Stock":
+        conditions.append("quantity > reorder_level")
+
+    sql = """
+        SELECT sku, name, category, supplier, quantity, reorder_level, unit_price
+        FROM components
+        WHERE """ + " AND ".join(conditions) + """
+        ORDER BY name COLLATE NOCASE
+    """
+    return db.execute(sql, params).fetchall()
+
+
+def availability_report_data(rows):
+    """Format report data consistently for CSV and PDF exports."""
+    return [
+        [
+            row["sku"],
+            row["name"],
+            row["category"] or "",
+            row["supplier"] or "",
+            row["quantity"],
+            row["reorder_level"],
+            availability_status(int(row["quantity"]), int(row["reorder_level"])),
+            f"{row['unit_price']:.2f}",
+        ]
+        for row in rows
+    ]
 
 
 def write_audit(user_id: int | None, event_type: str, details: str) -> None:

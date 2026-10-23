@@ -16,6 +16,10 @@
     <nav class="topnav" aria-label="Main navigation">
       <a href="{{ url_for('components') }}" class="{{ 'active' if request.endpoint in ['components', 'component_detail', 'component_edit', 'component_new'] else '' }}">Inventory</a>
       <a href="{{ url_for('export_components_csv') }}">Export CSV</a>
+      {% if g.user['role'] == 'Admin' %}
+      <a href="{{ url_for('availability_report') }}"
+         class="{{ 'active' if request.endpoint in ['availability_report', 'export_availability_report_csv', 'export_availability_report_pdf'] else '' }}">Reports</a>
+      {% endif %}
     </nav>
     <div class="account-area">
       <div class="account-label"><strong>{{ g.user['username'] }}</strong><span>{{ g.user['role'] }}</span></div>

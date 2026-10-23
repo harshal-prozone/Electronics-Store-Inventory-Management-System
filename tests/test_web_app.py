@@ -303,3 +303,80 @@ def test_edit_cannot_change_quantity_without_transaction(client, app):
     assert new_quantity == original_quantity
     assert new_transactions == original_transactions
 
+def test_availability_report_filters_by_category_supplier_and_status(client):
+    sign_in(client)
+    response = client.get(
+        "/reports/availability",
+        query_string={
+            "category": "Microcontrollers",
+            "supplier": "Circuit Hub",
+            "status": "Low Stock",
+        },
+    )
+
+    assert response.status_code == 200
+    page = response.get_data(as_text=True)
+    assert "ESP32 DevKit" in page
+    assert "Arduino Uno R3" not in page
+    assert "Raspberry Pi Pico" not in page
+    assert "Low Stock" in page
+
+
+def test_availability_report_csv_respects_status_filter(client):
+    sign_in(client)
+    response = client.get(
+        "/reports/availability.csv",
+        query_string={"status": "Low Stock"},
+    )
+
+    assert response.status_code == 200
+    assert response.mimetype == "text/csv"
+    report = response.get_data(as_text=True)
+    assert "ESP32 DevKit" in report
+    assert "Arduino Uno R3" not in report
+    assert "Raspberry Pi Pico" not in report
+
+
+def test_availability_report_pdf_is_valid_download(client):
+    sign_in(client)
+    response = client.get(
+        "/reports/availability.pdf",
+        query_string={
+            "category": "Microcontrollers",
+            "supplier": "Circuit Hub",
+            "status": "Low Stock",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.mimetype == "application/pdf"
+    assert response.data.startswith(b"%PDF-")
+    assert "availability-report.pdf" in response.headers["Content-Disposition"]
+
+
+def test_staff_cannot_access_availability_reports(client, app):
+    from werkzeug.security import generate_password_hash
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        db.execute(
+            "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
+            (
+                "reportstaff",
+                "reportstaff@example.com",
+                generate_password_hash("SecureStaff123!"),
+                "Staff",
+            ),
+        )
+        db.commit()
+        db.close()
+
+    client.post(
+        "/login",
+        data={"identity": "reportstaff", "password": "SecureStaff123!"},
+    )
+
+    assert client.get("/reports/availability").status_code == 403
+    assert client.get("/reports/availability.csv").status_code == 403
+    assert client.get("/reports/availability.pdf").status_code == 403
