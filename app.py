@@ -354,7 +354,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     @app.get("/export/components.csv")
     @login_required
     def export_components_csv():
-        rows = get_db().execute("SELECT * FROM components ORDER BY name COLLATE NOCASE").fetchall()
+        rows = get_db().execute("SELECT * FROM components WHERE deleted_at IS NULL ORDER BY name COLLATE NOCASE").fetchall()
         buffer = io.StringIO(newline="")
         writer = csv.writer(buffer)
         writer.writerow(["SKU", "Name", "Description", "Category", "Supplier", "Quantity", "Reorder Level", "Availability", "Unit Price"])
