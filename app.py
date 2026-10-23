@@ -457,7 +457,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             table_data,
             repeatRows=1,
             colWidths=[
-                0.85 * inch, 1.55 * inch, 1.20 * inch, 1.45 * inch,
+                1.15 * inch, 1.55 * inch, 1.20 * inch, 1.45 * inch,
                 0.70 * inch, 0.95 * inch, 0.95 * inch, 1.20 * inch,
             ],
         )
