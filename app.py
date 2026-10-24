@@ -241,6 +241,34 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             categories=categories, suppliers=suppliers, page=page,
             pages=max((total + per_page - 1) // per_page, 1), total=total,
         )
+    
+    def get_catalog_options():
+        db = get_db()
+        categories = db.execute(
+            "SELECT id, name FROM categories ORDER BY name COLLATE NOCASE"
+        ).fetchall()
+        suppliers = db.execute(
+            "SELECT id, name FROM suppliers ORDER BY name COLLATE NOCASE"
+        ).fetchall()
+        return categories, suppliers
+    
+    def validate_catalog_selection(values):
+        """Ensure component category and supplier exist in the catalogues."""
+        db = get_db()
+        category = db.execute(
+            "SELECT 1 FROM categories WHERE name = ? COLLATE NOCASE",
+            (values[3],),
+        ).fetchone()
+        supplier = db.execute(
+            "SELECT 1 FROM suppliers WHERE name = ? COLLATE NOCASE",
+            (values[4],),
+        ).fetchone()
+
+        if not category:
+            return "Select a valid category from the catalogue."
+        if not supplier:
+            return "Select a valid supplier from the catalogue."
+        return None
 
     @app.route("/components/new", methods=("GET", "POST"))
     @login_required
@@ -248,6 +276,8 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     def component_new():
         if request.method == "POST":
             values, error = validate_component_form(request.form)
+            if not error:
+                error = validate_catalog_selection(values)
             if error:
                 flash(error, "error")
             else:
@@ -265,7 +295,16 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 except sqlite3.IntegrityError:
                     get_db().rollback()
                     flash("That SKU already exists. Use a unique SKU.", "error")
-        return render_template("component_form.html", component=None, page_title="Add component")
+        
+        categories, suppliers = get_catalog_options()
+        return render_template(
+            "component_form.html",
+            component=None,
+            page_title="Add component",
+            categories=categories,
+            suppliers=suppliers,
+        )
+
 
     @app.route("/components/<int:component_id>/edit", methods=("GET", "POST"))
     @login_required
@@ -276,6 +315,8 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             form_data = request.form.copy()
             form_data["quantity"] = str(component["quantity"])
             values, error = validate_component_form(form_data)
+            if not error:
+                error = validate_catalog_selection(values)
             if error:
                 flash(error, "error")
             else:
@@ -292,7 +333,16 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 except sqlite3.IntegrityError:
                     get_db().rollback()
                     flash("That SKU is already in use by another component.", "error")
-        return render_template("component_form.html", component=component, page_title="Edit component")
+        
+        categories, suppliers = get_catalog_options()
+        return render_template(
+            "component_form.html",
+            component=component,
+            page_title="Edit component",
+            categories=categories,
+            suppliers=suppliers,
+        )
+
 
     
     @app.get("/components/<int:component_id>")
@@ -358,6 +408,178 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         except (ValueError, LookupError, TypeError) as exc:
             flash(str(exc), "error")
         return redirect(url_for("component_detail", component_id=component_id))
+    
+    @app.get("/categories")
+    @login_required
+    @admin_required
+    def categories():
+        rows = get_db().execute(
+            "SELECT * FROM categories ORDER BY name COLLATE NOCASE"
+        ).fetchall()
+        return render_template("categories.html", categories=rows)
+
+    @app.route("/categories/new", methods=("GET", "POST"))
+    @login_required
+    @admin_required
+    def category_new():
+        if request.method == "POST":
+            name = request.form.get("name", "").strip()
+            if not name or len(name) > 80:
+                flash("Category name is required and must be 80 characters or fewer.", "error")
+            else:
+                try:
+                    db = get_db()
+                    cursor = db.execute(
+                        "INSERT INTO categories (name) VALUES (?)", (name,)
+                    )
+                    db.commit()
+                    write_audit(g.user["id"], "category-created", f"category_id={cursor.lastrowid}; name={name}")
+                    flash("Category created successfully.", "success")
+                    return redirect(url_for("categories"))
+                except sqlite3.IntegrityError:
+                    get_db().rollback()
+                    flash("A category with that name already exists.", "error")
+        return render_template("catalog_form.html", page_title="Add category", item_type="Category")
+
+    @app.route("/categories/<int:category_id>/edit", methods=("GET", "POST"))
+    @login_required
+    @admin_required
+    def category_edit(category_id: int):
+        db = get_db()
+        category = db.execute(
+            "SELECT * FROM categories WHERE id = ?", (category_id,)
+        ).fetchone()
+        if category is None:
+            abort(404)
+
+        if request.method == "POST":
+            name = request.form.get("name", "").strip()
+            if not name or len(name) > 80:
+                flash("Category name is required and must be 80 characters or fewer.", "error")
+            else:
+                try:
+                    db.execute(
+                        "UPDATE categories SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                        (name, category_id),
+                    )
+                    db.commit()
+                    write_audit(g.user["id"], "category-updated", f"category_id={category_id}; name={name}")
+                    flash("Category updated successfully.", "success")
+                    return redirect(url_for("categories"))
+                except sqlite3.IntegrityError:
+                    db.rollback()
+                    flash("A category with that name already exists.", "error")
+        return render_template("catalog_form.html", page_title="Edit category", item_type="Category", item=category)
+
+    @app.post("/categories/<int:category_id>/delete")
+    @login_required
+    @admin_required
+    def category_delete(category_id: int):
+        db = get_db()
+        category = db.execute(
+            "SELECT * FROM categories WHERE id = ?", (category_id,)
+        ).fetchone()
+        if category is None:
+            abort(404)
+
+        used = db.execute(
+            "SELECT 1 FROM components WHERE category = ? AND deleted_at IS NULL LIMIT 1",
+            (category["name"],),
+        ).fetchone()
+        if used:
+            flash("Cannot delete a category assigned to an active component.", "error")
+        else:
+            db.execute("DELETE FROM categories WHERE id = ?", (category_id,))
+            db.commit()
+            write_audit(g.user["id"], "category-deleted", f"category_id={category_id}; name={category['name']}")
+            flash("Category deleted successfully.", "success")
+        return redirect(url_for("categories"))
+
+    @app.get("/suppliers")
+    @login_required
+    @admin_required
+    def suppliers():
+        rows = get_db().execute(
+            "SELECT * FROM suppliers ORDER BY name COLLATE NOCASE"
+        ).fetchall()
+        return render_template("suppliers.html", suppliers=rows)
+
+    @app.route("/suppliers/new", methods=("GET", "POST"))
+    @login_required
+    @admin_required
+    def supplier_new():
+        if request.method == "POST":
+            name = request.form.get("name", "").strip()
+            if not name or len(name) > 120:
+                flash("Supplier name is required and must be 120 characters or fewer.", "error")
+            else:
+                try:
+                    db = get_db()
+                    cursor = db.execute(
+                        "INSERT INTO suppliers (name) VALUES (?)", (name,)
+                    )
+                    db.commit()
+                    write_audit(g.user["id"], "supplier-created", f"supplier_id={cursor.lastrowid}; name={name}")
+                    flash("Supplier created successfully.", "success")
+                    return redirect(url_for("suppliers"))
+                except sqlite3.IntegrityError:
+                    get_db().rollback()
+                    flash("A supplier with that name already exists.", "error")
+        return render_template("catalog_form.html", page_title="Add supplier", item_type="Supplier")
+
+    @app.route("/suppliers/<int:supplier_id>/edit", methods=("GET", "POST"))
+    @login_required
+    @admin_required
+    def supplier_edit(supplier_id: int):
+        db = get_db()
+        supplier = db.execute(
+            "SELECT * FROM suppliers WHERE id = ?", (supplier_id,)
+        ).fetchone()
+        if supplier is None:
+            abort(404)
+
+        if request.method == "POST":
+            name = request.form.get("name", "").strip()
+            if not name or len(name) > 120:
+                flash("Supplier name is required and must be 120 characters or fewer.", "error")
+            else:
+                try:
+                    db.execute(
+                        "UPDATE suppliers SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                        (name, supplier_id),
+                    )
+                    db.commit()
+                    write_audit(g.user["id"], "supplier-updated", f"supplier_id={supplier_id}; name={name}")
+                    flash("Supplier updated successfully.", "success")
+                    return redirect(url_for("suppliers"))
+                except sqlite3.IntegrityError:
+                    db.rollback()
+                    flash("A supplier with that name already exists.", "error")
+        return render_template("catalog_form.html", page_title="Edit supplier", item_type="Supplier", item=supplier)
+
+    @app.post("/suppliers/<int:supplier_id>/delete")
+    @login_required
+    @admin_required
+    def supplier_delete(supplier_id: int):
+        db = get_db()
+        supplier = db.execute(
+            "SELECT * FROM suppliers WHERE id = ?", (supplier_id,)
+        ).fetchone()
+        if supplier is None:
+            abort(404)
+
+        used = db.execute(
+            "SELECT 1 FROM components WHERE supplier = ? AND deleted_at IS NULL LIMIT 1",
+            (supplier["name"],),
+        ).fetchone()
+        if used:
+            flash("Cannot delete a supplier assigned to an active component.", "error")
+        else:
+            db.execute("DELETE FROM suppliers WHERE id = ?", (supplier_id,))
+            db.commit()
+            write_audit(g.user["id"], "supplier-deleted", f"supplier_id={supplier_id}; name={supplier['name']}")
+            flash("Supplier deleted successfully.", "success")
+        return redirect(url_for("suppliers"))
 
     @app.get("/health")
     def health():
@@ -569,6 +791,9 @@ def init_db() -> None:
 
     with open(ROOT / "schema.sql", encoding="utf-8") as schema_file:
         db.executescript(schema_file.read())
+    
+    
+
 
     # Safely migrate databases created before soft deletion was introduced.
     columns = {
@@ -614,6 +839,21 @@ def init_db() -> None:
                 ("SEN-DHT-022", "DHT22 Sensor", "Temperature and humidity sensor", "Sensors", "Maker Supplies", 8, 4, 280.00),
             ],
         )
+        # Migrate existing component categories into the categories table.
+    db.execute(
+        """INSERT OR IGNORE INTO categories (name)
+           SELECT DISTINCT TRIM(category)
+           FROM components
+           WHERE TRIM(category) <> ''"""
+    )
+
+    # Migrate existing component suppliers into the suppliers table.
+    db.execute(
+        """INSERT OR IGNORE INTO suppliers (name)
+           SELECT DISTINCT TRIM(supplier)
+           FROM components
+           WHERE TRIM(supplier) <> ''"""
+    )
 
     db.commit()
 

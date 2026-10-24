@@ -184,8 +184,10 @@ def test_admin_can_create_staff_user(client, app):
     assert user[3] == "Staff"
 
 
+
 def test_duplicate_username_is_rejected(client, app):
     sign_in(client)
+
 
     response = client.post(
         "/admin/users",
@@ -213,6 +215,20 @@ def test_duplicate_username_is_rejected(client, app):
 
     assert count == 0
 
+def create_catalog_entry(client, category="Test Category", supplier="Test Supplier"):
+    category_response = client.post(
+        "/categories/new",
+        data={"name": category},
+        follow_redirects=True,
+    )
+    supplier_response = client.post(
+        "/suppliers/new",
+        data={"name": supplier},
+        follow_redirects=True,
+    )
+
+    assert category_response.status_code == 200
+    assert supplier_response.status_code == 200
 
 def test_staff_cannot_access_user_management(client, app):
     from werkzeug.security import generate_password_hash
@@ -308,6 +324,7 @@ def test_edit_cannot_change_quantity_without_transaction(client, app):
 
 def test_admin_can_create_component(client, app):
     sign_in(client)
+    create_catalog_entry(client)
     payload = {
         "sku": "TEST-NEW-001",
         "name": "Test New Component",
@@ -339,6 +356,7 @@ def test_admin_can_create_component(client, app):
 
 def test_duplicate_component_sku_is_rejected(client, app):
     sign_in(client)
+    create_catalog_entry(client, category="Test", supplier="Test Supplier")
     response = client.post(
         "/components/new",
         data={
@@ -693,6 +711,11 @@ def test_component_creation_rejects_invalid_values(client, app, field, invalid_v
 
 def test_csv_exports_escape_spreadsheet_formulas(client, app):
     sign_in(client)
+    create_catalog_entry(
+        client,
+        category="+SUM(A1:A2)",
+        supplier="@SUM(1,1)",
+    )
     payload = {
         "sku": "CSV-ESCAPE-001",
         "name": "=HYPERLINK(\"https://example.com\",\"click\")",
@@ -753,3 +776,254 @@ def test_production_requires_explicit_secret_key(tmp_path, monkeypatch):
     monkeypatch.delenv("SECRET_KEY", raising=False)
     with pytest.raises(RuntimeError, match="SECRET_KEY must be set"):
         create_app({"DATABASE": str(tmp_path / "production.sqlite")})
+
+
+def test_admin_can_create_and_edit_category(client, app):
+    sign_in(client)
+
+    response = client.post(
+        "/categories/new",
+        data={"name": "Test Electronics"},
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        row = db.execute(
+            "SELECT id FROM categories WHERE name = ?",
+            ("Test Electronics",),
+        ).fetchone()
+        db.close()
+
+    assert row is not None
+    category_id = row[0]
+
+    response = client.post(
+        f"/categories/{category_id}/edit",
+        data={"name": "Updated Electronics"},
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        row = db.execute(
+            "SELECT name FROM categories WHERE id = ?",
+            (category_id,),
+        ).fetchone()
+        db.close()
+
+    assert row[0] == "Updated Electronics"
+
+
+def test_admin_can_delete_unused_category(client, app):
+    sign_in(client)
+    client.post("/categories/new", data={"name": "Unused Category"})
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        category_id = db.execute(
+            "SELECT id FROM categories WHERE name = ?",
+            ("Unused Category",),
+        ).fetchone()[0]
+        db.close()
+
+    response = client.post(
+        f"/categories/{category_id}/delete",
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        row = db.execute(
+            "SELECT id FROM categories WHERE id = ?",
+            (category_id,),
+        ).fetchone()
+        db.close()
+
+    assert row is None
+
+
+def test_admin_can_create_edit_and_delete_supplier(client, app):
+    sign_in(client)
+
+    response = client.post(
+        "/suppliers/new",
+        data={"name": "Test Supplier Co"},
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        row = db.execute(
+            "SELECT id FROM suppliers WHERE name = ?",
+            ("Test Supplier Co",),
+        ).fetchone()
+        db.close()
+
+    assert row is not None
+    supplier_id = row[0]
+
+    response = client.post(
+        f"/suppliers/{supplier_id}/edit",
+        data={"name": "Updated Supplier Co"},
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        row = db.execute(
+            "SELECT name FROM suppliers WHERE id = ?",
+            (supplier_id,),
+        ).fetchone()
+        db.close()
+
+    assert row[0] == "Updated Supplier Co"
+
+    response = client.post(
+        f"/suppliers/{supplier_id}/delete",
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        row = db.execute(
+            "SELECT id FROM suppliers WHERE id = ?",
+            (supplier_id,),
+        ).fetchone()
+        db.close()
+
+    assert row is None
+
+@pytest.mark.parametrize(
+    ("url", "table"),
+    [
+        ("/categories/new", "categories"),
+        ("/suppliers/new", "suppliers"),
+    ],
+)
+def test_catalog_rejects_blank_names(client, app, url, table):
+    sign_in(client)
+
+    response = client.post(
+        url,
+        data={"name": "   "},
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        count = db.execute(
+            f"SELECT COUNT(*) FROM {table} WHERE TRIM(name) = ''"
+        ).fetchone()[0]
+        db.close()
+
+    assert count == 0
+
+
+def test_duplicate_category_name_is_rejected(client, app):
+    sign_in(client)
+    client.post("/categories/new", data={"name": "Duplicate Category"})
+    client.post("/categories/new", data={"name": "Duplicate Category"})
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        count = db.execute(
+            "SELECT COUNT(*) FROM categories WHERE name = ?",
+            ("Duplicate Category",),
+        ).fetchone()[0]
+        db.close()
+
+    assert count == 1
+
+
+def test_duplicate_supplier_name_is_rejected(client, app):
+    sign_in(client)
+    client.post("/suppliers/new", data={"name": "Duplicate Supplier"})
+    client.post("/suppliers/new", data={"name": "Duplicate Supplier"})
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        count = db.execute(
+            "SELECT COUNT(*) FROM suppliers WHERE name = ?",
+            ("Duplicate Supplier",),
+        ).fetchone()[0]
+        db.close()
+
+    assert count == 1
+
+
+def test_cannot_delete_category_used_by_component(client, app):
+    sign_in(client)
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        category_id = db.execute(
+            "SELECT id FROM categories WHERE name = ?",
+            ("Microcontrollers",),
+        ).fetchone()[0]
+        db.close()
+
+    response = client.post(
+        f"/categories/{category_id}/delete",
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        row = db.execute(
+            "SELECT id FROM categories WHERE id = ?",
+            (category_id,),
+        ).fetchone()
+        db.close()
+
+    assert row is not None
+
+
+def test_cannot_delete_supplier_used_by_component(client, app):
+    sign_in(client)
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        supplier_id = db.execute(
+            "SELECT id FROM suppliers WHERE name = ?",
+            ("Maker Supplies",),
+        ).fetchone()[0]
+        db.close()
+
+    response = client.post(
+        f"/suppliers/{supplier_id}/delete",
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        row = db.execute(
+            "SELECT id FROM suppliers WHERE id = ?",
+            (supplier_id,),
+        ).fetchone()
+        db.close()
+
+    assert row is not None
