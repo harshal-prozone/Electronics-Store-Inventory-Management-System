@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}Availability report{% endblock %}
+{% block content %}
+<div class="breadcrumbs">
+  <a href="{{ url_for('components') }}">Inventory</a><span>/</span><span>Availability report</span>
+</div>
+
+<section class="page-heading">
+  <div>
+    <div class="eyebrow">REPORTS / INVENTORY</div>
+    <h1>Availability report</h1>
+    <p>Review active components and export filtered availability data.</p>
+  </div>
+</section>
+
+<section class="panel inventory-panel">
+  <div class="panel-header">
+    <div><h2>Report filters</h2><p class="muted">Choose one or more filters, then apply them.</p></div>
+    <span class="result-count">{{ components|length }} result{{ '' if components|length == 1 else 's' }}</span>
+  </div>
+
+  <form class="filter-form" method="get" action="{{ url_for('availability_report') }}">
+    <select name="category" aria-label="Filter by category">
+      <option value="">All categories</option>
+      {% for option in categories %}
+      <option value="{{ option }}" {{ 'selected' if category_filter == option else '' }}>{{ option }}</option>
+      {% endfor %}
+    </select>
+    <select name="supplier" aria-label="Filter by supplier">
+      <option value="">All suppliers</option>
+      {% for option in suppliers %}
+      <option value="{{ option }}" {{ 'selected' if supplier_filter == option else '' }}>{{ option }}</option>
+      {% endfor %}
+    </select>
+    <select name="status" aria-label="Filter by availability">
+      <option value="">All statuses</option>
+      {% for option in ['In Stock', 'Low Stock', 'Out of Stock'] %}
+      <option value="{{ option }}" {{ 'selected' if status_filter == option else '' }}>{{ option }}</option>
+      {% endfor %}
+    </select>
+    <button class="button button-secondary" type="submit">Apply filters</button>
+    {% if category_filter or supplier_filter or status_filter %}
+    <a class="clear-link" href="{{ url_for('availability_report') }}">Clear</a>
+    {% endif %}
+  </form>
+
+  <div class="form-actions">
+    <a class="button button-primary"
+       href="{{ url_for('export_availability_report_csv', category=category_filter, supplier=supplier_filter, status=status_filter) }}">Download CSV</a>
+    <a class="button button-secondary"
+       href="{{ url_for('export_availability_report_pdf', category=category_filter, supplier=supplier_filter, status=status_filter) }}">Download PDF</a>
+  </div>
+
+  <div class="table-wrap">
+    <table class="inventory-table">
+      <thead>
+        <tr>
+          <th>SKU</th><th>Component</th><th>Category</th><th>Supplier</th>
+          <th>Quantity</th><th>Reorder level</th><th>Status</th><th>Unit price (INR)</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for component in components %}
+        {% set status = availability_status(component['quantity'], component['reorder_level']) %}
+        <tr>
+          <td>{{ component['sku'] }}</td>
+          <td>{{ component['name'] }}</td>
+          <td>{{ component['category'] or 'Uncategorised' }}</td>
+          <td>{{ component['supplier'] or 'No supplier' }}</td>
+          <td>{{ component['quantity'] }}</td>
+          <td>{{ component['reorder_level'] }}</td>
+          <td><span class="status-pill status-{{ status|replace(' ', '-')|lower }}"><span class="status-dot"></span>{{ status }}</span></td>
+          <td>{{ '%.2f'|format(component['unit_price']) }}</td>
+        </tr>
+        {% else %}
+        <tr><td colspan="8" class="empty-cell">No components match the selected filters.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</section>
+{% endblock %}

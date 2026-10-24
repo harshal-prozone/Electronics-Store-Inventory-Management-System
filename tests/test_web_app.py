@@ -1,4 +1,7 @@
+import csv
+import io
 import sqlite3
+from datetime import timedelta
 
 import pytest
 
@@ -509,3 +512,244 @@ def test_staff_cannot_create_edit_or_delete_components(client, app):
     assert new_count == 0
     assert original[0] == "Arduino Uno R3"
     assert original[1] is None
+
+def test_availability_report_filters_by_category_supplier_and_status(client):
+    sign_in(client)
+    response = client.get(
+        "/reports/availability",
+        query_string={
+            "category": "Microcontrollers",
+            "supplier": "Circuit Hub",
+            "status": "Low Stock",
+        },
+    )
+
+    assert response.status_code == 200
+    page = response.get_data(as_text=True)
+    assert "ESP32 DevKit" in page
+    assert "Arduino Uno R3" not in page
+    assert "Raspberry Pi Pico" not in page
+    assert "Low Stock" in page
+
+
+def test_availability_report_csv_respects_status_filter(client):
+    sign_in(client)
+    response = client.get(
+        "/reports/availability.csv",
+        query_string={
+            "category": "Microcontrollers",
+            "supplier": "Circuit Hub",
+            "status": "Low Stock",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.mimetype == "text/csv"
+    report = response.get_data(as_text=True)
+    assert "ESP32 DevKit" in report
+    assert "Arduino Uno R3" not in report
+    assert "Raspberry Pi Pico" not in report
+    records = list(csv.DictReader(io.StringIO(report)))
+    assert len(records) == 1
+    assert records[0]["Component"] == "ESP32 DevKit"
+    assert records[0]["Category"] == "Microcontrollers"
+    assert records[0]["Supplier"] == "Circuit Hub"
+    assert records[0]["Availability"] == "Low Stock"
+
+
+def test_availability_report_pdf_is_valid_download(client):
+    sign_in(client)
+    response = client.get(
+        "/reports/availability.pdf",
+        query_string={
+            "category": "Microcontrollers",
+            "supplier": "Circuit Hub",
+            "status": "Low Stock",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.mimetype == "application/pdf"
+    assert response.data.startswith(b"%PDF-")
+    assert "availability-report.pdf" in response.headers["Content-Disposition"]
+
+
+def test_staff_cannot_access_availability_reports(client, app):
+    from werkzeug.security import generate_password_hash
+
+    with app.app_context():
+        from flask import current_app
+        db = sqlite3.connect(current_app.config["DATABASE"])
+        db.execute(
+            "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
+            (
+                "reportstaff",
+                "reportstaff@example.com",
+                generate_password_hash("SecureStaff123!"),
+                "Staff",
+            ),
+        )
+        db.commit()
+        db.close()
+
+    client.post(
+        "/login",
+        data={"identity": "reportstaff", "password": "SecureStaff123!"},
+    )
+
+    assert client.get("/reports/availability").status_code == 403
+    assert client.get("/reports/availability.csv").status_code == 403
+    assert client.get("/reports/availability.pdf").status_code == 403
+
+
+def test_login_accepts_email_address(client):
+    response = client.post(
+        "/login",
+        data={"identity": "admin@example.local", "password": "ChangeMe123!"},
+    )
+    assert response.status_code == 302
+    assert response.headers["Location"].endswith("/components")
+    assert client.get("/components").status_code == 200
+
+
+def test_permanent_session_expires(client, app):
+    from flask import session
+
+    sign_in(client)
+    with client.session_transaction() as sess:
+        assert sess.get("_permanent") is True
+    app.config["PERMANENT_SESSION_LIFETIME"] = timedelta(seconds=-1)
+    response = client.get("/components")
+    assert response.status_code == 302
+    assert "/login" in response.headers["Location"]
+
+
+def test_login_post_requires_csrf_token(client, app):
+    app.config["WTF_CSRF_ENABLED"] = True
+    response = client.post(
+        "/login",
+        data={"identity": "admin", "password": "ChangeMe123!"},
+    )
+    assert response.status_code == 400
+
+
+def test_duplicate_email_is_rejected(client, app):
+    sign_in(client)
+    response = client.post(
+        "/admin/users",
+        data={
+            "username": "different-user",
+            "email": "admin@example.local",
+            "password": "SecureStaff123!",
+            "role": "Staff",
+        },
+        follow_redirects=True,
+    )
+    assert response.status_code == 200
+    assert "already registered" in response.get_data(as_text=True)
+    with app.app_context():
+        db = sqlite3.connect(app.config["DATABASE"])
+        count = db.execute(
+            "SELECT COUNT(*) FROM users WHERE username = ?", ("different-user",)
+        ).fetchone()[0]
+        db.close()
+    assert count == 0
+
+
+@pytest.mark.parametrize(
+    ("field", "invalid_value"),
+    [
+        ("sku", "SKU WITH SPACES"),
+        ("name", "   "),
+        ("quantity", "-1"),
+        ("reorder_level", "-1"),
+        ("unit_price", "-0.01"),
+        ("unit_price", "nan"),
+    ],
+)
+def test_component_creation_rejects_invalid_values(client, app, field, invalid_value):
+    sign_in(client)
+    payload = {
+        "sku": "INVALID-INPUT-001",
+        "name": "Validation test component",
+        "description": "",
+        "category": "Validation",
+        "supplier": "Test Supplier",
+        "quantity": "1",
+        "reorder_level": "1",
+        "unit_price": "12.50",
+    }
+    payload[field] = invalid_value
+    response = client.post("/components/new", data=payload, follow_redirects=True)
+    assert response.status_code == 200
+    with app.app_context():
+        db = sqlite3.connect(app.config["DATABASE"])
+        count = db.execute(
+            "SELECT COUNT(*) FROM components WHERE sku = ?", ("INVALID-INPUT-001",)
+        ).fetchone()[0]
+        db.close()
+    assert count == 0
+
+
+def test_csv_exports_escape_spreadsheet_formulas(client, app):
+    sign_in(client)
+    payload = {
+        "sku": "CSV-ESCAPE-001",
+        "name": "=HYPERLINK(\"https://example.com\",\"click\")",
+        "description": "\t=1+1",
+        "category": "+SUM(A1:A2)",
+        "supplier": "@SUM(1,1)",
+        "quantity": "2",
+        "reorder_level": "1",
+        "unit_price": "12.50",
+    }
+    created = client.post("/components/new", data=payload, follow_redirects=True)
+    assert created.status_code == 200
+
+    # The form strips leading whitespace, so insert the tab-prefixed test
+    # value directly to verify that the CSV exporter handles stored data.
+    with app.app_context():
+        db = sqlite3.connect(app.config["DATABASE"])
+        db.execute(
+            "UPDATE components SET description = ? WHERE sku = ?",
+            ("\t=1+1", "CSV-ESCAPE-001"),
+        )
+        db.commit()
+        db.close()
+
+    catalogue_response = client.get("/export/components.csv")
+    assert catalogue_response.status_code == 200
+    catalogue_rows = list(csv.reader(io.StringIO(catalogue_response.get_data(as_text=True))))
+    catalogue_record = next(row for row in catalogue_rows if row[0] == "CSV-ESCAPE-001")
+    assert catalogue_record[1].startswith("'=")
+    assert catalogue_record[2].startswith("'\t=")
+    assert catalogue_record[3] == "'+SUM(A1:A2)"
+    assert catalogue_record[4] == "'@SUM(1,1)"
+
+    report_response = client.get(
+        "/reports/availability.csv",
+        query_string={"category": "+SUM(A1:A2)", "supplier": "@SUM(1,1)"},
+    )
+    assert report_response.status_code == 200
+    report_rows = list(csv.DictReader(io.StringIO(report_response.get_data(as_text=True))))
+    assert len(report_rows) == 1
+    assert report_rows[0]["Component"].startswith("'=")
+    assert report_rows[0]["Category"] == "'+SUM(A1:A2)"
+    assert report_rows[0]["Supplier"] == "'@SUM(1,1)"
+
+
+def test_non_testing_database_does_not_seed_a_known_default_password(tmp_path, monkeypatch):
+    monkeypatch.delenv("ADMIN_PASSWORD", raising=False)
+    application = create_app({"DATABASE": str(tmp_path / "no-default-admin.sqlite")})
+    with application.app_context():
+        db = sqlite3.connect(application.config["DATABASE"])
+        count = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
+        db.close()
+    assert count == 0
+
+
+def test_production_requires_explicit_secret_key(tmp_path, monkeypatch):
+    monkeypatch.setenv("APP_ENV", "production")
+    monkeypatch.delenv("SECRET_KEY", raising=False)
+    with pytest.raises(RuntimeError, match="SECRET_KEY must be set"):
+        create_app({"DATABASE": str(tmp_path / "production.sqlite")})

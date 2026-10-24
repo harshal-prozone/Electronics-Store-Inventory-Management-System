@@ -13,6 +13,7 @@ import io
 import math
 import os
 import re
+import secrets
 import sqlite3
 from functools import wraps
 from pathlib import Path
@@ -24,6 +25,12 @@ from flask import (
     request, session, url_for,
 )
 from flask_wtf.csrf import CSRFProtect
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import landscape, letter
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.lib.units import inch
+from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle
+from xml.sax.saxutils import escape
 from werkzeug.security import check_password_hash, generate_password_hash
 
 from inventory_service import adjust_stock, availability_status
@@ -33,14 +40,34 @@ DEFAULT_DB = ROOT / "instance" / "inventory.db"
 csrf = CSRFProtect()
 
 
+def safe_csv_cell(value: Any) -> Any:
+    """Keep untrusted text from being evaluated as a spreadsheet formula."""
+    if not isinstance(value, str):
+        return value
+    significant = value.lstrip(" \t\r\n")
+    if value.startswith(("\t", "\r")) or significant.startswith(("=", "+", "-", "@")):
+        return "'" + value
+    return value
+
+
 def create_app(test_config: dict[str, Any] | None = None) -> Flask:
+    environment = os.environ.get("APP_ENV", "development").strip().lower()
+    secret_key = os.environ.get("SECRET_KEY")
+    if not secret_key:
+        if environment == "production":
+            raise RuntimeError("SECRET_KEY must be set when APP_ENV=production.")
+        # A random development key avoids a predictable, forgeable session key.
+        # Configure a persistent SECRET_KEY when sessions must survive restarts.
+        secret_key = secrets.token_hex(32)
+
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
-        SECRET_KEY=os.environ.get("SECRET_KEY", "local-development-key-change-before-deployment"),
+        SECRET_KEY=secret_key,
+        APP_ENV=environment,
         DATABASE=os.environ.get("DATABASE_PATH", str(DEFAULT_DB)),
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
-        SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "0") == "1",
+        SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "1" if environment == "production" else "0") == "1",
         PERMANENT_SESSION_LIFETIME=60 * 60,
         WTF_CSRF_TIME_LIMIT=None,
     )
@@ -309,17 +336,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         flash("Component moved out of active inventory.", "success")
         return redirect(url_for("components"))
 
-    @login_required
-    def component_detail(component_id: int):
-        component = get_component_or_404(component_id)
-        transactions = get_db().execute(
-            """SELECT t.*, u.username FROM inventory_transactions t
-               JOIN users u ON u.id = t.user_id
-               WHERE t.component_id = ? ORDER BY t.id DESC LIMIT 20""",
-            (component_id,),
-        ).fetchall()
-        return render_template("component_detail.html", component=component, transactions=transactions)
-
     @app.post("/components/<int:component_id>/stock")
     @login_required
     def component_stock(component_id: int):
@@ -351,6 +367,134 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         except sqlite3.Error:
             return jsonify(status="error", database="unavailable"), 503
 
+    @app.get("/reports/availability")
+    @login_required
+    @admin_required
+    def availability_report():
+        category_filter, supplier_filter, status_filter = get_availability_report_filters()
+        db = get_db()
+        rows = get_availability_report_rows(
+            db, category_filter, supplier_filter, status_filter
+        )
+        categories = [
+            row[0] for row in db.execute(
+                """SELECT DISTINCT category FROM components
+                   WHERE deleted_at IS NULL AND category <> ''
+                   ORDER BY category COLLATE NOCASE"""
+            ).fetchall()
+        ]
+        suppliers = [
+            row[0] for row in db.execute(
+                """SELECT DISTINCT supplier FROM components
+                   WHERE deleted_at IS NULL AND supplier <> ''
+                   ORDER BY supplier COLLATE NOCASE"""
+            ).fetchall()
+        ]
+        return render_template(
+            "availability_report.html",
+            components=rows,
+            categories=categories,
+            suppliers=suppliers,
+            category_filter=category_filter,
+            supplier_filter=supplier_filter,
+            status_filter=status_filter,
+            report_data=availability_report_data(rows),
+        )
+
+    @app.get("/reports/availability.csv")
+    @login_required
+    @admin_required
+    def export_availability_report_csv():
+        category, supplier, status = get_availability_report_filters()
+        rows = get_availability_report_rows(get_db(), category, supplier, status)
+        buffer = io.StringIO(newline="")
+        writer = csv.writer(buffer)
+        writer.writerow([
+            "SKU", "Component", "Category", "Supplier", "Quantity",
+            "Reorder Level", "Availability", "Unit Price (INR)",
+        ])
+        writer.writerows([[safe_csv_cell(value) for value in record] for record in availability_report_data(rows)])
+        response = make_response(buffer.getvalue())
+        response.headers["Content-Type"] = "text/csv; charset=utf-8"
+        response.headers["Content-Disposition"] = (
+            'attachment; filename="availability-report.csv"'
+        )
+        return response
+
+    @app.get("/reports/availability.pdf")
+    @login_required
+    @admin_required
+    def export_availability_report_pdf():
+        category, supplier, status = get_availability_report_filters()
+        rows = get_availability_report_rows(get_db(), category, supplier, status)
+        records = availability_report_data(rows)
+
+        buffer = io.BytesIO()
+        document = SimpleDocTemplate(
+            buffer,
+            pagesize=landscape(letter),
+            rightMargin=0.45 * inch,
+            leftMargin=0.45 * inch,
+            topMargin=0.45 * inch,
+            bottomMargin=0.45 * inch,
+            title="Inventory Availability Report",
+        )
+        styles = getSampleStyleSheet()
+        filter_text = (
+            f"Category: {category or 'All'} | "
+            f"Supplier: {supplier or 'All'} | "
+            f"Status: {status or 'All'}"
+        )
+        story = [
+            Paragraph("Inventory Availability Report", styles["Title"]),
+            Paragraph(escape(filter_text), styles["Normal"]),
+            Spacer(1, 0.18 * inch),
+        ]
+        headers = [
+            "SKU", "Component", "Category", "Supplier", "Quantity",
+            "Reorder Level", "Status", "Unit Price (INR)",
+        ]
+        table_data = [
+            [Paragraph(escape(value), styles["BodyText"]) for value in headers]
+        ]
+        for record in records:
+            table_data.append([
+                Paragraph(escape(str(value)), styles["BodyText"])
+                for value in record
+            ])
+
+        table = Table(
+            table_data,
+            repeatRows=1,
+            colWidths=[
+                1.15 * inch, 1.55 * inch, 1.20 * inch, 1.45 * inch,
+                0.70 * inch, 0.95 * inch, 0.95 * inch, 1.20 * inch,
+            ],
+        )
+        table.setStyle(TableStyle([
+            ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#18324A")),
+            ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
+            ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
+            ("GRID", (0, 0), (-1, -1), 0.4, colors.HexColor("#D7E0E8")),
+            ("ROWBACKGROUNDS", (0, 1), (-1, -1),
+             [colors.white, colors.HexColor("#F3F6F9")]),
+            ("VALIGN", (0, 0), (-1, -1), "TOP"),
+            ("ALIGN", (4, 1), (-1, -1), "RIGHT"),
+            ("LEFTPADDING", (0, 0), (-1, -1), 5),
+            ("RIGHTPADDING", (0, 0), (-1, -1), 5),
+            ("TOPPADDING", (0, 0), (-1, -1), 5),
+            ("BOTTOMPADDING", (0, 0), (-1, -1), 5),
+        ]))
+        story.append(table)
+        document.build(story)
+
+        response = make_response(buffer.getvalue())
+        response.headers["Content-Type"] = "application/pdf"
+        response.headers["Content-Disposition"] = (
+            'attachment; filename="availability-report.pdf"'
+        )
+        return response
+
     @app.get("/export/components.csv")
     @login_required
     def export_components_csv():
@@ -359,7 +503,12 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         writer = csv.writer(buffer)
         writer.writerow(["SKU", "Name", "Description", "Category", "Supplier", "Quantity", "Reorder Level", "Availability", "Unit Price"])
         for row in rows:
-            writer.writerow([row["sku"], row["name"], row["description"], row["category"], row["supplier"], row["quantity"], row["reorder_level"], availability_status(row["quantity"], row["reorder_level"]), f"{row['unit_price']:.2f}"])
+            writer.writerow([safe_csv_cell(value) for value in [
+                row["sku"], row["name"], row["description"], row["category"],
+                row["supplier"], row["quantity"], row["reorder_level"],
+                availability_status(row["quantity"], row["reorder_level"]),
+                f"{row['unit_price']:.2f}",
+            ]])
         response = make_response(buffer.getvalue())
         response.headers["Content-Type"] = "text/csv; charset=utf-8"
         response.headers["Content-Disposition"] = "attachment; filename=inventory.csv"
@@ -369,7 +518,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     def init_db_command():
         """Create tables and seed a demo administrator and sample inventory."""
         init_db()
-        click.echo("Database initialized. Demo login: admin / ChangeMe123! (change for real use).")
+        click.echo("Database initialized. If no administrator exists, run: flask --app app create-admin")
 
     @app.cli.command("create-admin")
     @click.option("--username", prompt=True)
@@ -431,13 +580,26 @@ def init_db() -> None:
 
     user_count = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
     if user_count == 0:
-        admin_username = os.environ.get("ADMIN_USERNAME", "admin").strip() or "admin"
-        admin_email = os.environ.get("ADMIN_EMAIL", "admin@example.local").strip() or "admin@example.local"
-        admin_password = os.environ.get("ADMIN_PASSWORD", "ChangeMe123!")
-        db.execute(
-            "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, 'Admin')",
-            (admin_username, admin_email, generate_password_hash(admin_password)),
-        )
+        # Tests use a deterministic test-only account; normal installs never get
+        # a known default password. Without ADMIN_PASSWORD, use create-admin CLI.
+        if current_app.config.get("TESTING"):
+            admin_password = "ChangeMe123!"
+        else:
+            admin_password = os.environ.get("ADMIN_PASSWORD", "")
+
+        if admin_password:
+            if len(admin_password) < 10:
+                raise RuntimeError("ADMIN_PASSWORD must be at least 10 characters long.")
+            admin_username = os.environ.get("ADMIN_USERNAME", "admin").strip() or "admin"
+            admin_email = os.environ.get("ADMIN_EMAIL", "admin@example.local").strip() or "admin@example.local"
+            db.execute(
+                "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, 'Admin')",
+                (admin_username, admin_email, generate_password_hash(admin_password)),
+            )
+        elif not current_app.config.get("TESTING"):
+            current_app.logger.warning(
+                "No administrator was seeded. Run 'flask --app app create-admin' to create one."
+            )
 
     component_count = db.execute("SELECT COUNT(*) FROM components").fetchone()[0]
     if component_count == 0:
@@ -455,6 +617,62 @@ def init_db() -> None:
 
     db.commit()
 
+
+
+def get_availability_report_filters():
+    """Read and normalize report filters from the query string."""
+    category = request.args.get("category", "").strip()[:80]
+    supplier = request.args.get("supplier", "").strip()[:120]
+    status = request.args.get("status", "").strip()
+    valid_statuses = {"", "In Stock", "Low Stock", "Out of Stock"}
+    if status not in valid_statuses:
+        status = ""
+    return category, supplier, status
+
+
+def get_availability_report_rows(db, category="", supplier="", status=""):
+    """Return active inventory rows matching the selected report filters."""
+    conditions = ["deleted_at IS NULL"]
+    params = []
+
+    if category:
+        conditions.append("category = ?")
+        params.append(category)
+    if supplier:
+        conditions.append("supplier = ?")
+        params.append(supplier)
+
+    if status == "Out of Stock":
+        conditions.append("quantity = 0")
+    elif status == "Low Stock":
+        conditions.append("quantity > 0 AND quantity <= reorder_level")
+    elif status == "In Stock":
+        conditions.append("quantity > reorder_level")
+
+    sql = """
+        SELECT sku, name, category, supplier, quantity, reorder_level, unit_price
+        FROM components
+        WHERE """ + " AND ".join(conditions) + """
+        ORDER BY name COLLATE NOCASE
+    """
+    return db.execute(sql, params).fetchall()
+
+
+def availability_report_data(rows):
+    """Format report data consistently for CSV and PDF exports."""
+    return [
+        [
+            row["sku"],
+            row["name"],
+            row["category"] or "",
+            row["supplier"] or "",
+            row["quantity"],
+            row["reorder_level"],
+            availability_status(int(row["quantity"]), int(row["reorder_level"])),
+            f"{row['unit_price']:.2f}",
+        ]
+        for row in rows
+    ]
 
 
 def write_audit(user_id: int | None, event_type: str, details: str) -> None:
