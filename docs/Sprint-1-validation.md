@@ -1,44 +1,50 @@
 # Sprint 1 validation record
 
-**Scheduled sprint:** 19-23 October 2026  
-**Validation date:** 24 October 2026  
-**Purpose:** Track actual evidence against the Sprint 1 backlog and the Software Engineering Mini-Project Deliverables Part-2 brief.
+**Scheduled sprint:** 19-23 October 2026
 
-## Automated verification currently visible on `main`
+**Closeout audit:** 24 October 2026
+**Scope source:** The Sprint 1 acceptance map in this repository covers Issues #5, #6, #7, #8, #9, #11 and #14. This record distinguishes code/CI evidence from human acceptance.
 
-- GitHub Actions: [run 40067291817](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/actions/runs/40067291817)
-- Result: **53 tests passed** on Python 3.12 (current merged `main` revision at the time of audit).
-- Existing test coverage includes authentication/roles, component CRUD and soft deletion, availability boundaries, transaction rollback/concurrency, reports and exports, CSV formula-injection handling, and key security configuration.
-- This passing run does **not** validate the unmerged category/supplier branch or the performance benchmark until those changes are applied and CI runs again.
+## Latest merged-main automated verification
+
+- GitHub Actions: [run 40113760398](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/actions/runs/40113760398)
+- Result: **65 tests passed** on Python 3.12; the performance acceptance step passed.
+- Performance inputs: 5,000 active components, 10 concurrent workers, 100 HTTP listing/search/filter requests.
+- Results: 100 successful, 0 failed; p50 54.93 ms; p95 194.24 ms; max 254.45 ms; 100% completed within two seconds. Acceptance is at least 95% within two seconds.
+- Environment qualification: temporary SQLite database and loopback threaded Flask WSGI server. This is a coursework acceptance test, not a production-network load test or proof of 99% availability.
 
 ## Sprint 1 issue acceptance map
 
-| Issue | Requirement | Current evidence / status |
+| Issue | Requirement | Evidence and status |
 |---|---|---|
-| #5 | Authentication and user management | Merged PR #26; automated authentication/role/CSRF/session tests are on `main`. |
-| #6 | Component CRUD and SKU validation | Merged PRs #28 and #30; CRUD, duplicate SKU, soft delete and Staff restrictions are tested. |
-| #7 | Search, filters and pagination | Search, category/supplier/status filtering and pagination are implemented. Performance target was previously unverified; run `python scripts/performance_test.py` after applying the completion kit. |
-| #8 | Category and supplier management | PR #32 contains the feature but is not merged and was marked non-mergeable at audit time. Keep Issue #8 open until integration and the combined test run succeed. |
-| #9 | Stock-in/out and transaction history | Merged PRs #27 and #29; stock movement, rollback, concurrency and quantity traceability have automated coverage. |
-| #11 | Availability classification | Service boundary tests and manual results are recorded on [Issue #11](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/11). |
-| #14 | Availability reports and CSV/PDF export | Merged PR #31; filter/export tests and manual verification are recorded. Merge occurred 24 October, after the scheduled sprint ended on 23 October. |
-| #22 | Transaction integrity/rollback | Functionality overlaps materially with Issue #9 and is covered in `inventory_service.py` plus rollback/concurrency tests. Close as duplicate only after confirming the team accepts #9 as the canonical ticket. |
+| #5 | Authentication and user management | PR #26 merged; authentication, Admin/Staff access control, CSRF/session and user management tests are on `main`; Issue #5 has a manual acceptance report. |
+| #6 | Component CRUD and SKU validation | PRs #28 and #30 merged; component creation/editing, duplicate SKU, validation, soft deletion, CSV exclusion and Staff restrictions are tested. |
+| #7 | Search, filters and pagination | Search/filter/pagination regression tests and passing performance acceptance run 40113760398. Evidence meets the stated numeric threshold; reconcile the issue state and link the run. |
+| #8 | Category and supplier management | PR #32 introduced the feature and PR #33 integrated it; the merged `main` test suite includes catalogue CRUD, authorization, protected deletion and association-preserving rename tests. |
+| #9 | Stock-in/out and transaction history | PRs #27 and #29 merged; transaction records, rollback, failed stock-out and concurrent oversell behavior are tested; manual results are recorded on Issue #9. |
+| #11 | Availability classification | Service boundary tests plus manual stock-in/out verification are recorded on Issue #11. This establishes status classification, not a separate email/SMS alert service. |
+| #14 | Availability reports and CSV/PDF export | PR #31 merged; tests cover report filters, CSV/PDF response and Staff restrictions. Merge occurred on 24 October, after the scheduled 23 October sprint end. |
 
-## Performance acceptance procedure
+## Additional quality gates added by the closeout change
 
-Run the repeatable HTTP benchmark, preferably in the GitHub Actions workflow:
+- **Clean setup smoke:** a fresh CI job installs `requirements.txt`, initializes a new database, creates an administrator, starts Flask and requests `/health`. Actual pass/fail is recorded by the pull-request workflow.
+- **Cross-browser smoke:** a Playwright matrix exercises inventory search/filter/pagination, component creation in the three-view path (inventory → form → detail), stock adjustment/history, catalogue CRUD, filtered report CSV/PDF downloads, and Staff denial on Chrome, Edge and Firefox. Do not claim those browsers passed until every matrix job is green.
+- Existing unit/integration tests remain the principal automated regression suite.
 
-```bash
-python scripts/performance_test.py
-```
+## Issue tracking reconciliation
 
-The script creates a disposable SQLite database, seeds at least 5,000 active components, starts a threaded loopback HTTP server, and issues 100 listing/search/filter requests using 10 concurrent workers. It prints the actual p50/p95/max latency, percentage within two seconds and failures. The pass condition is zero failed requests and at least 95% within two seconds.
+- Issues #7 and #18 have objective passing evidence in run 40113760398. Close them only after linking the run and confirming the existing issue body is satisfied.
+- Issue #22 largely duplicates the transaction rollback/concurrency criteria in Issue #9. The closeout script comments with the cross-reference and closes #22 as duplicate when authenticated GitHub CLI access is available; reopen it if the team identifies distinct requirements.
+- Do not close #13 solely on the basis of automated browser smoke; the issue requires representative-user usability evidence in addition to browser compatibility.
+- Issue #24 has setup instructions and a clean-run CI check; its explicit “another team member verifies the instructions” criterion requires a real teammate to follow them and record the result.
 
-**Evidence must be taken from the actual run log.** Do not enter an assumed latency result into this document. The benchmark is a repeatable coursework check, not a claim that a production deployment has been load-tested over its real network.
+## Manual and team acceptance still required
 
-## Manual verification still required
+- A teammate must review the closeout PR and submit a real GitHub review. No review submission was recorded on original PR #33.
+- A representative user must complete the component-add workflow and record the usability result. The automated check verifies the three-view path but cannot attest to a person's experience.
+- Compare the submitted SRS, SAD and Test Plan against the implementation line by line and update the traceability matrix. This record is currently grounded in GitHub issues/tests; it is not signed-off formal PDF traceability.
+- The actual one-minute video remains a separate recording task and is intentionally outside the automated closeout changes; the storyboard is not the video.
 
-- A repository owner/team member must review the relevant PR(s) and record a real GitHub review. Automated CI success is not a substitute for a review submission.
-- A team member must record the one-minute working-product demo and upload the actual video to the repository. A script/storyboard is not the video.
-- If the course requires cross-browser checks, capture actual Chrome, Edge and Firefox results instead of marking them complete by inference.
-- Compare the implementation with the submitted SRS/SAD/Test Plan and update the deviation record below if those documents impose additional requirements.
+## Schedule deviation
+
+Availability reports (PR #31) and final Sprint 1 integration (PR #33) were merged on 24 October 2026, one calendar day after the recorded sprint end on 23 October. Keep this deviation visible in the final presentation.

@@ -269,24 +269,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             return "Select a valid supplier from the catalogue."
         return None
 
-    def get_catalog_options():
-        """Return catalogue entries for component-form dropdowns."""
-        db = get_db()
-        categories = db.execute("SELECT id, name FROM categories ORDER BY name COLLATE NOCASE").fetchall()
-        suppliers = db.execute("SELECT id, name FROM suppliers ORDER BY name COLLATE NOCASE").fetchall()
-        return categories, suppliers
-
-    def validate_catalog_selection(values):
-        """Ensure component category and supplier exist in their catalogues."""
-        db = get_db()
-        category = db.execute("SELECT 1 FROM categories WHERE name = ? COLLATE NOCASE", (values[3],)).fetchone()
-        supplier = db.execute("SELECT 1 FROM suppliers WHERE name = ? COLLATE NOCASE", (values[4],)).fetchone()
-        if not category:
-            return "Select a valid category from the catalogue."
-        if not supplier:
-            return "Select a valid supplier from the catalogue."
-        return None
-
     @app.route("/components/new", methods=("GET", "POST"))
     @login_required
     @admin_required
