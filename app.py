@@ -1,9 +1,8 @@
 """Flask web application for the Electronics Store Inventory Management System.
 
-This is a coursework MVP focused on the inventory catalogue and Sprint 1 Issue #11:
-availability classification and low-stock status updates. Broader backlog stories
-(e.g. PDF reports, bulk imports, performance harnesses and full user administration)
-are intentionally left for their own sprint branches.
+Sprint 1 functionality includes authentication and role controls, component CRUD,
+recorded stock movements, availability classification, and filtered availability
+reports with CSV/PDF exports. Performance claims require a recorded load-test run.
 """
 
 from __future__ import annotations
@@ -270,6 +269,24 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             return "Select a valid supplier from the catalogue."
         return None
 
+    def get_catalog_options():
+        """Return catalogue entries for component-form dropdowns."""
+        db = get_db()
+        categories = db.execute("SELECT id, name FROM categories ORDER BY name COLLATE NOCASE").fetchall()
+        suppliers = db.execute("SELECT id, name FROM suppliers ORDER BY name COLLATE NOCASE").fetchall()
+        return categories, suppliers
+
+    def validate_catalog_selection(values):
+        """Ensure component category and supplier exist in their catalogues."""
+        db = get_db()
+        category = db.execute("SELECT 1 FROM categories WHERE name = ? COLLATE NOCASE", (values[3],)).fetchone()
+        supplier = db.execute("SELECT 1 FROM suppliers WHERE name = ? COLLATE NOCASE", (values[4],)).fetchone()
+        if not category:
+            return "Select a valid category from the catalogue."
+        if not supplier:
+            return "Select a valid supplier from the catalogue."
+        return None
+
     @app.route("/components/new", methods=("GET", "POST"))
     @login_required
     @admin_required
@@ -295,16 +312,9 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 except sqlite3.IntegrityError:
                     get_db().rollback()
                     flash("That SKU already exists. Use a unique SKU.", "error")
-        
         categories, suppliers = get_catalog_options()
-        return render_template(
-            "component_form.html",
-            component=None,
-            page_title="Add component",
-            categories=categories,
-            suppliers=suppliers,
-        )
-
+        return render_template("component_form.html", component=None, page_title="Add component",
+                               categories=categories, suppliers=suppliers)
 
     @app.route("/components/<int:component_id>/edit", methods=("GET", "POST"))
     @login_required
@@ -333,16 +343,9 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 except sqlite3.IntegrityError:
                     get_db().rollback()
                     flash("That SKU is already in use by another component.", "error")
-        
         categories, suppliers = get_catalog_options()
-        return render_template(
-            "component_form.html",
-            component=component,
-            page_title="Edit component",
-            categories=categories,
-            suppliers=suppliers,
-        )
-
+        return render_template("component_form.html", component=component, page_title="Edit component",
+                               categories=categories, suppliers=suppliers)
 
     
     @app.get("/components/<int:component_id>")
@@ -457,10 +460,16 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             if not name or len(name) > 80:
                 flash("Category name is required and must be 80 characters or fewer.", "error")
             else:
+                old_name = category["name"]
                 try:
+                    db.execute("BEGIN IMMEDIATE")
                     db.execute(
                         "UPDATE categories SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
                         (name, category_id),
+                    )
+                    db.execute(
+                        "UPDATE components SET category = ? WHERE category = ?",
+                        (name, old_name),
                     )
                     db.commit()
                     write_audit(g.user["id"], "category-updated", f"category_id={category_id}; name={name}")
@@ -543,10 +552,16 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             if not name or len(name) > 120:
                 flash("Supplier name is required and must be 120 characters or fewer.", "error")
             else:
+                old_name = supplier["name"]
                 try:
+                    db.execute("BEGIN IMMEDIATE")
                     db.execute(
                         "UPDATE suppliers SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
                         (name, supplier_id),
+                    )
+                    db.execute(
+                        "UPDATE components SET supplier = ? WHERE supplier = ?",
+                        (name, old_name),
                     )
                     db.commit()
                     write_audit(g.user["id"], "supplier-updated", f"supplier_id={supplier_id}; name={name}")
@@ -580,6 +595,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             write_audit(g.user["id"], "supplier-deleted", f"supplier_id={supplier_id}; name={supplier['name']}")
             flash("Supplier deleted successfully.", "success")
         return redirect(url_for("suppliers"))
+
 
     @app.get("/health")
     def health():
@@ -857,7 +873,18 @@ def init_db() -> None:
 
     db.commit()
 
-
+    # Preserve existing values while seeding administrator-managed catalogues.
+    db.execute(
+        """INSERT OR IGNORE INTO categories (name)
+           SELECT DISTINCT TRIM(category) FROM components
+           WHERE deleted_at IS NULL AND TRIM(category) <> ''"""
+    )
+    db.execute(
+        """INSERT OR IGNORE INTO suppliers (name)
+           SELECT DISTINCT TRIM(supplier) FROM components
+           WHERE deleted_at IS NULL AND TRIM(supplier) <> ''"""
+    )
+    db.commit()
 
 def get_availability_report_filters():
     """Read and normalize report filters from the query string."""

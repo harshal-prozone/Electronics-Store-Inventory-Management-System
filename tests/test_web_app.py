@@ -34,6 +34,13 @@ def sign_in(client):
     )
 
 
+def create_catalog_entry(client, category="Test Category", supplier="Test Supplier"):
+    category_response = client.post("/categories/new", data={"name": category}, follow_redirects=True)
+    supplier_response = client.post("/suppliers/new", data={"name": supplier}, follow_redirects=True)
+    assert category_response.status_code == 200
+    assert supplier_response.status_code == 200
+
+
 def test_inventory_requires_login(client):
     response = client.get("/components")
     assert response.status_code == 302
@@ -687,6 +694,7 @@ def test_duplicate_email_is_rejected(client, app):
 )
 def test_component_creation_rejects_invalid_values(client, app, field, invalid_value):
     sign_in(client)
+    create_catalog_entry(client, category="Validation", supplier="Test Supplier")
     payload = {
         "sku": "INVALID-INPUT-001",
         "name": "Validation test component",
@@ -711,11 +719,7 @@ def test_component_creation_rejects_invalid_values(client, app, field, invalid_v
 
 def test_csv_exports_escape_spreadsheet_formulas(client, app):
     sign_in(client)
-    create_catalog_entry(
-        client,
-        category="+SUM(A1:A2)",
-        supplier="@SUM(1,1)",
-    )
+    create_catalog_entry(client, category="+SUM(A1:A2)", supplier="@SUM(1,1)")
     payload = {
         "sku": "CSV-ESCAPE-001",
         "name": "=HYPERLINK(\"https://example.com\",\"click\")",
@@ -778,6 +782,8 @@ def test_production_requires_explicit_secret_key(tmp_path, monkeypatch):
         create_app({"DATABASE": str(tmp_path / "production.sqlite")})
 
 
+
+# Category and supplier catalogue regression tests.
 def test_admin_can_create_and_edit_category(client, app):
     sign_in(client)
 
@@ -1027,3 +1033,74 @@ def test_cannot_delete_supplier_used_by_component(client, app):
         db.close()
 
     assert row is not None
+
+
+def test_staff_cannot_manage_categories_or_suppliers(client, app):
+    from werkzeug.security import generate_password_hash
+    with app.app_context():
+        db = sqlite3.connect(app.config["DATABASE"])
+        db.execute("INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
+            ("catalogstaff", "catalogstaff@example.com", generate_password_hash("SecureStaff123!"), "Staff"))
+        db.commit()
+        db.close()
+    client.post("/login", data={"identity": "catalogstaff", "password": "SecureStaff123!"})
+    assert client.get("/categories").status_code == 403
+    assert client.get("/suppliers").status_code == 403
+    assert client.post("/categories/new", data={"name": "Not Allowed"}).status_code == 403
+    assert client.post("/suppliers/new", data={"name": "Not Allowed"}).status_code == 403
+
+
+def test_renaming_catalogue_entry_updates_component_associations(client, app):
+    sign_in(client)
+    with app.app_context():
+        db = sqlite3.connect(app.config["DATABASE"])
+        category_id = db.execute("SELECT id FROM categories WHERE name = ?", ("Microcontrollers",)).fetchone()[0]
+        supplier_id = db.execute("SELECT id FROM suppliers WHERE name = ?", ("Maker Supplies",)).fetchone()[0]
+        db.close()
+    assert client.post(f"/categories/{category_id}/edit", data={"name": "MCU boards"}, follow_redirects=True).status_code == 200
+    assert client.post(f"/suppliers/{supplier_id}/edit", data={"name": "Maker Warehouse"}, follow_redirects=True).status_code == 200
+    with app.app_context():
+        db = sqlite3.connect(app.config["DATABASE"])
+        category_count = db.execute("SELECT COUNT(*) FROM components WHERE category = ?", ("MCU boards",)).fetchone()[0]
+        supplier_count = db.execute("SELECT COUNT(*) FROM components WHERE supplier = ?", ("Maker Warehouse",)).fetchone()[0]
+        db.close()
+    assert category_count > 0
+    assert supplier_count > 0
+
+
+def test_inventory_pagination_and_filters_preserve_query_state(client, app):
+    sign_in(client)
+    with app.app_context():
+        db = sqlite3.connect(app.config["DATABASE"])
+        db.executemany(
+            """INSERT INTO components
+               (sku, name, description, category, supplier, quantity, reorder_level, unit_price)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+            [
+                (f"PG-{index:03d}", f"Pagination Component {index:02d}", "Pagination acceptance test",
+                 "Pagination Test", "Pagination Supplier", 20, 5, 1.0)
+                for index in range(15)
+            ],
+        )
+        db.commit()
+        db.close()
+
+    params = {
+        "category": "Pagination Test",
+        "supplier": "Pagination Supplier",
+        "status": "In Stock",
+    }
+    first = client.get("/components", query_string={**params, "page": 1})
+    first_page = first.get_data(as_text=True)
+    assert first.status_code == 200
+    assert "Page 1 of 2" in first_page
+    assert "Pagination Component 00" in first_page
+    assert "Pagination Component 14" not in first_page
+    assert "page=2" in first_page
+
+    second = client.get("/components", query_string={**params, "page": 2})
+    second_page = second.get_data(as_text=True)
+    assert second.status_code == 200
+    assert "Page 2 of 2" in second_page
+    assert "Pagination Component 14" in second_page
+    assert "Pagination Component 00" not in second_page
