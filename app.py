@@ -460,10 +460,16 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             if not name or len(name) > 80:
                 flash("Category name is required and must be 80 characters or fewer.", "error")
             else:
+                old_name = category["name"]
                 try:
+                    db.execute("BEGIN IMMEDIATE")
                     db.execute(
                         "UPDATE categories SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
                         (name, category_id),
+                    )
+                    db.execute(
+                        "UPDATE components SET category = ? WHERE category = ?",
+                        (name, old_name),
                     )
                     db.commit()
                     write_audit(g.user["id"], "category-updated", f"category_id={category_id}; name={name}")
@@ -546,10 +552,16 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             if not name or len(name) > 120:
                 flash("Supplier name is required and must be 120 characters or fewer.", "error")
             else:
+                old_name = supplier["name"]
                 try:
+                    db.execute("BEGIN IMMEDIATE")
                     db.execute(
                         "UPDATE suppliers SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
                         (name, supplier_id),
+                    )
+                    db.execute(
+                        "UPDATE components SET supplier = ? WHERE supplier = ?",
+                        (name, old_name),
                     )
                     db.commit()
                     write_audit(g.user["id"], "supplier-updated", f"supplier_id={supplier_id}; name={name}")
