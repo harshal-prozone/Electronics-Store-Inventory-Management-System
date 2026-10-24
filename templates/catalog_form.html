@@ -1,0 +1,43 @@
+{% extends 'base.html' %}
+{% block title %}{{ page_title }}{% endblock %}
+
+{% block content %}
+<div class="breadcrumbs">
+  <a href="{{ url_for('components') }}">Inventory</a>
+  <span>/</span>
+  <span>{{ page_title }}</span>
+</div>
+
+<section class="page-heading compact-heading">
+  <div>
+    <div class="eyebrow">CATALOGUE MANAGEMENT</div>
+    <h1>{{ page_title }}</h1>
+    <p>Enter a unique name for this {{ item_type|lower }}.</p>
+  </div>
+</section>
+
+<form method="post" class="panel form-panel">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+  <div class="field">
+    <label for="name">{{ item_type }} name <span class="required">*</span></label>
+    <input
+      id="name"
+      name="name"
+      type="text"
+      required
+      maxlength="{{ 80 if item_type == 'Category' else 120 }}"
+      value="{{ request.form.get('name', item['name'] if item else '') }}"
+      placeholder="Enter {{ item_type|lower }} name"
+    >
+  </div>
+
+  <div class="form-actions">
+    <a class="button button-secondary"
+       href="{{ url_for('categories') if item_type == 'Category' else url_for('suppliers') }}">
+      Cancel
+    </a>
+    <button class="button button-primary" type="submit">Save {{ item_type|lower }}</button>
+  </div>
+</form>
+{% endblock %}

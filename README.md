@@ -7,6 +7,7 @@ A Flask + SQLite inventory management application for electronics components. Th
 - Username/email login, Admin and Staff roles, password hashing, session expiry, and CSRF protection.
 - Searchable, filtered and paginated component inventory.
 - Admin-only component creation, editing, duplicate-SKU validation, and soft deletion.
+- Admin-managed category and supplier catalogues with server-side validation and protected deletion.
 - Atomic stock-in/stock-out operations with transaction history; stock-out cannot reduce stock below zero.
 - Availability classification derived from quantity and reorder level: zero is **Out of Stock**; positive quantity at or below the threshold is **Low Stock**; quantity above the threshold is **In Stock**.
 - Component catalogue CSV export and an Admin-only availability report with category, supplier, and status filters and CSV/PDF export.
@@ -47,6 +48,23 @@ git diff --check
 ```
 
 The tests cover availability boundary rules, component CRUD and input validation, authentication and role restrictions, stock transaction integrity/rollback/concurrency, report filters, exports, and CSV formula-injection handling. CI runs `pytest -q` on pushes and pull requests.
+
+## Sprint 1 performance validation
+
+Run the repeatable 5,000-component / 10-concurrent-user HTTP acceptance check:
+
+```bash
+python scripts/performance_test.py
+```
+
+It prints measured p50/p95/max latency, errors, and the percentage of requests completing within two seconds. Keep the run output as evidence; do not claim the performance target passed without a passing run. This loopback test is a coursework check and is not a production-network load test.
+
+## Troubleshooting
+
+- If the app starts without an Admin account, run `flask --app app create-admin` after initializing the database.
+- If imports fail, activate the project's virtual environment and run `python -m pip install -r requirements.txt`.
+- If a database migration appears inconsistent, back up the SQLite file before resetting `DATABASE_PATH` to a fresh test database.
+- If a test or performance run leaves a port or database problem, stop the local server and rerun; the performance script itself uses a temporary database and ephemeral port.
 
 ## Data and integrity
 

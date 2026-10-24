@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% block title %}Suppliers{% endblock %}
+
+{% block content %}
+<section class="page-heading">
+  <div>
+    <div class="eyebrow">CATALOGUE MANAGEMENT</div>
+    <h1>Suppliers</h1>
+    <p>Manage suppliers associated with inventory components.</p>
+  </div>
+  <a class="button button-primary" href="{{ url_for('supplier_new') }}">Add supplier</a>
+</section>
+
+<section class="panel">
+  {% if suppliers %}
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr><th>Supplier</th><th>Actions</th></tr>
+        </thead>
+        <tbody>
+          {% for supplier in suppliers %}
+          <tr>
+            <td>{{ supplier['name'] }}</td>
+            <td>
+              <a href="{{ url_for('supplier_edit', supplier_id=supplier['id']) }}">Edit</a>
+              <form method="post"
+                    action="{{ url_for('supplier_delete', supplier_id=supplier['id']) }}"
+                    style="display:inline"
+                    onsubmit="return confirm('Delete this supplier?');">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <button type="submit">Delete</button>
+              </form>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <p>No suppliers have been created yet.</p>
+  {% endif %}
+</section>
+{% endblock %}
