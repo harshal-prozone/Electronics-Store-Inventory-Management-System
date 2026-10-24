@@ -11,6 +11,7 @@ from __future__ import annotations
 import os
 import tempfile
 import threading
+import sys
 from pathlib import Path
 
 TEMP_DIR = tempfile.TemporaryDirectory(prefix="esims-browser-acceptance-")
@@ -20,6 +21,11 @@ os.environ["DATABASE_PATH"] = str(Path(TEMP_DIR.name) / "browser.sqlite")
 os.environ.pop("ADMIN_PASSWORD", None)
 os.environ.pop("ADMIN_USERNAME", None)
 os.environ.pop("ADMIN_EMAIL", None)
+
+# Allow this script to import app.py from the repository root.
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 
 from playwright.sync_api import sync_playwright  # noqa: E402
 from werkzeug.security import generate_password_hash  # noqa: E402
