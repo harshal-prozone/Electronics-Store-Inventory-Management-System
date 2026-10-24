@@ -30,7 +30,7 @@ jobs:
     env:
       APP_ENV: development
       SECRET_KEY: ci-setup-smoke-not-for-production
-      DATABASE_PATH: ${{ runner.temp }}/esims-setup-smoke.sqlite
+      DATABASE_PATH: /tmp/esims-setup-smoke.sqlite
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
