@@ -191,8 +191,10 @@ def test_admin_can_create_staff_user(client, app):
     assert user[3] == "Staff"
 
 
+
 def test_duplicate_username_is_rejected(client, app):
     sign_in(client)
+
 
     response = client.post(
         "/admin/users",
@@ -220,6 +222,20 @@ def test_duplicate_username_is_rejected(client, app):
 
     assert count == 0
 
+def create_catalog_entry(client, category="Test Category", supplier="Test Supplier"):
+    category_response = client.post(
+        "/categories/new",
+        data={"name": category},
+        follow_redirects=True,
+    )
+    supplier_response = client.post(
+        "/suppliers/new",
+        data={"name": supplier},
+        follow_redirects=True,
+    )
+
+    assert category_response.status_code == 200
+    assert supplier_response.status_code == 200
 
 def test_staff_cannot_access_user_management(client, app):
     from werkzeug.security import generate_password_hash
