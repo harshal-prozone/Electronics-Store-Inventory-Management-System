@@ -27,7 +27,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 if str(REPO_ROOT) not in sys.path:
     sys.path.insert(0, str(REPO_ROOT))
 
-from playwright.sync_api import sync_playwright  # noqa: E402
+from playwright.sync_api import expect, sync_playwright  # noqa: E402
 from werkzeug.security import generate_password_hash  # noqa: E402
 from werkzeug.serving import make_server  # noqa: E402
 from app import create_app, get_db  # noqa: E402
@@ -138,7 +138,11 @@ def run() -> None:
                 page.locator("#note").fill("Browser acceptance test")
                 page.get_by_role("button", name="Save stock movement").click()
                 assert page.get_by_text("In Stock", exact=True).first.is_visible()
-                assert "3 → 7" in page.locator("body").inner_text()
+                # Issue #21 displays movements as transaction table rows.
+                movement = page.get_by_role("row").filter(has_text="Browser acceptance test")
+                expect(movement).to_have_count(1)
+                for value in ("Stock addition", "+4", "admin", "7"):
+                    expect(movement.get_by_role("cell", name=value, exact=True)).to_be_visible()
 
                 # Category and supplier CRUD pages are usable through visible controls.
                 page.goto(f"{base_url}/categories")
