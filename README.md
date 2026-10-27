@@ -12,6 +12,7 @@ A Flask + SQLite inventory management application for electronics components. Sp
 - Availability classification derived from quantity and reorder level.
 - Component CSV export and an Admin-only availability report with category, supplier, and status filters and CSV/PDF export.
 - Audit entries for authentication and inventory-changing actions, a `/health` endpoint, and automated tests.
+- Component transaction history with inclusive UTC date filters, transaction type filters, saved resulting balances, and pagination (20 per page), ordered newest first. History supports stock additions, removals, and adjustment records; the stock entry form records additions and removals.
 
 ## Local setup (macOS/Linux)
 

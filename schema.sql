@@ -42,7 +42,7 @@ CREATE TABLE IF NOT EXISTS inventory_transactions (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     component_id INTEGER NOT NULL REFERENCES components(id) ON DELETE RESTRICT,
     user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE RESTRICT,
-    transaction_type TEXT NOT NULL CHECK (transaction_type IN ('stock-in', 'stock-out')),
+    transaction_type TEXT NOT NULL CHECK (transaction_type IN ('stock-in', 'stock-out', 'adjustment')),
     quantity INTEGER NOT NULL CHECK (quantity > 0),
     previous_quantity INTEGER NOT NULL CHECK (previous_quantity >= 0),
     new_quantity INTEGER NOT NULL CHECK (new_quantity >= 0),
