@@ -346,6 +346,36 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             transactions=transactions,
         )
 
+    @app.post("/components/<int:component_id>/threshold")
+    @login_required
+    @admin_required
+    def component_threshold(component_id: int):
+        get_component_or_404(component_id)
+        raw_threshold = request.form.get("reorder_level", "").strip()
+        # SQLite INTEGER values are signed 64-bit; reject oversized inputs too.
+        if (not re.fullmatch(r"[0-9]{1,19}", raw_threshold)
+                or int(raw_threshold) > 9223372036854775807):
+            flash("Minimum stock threshold must be a non-negative whole number within the supported range.", "error")
+            return redirect(url_for("component_detail", component_id=component_id))
+
+        threshold = int(raw_threshold)
+        db = get_db()
+        with db:
+            previous = db.execute(
+                """UPDATE components SET reorder_level = ?, updated_at = CURRENT_TIMESTAMP
+                   WHERE id = ? AND deleted_at IS NULL RETURNING quantity""",
+                (threshold, component_id),
+            ).fetchone()
+            if previous is None:
+                abort(404)
+            db.execute(
+                "INSERT INTO audit_log (user_id, event_type, details) VALUES (?, ?, ?)",
+                (g.user["id"], "threshold-updated", f"component_id={component_id}; reorder_level={threshold}"),
+            )
+        status = availability_status(previous["quantity"], threshold)
+        flash(f"Minimum stock threshold updated to {threshold}. Status: {status}.", "success")
+        return redirect(url_for("component_detail", component_id=component_id))
+
     @app.post("/components/<int:component_id>/delete")
     @login_required
     @admin_required

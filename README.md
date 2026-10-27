@@ -10,6 +10,7 @@ A Flask + SQLite inventory management application for electronics components. Sp
 - Admin-managed category and supplier catalogues, including validation, protected deletion, and association-preserving renames.
 - Transactional stock-in/stock-out with transaction history; stock-out cannot exceed available quantity.
 - Availability classification derived from quantity and reorder level.
+- Admins can set or update each component's minimum stock threshold directly on its details page. Thresholds are non-negative whole numbers; positive stock at or below the threshold is Low Stock, and zero is Out of Stock. Changes immediately appear in inventory views and reports and are recorded in the audit log.
 - Component CSV export and an Admin-only availability report with category, supplier, and status filters and CSV/PDF export.
 - Audit entries for authentication and inventory-changing actions, a `/health` endpoint, and automated tests.
 
