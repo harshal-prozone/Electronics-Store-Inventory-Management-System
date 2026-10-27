@@ -31,6 +31,18 @@
   <div class="detail-stat detail-stat-status"><span>Availability status</span><strong><span class="status-pill status-{{ status|replace(' ', '-')|lower }}"><span class="status-dot"></span>{{ status }}</span></strong><span class="muted">Calculated from quantity and threshold</span></div>
   <div class="detail-stat"><span>Unit price</span><strong>₹{{ '%.2f'|format(component['unit_price']) }}</strong><span class="muted">Estimated inventory value ₹{{ '%.2f'|format(component['unit_price'] * component['quantity']) }}</span></div>
 </div>
+  {% if g.user['role'] == 'Admin' %}
+  <section class="panel form-panel stock-panel">
+    <div class="panel-header"><div><h2>Minimum stock threshold</h2><p class="muted">Set when this component needs replenishment.</p></div></div>
+    <form method="post" action="{{ url_for('component_threshold', component_id=component['id']) }}" class="stock-adjust-form">
+      <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+      <label for="minimum-stock-threshold">Minimum stock (units)</label>
+      <input id="minimum-stock-threshold" name="reorder_level" type="number" min="0" max="9223372036854775807" step="1" required value="{{ component['reorder_level'] }}" aria-describedby="threshold-help">
+      <small id="threshold-help">Enter a non-negative whole number. Positive stock at or below this threshold is Low Stock. Zero stock is always Out of Stock.</small>
+      <button class="button button-primary button-full" type="submit">Save threshold</button>
+    </form>
+  </section>
+  {% endif %}
 <div class="detail-columns">
   <section class="panel stock-panel">
     <div class="panel-header"><div><h2>Adjust stock</h2><p class="muted">Record a stock-in or stock-out operation.</p></div></div>

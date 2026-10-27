@@ -1205,3 +1205,80 @@ def test_inventory_pagination_and_filters_preserve_query_state(client, app):
     assert "Page 2 of 2" in second_page
     assert "Pagination Component 14" in second_page
     assert "Pagination Component 00" not in second_page
+
+
+@pytest.fixture()
+def threshold_component(app):
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        return db.execute("SELECT id FROM components WHERE sku = 'MCU-ARD-001'").fetchone()[0]
+
+
+def test_admin_updates_threshold_and_availability_views(client, app, threshold_component):
+    sign_in(client)
+    component_id = threshold_component
+    page = client.get(f"/components/{component_id}").get_data(as_text=True)
+    assert 'Save threshold' in page
+    # Raising the threshold above the 12 available units flags low stock.
+    for threshold, status, other_status in [(15, 'Low Stock', 'In Stock'), (0, 'In Stock', 'Low Stock')]:
+        response = client.post(f"/components/{component_id}/threshold",
+                               data={'reorder_level': str(threshold), 'quantity': '999'},
+                               follow_redirects=True)
+        assert response.status_code == 200
+        assert f'Status: {status}.' in response.get_data(as_text=True)
+        for path in ['/components', '/reports/availability']:
+            assert 'Arduino Uno R3' in client.get(path, query_string={'status': status}).get_data(as_text=True)
+            assert 'Arduino Uno R3' not in client.get(path, query_string={'status': other_status}).get_data(as_text=True)
+        records = list(csv.DictReader(io.StringIO(client.get('/reports/availability.csv').get_data(as_text=True))))
+        record = next(row for row in records if row['SKU'] == 'MCU-ARD-001')
+        assert record['Reorder Level'] == str(threshold)
+        assert record['Availability'] == status
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        assert db.execute('SELECT quantity, reorder_level FROM components WHERE id = ?', (component_id,)).fetchone() == (12, 0)
+        assert db.execute('SELECT COUNT(*) FROM inventory_transactions WHERE component_id = ?', (component_id,)).fetchone()[0] == 0
+        assert db.execute("SELECT COUNT(*) FROM audit_log WHERE event_type = 'threshold-updated'").fetchone()[0] == 2
+
+
+@pytest.mark.parametrize('value', ['', '-1', '1.5', 'abc', 'NaN', 'Infinity', '9223372036854775808', '9' * 100])
+def test_invalid_threshold_leaves_inventory_unchanged(client, app, threshold_component, value):
+    sign_in(client)
+    response = client.post(f'/components/{threshold_component}/threshold', data={'reorder_level': value}, follow_redirects=True)
+    assert 'must be a non-negative whole number' in response.get_data(as_text=True)
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        assert db.execute('SELECT quantity, reorder_level FROM components WHERE id = ?', (threshold_component,)).fetchone() == (12, 5)
+        assert db.execute("SELECT COUNT(*) FROM audit_log WHERE event_type = 'threshold-updated'").fetchone()[0] == 0
+
+
+@pytest.mark.parametrize('quantity, threshold, expected', [(12, 12, 'Low Stock'), (0, 0, 'Out of Stock'), (0, 10, 'Out of Stock')])
+def test_threshold_status_boundaries(client, app, threshold_component, quantity, threshold, expected):
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        db.execute('UPDATE components SET quantity = ? WHERE id = ?', (quantity, threshold_component))
+    sign_in(client)
+    response = client.post(f'/components/{threshold_component}/threshold', data={'reorder_level': str(threshold)}, follow_redirects=True)
+    assert f'Status: {expected}.' in response.get_data(as_text=True)
+
+
+def test_threshold_requires_admin(client, app, threshold_component):
+    path = f'/components/{threshold_component}/threshold'
+    assert client.post(path, data={'reorder_level': '20'}).status_code == 302
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        db.execute("INSERT INTO users (username, email, password_hash, role) VALUES ('thresholdstaff', 'thresholdstaff@example.com', 'unused', 'Staff')")
+        user_id = db.execute("SELECT id FROM users WHERE username = 'thresholdstaff'").fetchone()[0]
+    with client.session_transaction() as session:
+        session['user_id'] = user_id
+    assert 'Save threshold' not in client.get(f'/components/{threshold_component}').get_data(as_text=True)
+    assert client.post(path, data={'reorder_level': '20'}).status_code == 403
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        assert db.execute('SELECT reorder_level FROM components WHERE id = ?', (threshold_component,)).fetchone()[0] == 5
+
+
+def test_threshold_rejects_missing_or_deleted_component(client, threshold_component):
+    sign_in(client)
+    assert client.post('/components/999999/threshold', data={'reorder_level': '10'}).status_code == 404
+    client.post(f'/components/{threshold_component}/delete')
+    assert client.post(f'/components/{threshold_component}/threshold', data={'reorder_level': '10'}).status_code == 404
+
+
+def test_threshold_requires_csrf(client, app, threshold_component):
+    sign_in(client)
+    app.config['WTF_CSRF_ENABLED'] = True
+    assert client.post(f'/components/{threshold_component}/threshold', data={'reorder_level': '10'}).status_code == 400
