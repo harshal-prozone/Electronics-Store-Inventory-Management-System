@@ -14,6 +14,7 @@ import os
 import re
 import secrets
 import sqlite3
+from datetime import date
 from functools import wraps
 from pathlib import Path
 from typing import Any
@@ -334,17 +335,57 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     @login_required
     def component_detail(component_id: int):
         component = get_component_or_404(component_id)
-        transactions = get_db().execute(
+        start_date = request.args.get("start_date", "").strip()
+        end_date = request.args.get("end_date", "").strip()
+        transaction_type = request.args.get("transaction_type", "").strip()
+        error = None
+        try:
+            for value in (start_date, end_date):
+                if value:
+                    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", value):
+                        raise ValueError
+                    date.fromisoformat(value)
+            if start_date and end_date and start_date > end_date:
+                error = "Start date must be on or before end date."
+        except ValueError:
+            error = "Enter valid dates in YYYY-MM-DD format."
+        if transaction_type not in ("", "stock-in", "stock-out", "adjustment"):
+            error = "Select a valid transaction type."
+        conditions = ["t.component_id = ?"]
+        params = [component_id]
+        if not error:
+            if start_date:
+                conditions.append("t.created_at >= ?")
+                params.append(start_date)
+            if end_date:
+                conditions.append("t.created_at <= ?")
+                params.append(end_date + " 23:59:59.999999")
+            if transaction_type:
+                conditions.append("t.transaction_type = ?")
+                params.append(transaction_type)
+        else:
+            flash(error, "error")
+            conditions.append("0 = 1")
+        where = " AND ".join(conditions)
+        db = get_db()
+        total = db.execute(
+            "SELECT COUNT(*) FROM inventory_transactions t WHERE " + where, params,
+        ).fetchone()[0]
+        pages = max(1, (total + 19) // 20)
+        page = min(max(1, request.args.get("page", 1, type=int) or 1), pages)
+        transactions = db.execute(
             """SELECT t.*, u.username FROM inventory_transactions t
-               JOIN users u ON u.id = t.user_id
-               WHERE t.component_id = ? ORDER BY t.id DESC LIMIT 20""",
-            (component_id,),
+               LEFT JOIN users u ON u.id = t.user_id WHERE """ + where +
+            " ORDER BY t.created_at DESC, t.id DESC LIMIT 20 OFFSET ?",
+            (*params, (page - 1) * 20),
         ).fetchall()
         return render_template(
             "component_detail.html",
             component=component,
             transactions=transactions,
-        )
+            start_date=start_date, end_date=end_date, transaction_type=transaction_type,
+            page=page, pages=pages, total=total,
+        ), 400 if error else 200
 
     @app.post("/components/<int:component_id>/threshold")
     @login_required
@@ -819,6 +860,22 @@ def init_db() -> None:
 
     with open(ROOT / "schema.sql", encoding="utf-8") as schema_file:
         db.executescript(schema_file.read())
+
+    # SQLite CHECK constraints require rebuilding the table to add a type.
+    transaction_sql = db.execute(
+        "SELECT sql FROM sqlite_master WHERE name = 'inventory_transactions'"
+    ).fetchone()[0]
+    if "'adjustment'" not in transaction_sql:
+        with db:
+            db.execute("BEGIN IMMEDIATE")
+            db.execute(transaction_sql.replace(
+                "inventory_transactions", "inventory_transactions_new", 1
+            ).replace("'stock-in', 'stock-out'", "'stock-in', 'stock-out', 'adjustment'"))
+            db.execute("INSERT INTO inventory_transactions_new SELECT * FROM inventory_transactions")
+            db.execute("DROP TABLE inventory_transactions")
+            db.execute("ALTER TABLE inventory_transactions_new RENAME TO inventory_transactions")
+            db.execute("CREATE INDEX idx_transactions_component_date "
+                       "ON inventory_transactions(component_id, created_at DESC)")
     
     
 

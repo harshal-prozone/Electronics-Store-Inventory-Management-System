@@ -41,6 +41,107 @@ def create_catalog_entry(client, category="Test Category", supplier="Test Suppli
     assert supplier_response.status_code == 200
 
 
+@pytest.fixture()
+def history(app):
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        component_id = db.execute("SELECT id FROM components ORDER BY id").fetchone()[0]
+        user_id = db.execute("SELECT id FROM users ORDER BY id").fetchone()[0]
+        for kind, quantity, previous, balance, timestamp, note in [
+            ('stock-in', 5, 12, 17, '2026-01-01 00:00:00', 'first-delivery'),
+            ('stock-out', 3, 17, 14, '2026-01-02 23:59:59', 'customer-issue'),
+            ('adjustment', 2, 14, 12, '2026-01-03 12:00:00', 'physical-count'),
+            ('stock-in', 4, 12, 16, '2026-01-03 12:00:00', 'latest-delivery'),
+        ]:
+            db.execute("""INSERT INTO inventory_transactions
+                (component_id, user_id, transaction_type, quantity, previous_quantity,
+                 new_quantity, created_at, note) VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
+                (component_id, user_id, kind, quantity, previous, balance, timestamp, note))
+        other_id = db.execute("SELECT id FROM components WHERE id != ?", (component_id,)).fetchone()[0]
+        db.execute("""INSERT INTO inventory_transactions
+            (component_id, user_id, transaction_type, quantity, previous_quantity, new_quantity, note)
+            VALUES (?, ?, 'stock-in', 1, 0, 1, 'other-component')""", (other_id, user_id))
+    return component_id
+
+
+def test_component_history_details_and_order(client, history):
+    sign_in(client)
+    page = client.get(f"/components/{history}").get_data(as_text=True)
+    assert page.index('latest-delivery') < page.index('physical-count') < page.index('customer-issue') < page.index('first-delivery')
+    for text in ('Stock addition', 'Stock removal', 'Adjustment', 'admin',
+                 'Resulting balance', '<td>14</td>', '<td>16</td>'):
+        assert text in page
+    assert 'other-component' not in page
+
+
+def test_component_history_combined_filters_keep_saved_balance(client, history):
+    sign_in(client)
+    page = client.get(f"/components/{history}?start_date=2026-01-02&end_date=2026-01-02&transaction_type=stock-out").get_data(as_text=True)
+    assert 'customer-issue' in page
+    assert '<td>14</td>' in page
+    assert 'first-delivery' not in page
+    assert 'physical-count' not in page
+    page = client.get(f"/components/{history}?transaction_type=adjustment").get_data(as_text=True)
+    assert 'physical-count' in page
+    assert 'latest-delivery' not in page
+
+
+@pytest.mark.parametrize('query', [
+    'start_date=invalid', 'end_date=2026-02-30',
+    'start_date=2026-02-01&end_date=2026-01-01', 'transaction_type=invalid',
+])
+def test_component_history_rejects_invalid_filters(client, history, query):
+    sign_in(client)
+    assert client.get(f"/components/{history}?{query}").status_code == 400
+
+
+def test_component_history_pagination_and_empty_results(client, app, history):
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        for index in range(22):
+            db.execute("""INSERT INTO inventory_transactions
+                (component_id, user_id, transaction_type, quantity, previous_quantity,
+                 new_quantity, created_at, note)
+                VALUES (?, 1, 'stock-in', 1, 0, 1, '2026-02-01 00:00:00', ?)""",
+                (history, f'page-marker-{index:02d}'))
+    sign_in(client)
+    page = client.get(f'/components/{history}?start_date=2026-02-01').get_data(as_text=True)
+    assert 'page-marker-21' in page
+    assert 'page-marker-00' not in page
+    assert 'start_date=2026-02-01' in page
+    page = client.get(f'/components/{history}?start_date=2026-02-01&page=2').get_data(as_text=True)
+    assert 'page-marker-00' in page
+    assert 'page-marker-21' not in page
+    page = client.get(f'/components/{history}?start_date=2027-01-01').get_data(as_text=True)
+    assert 'No transactions found' in page
+
+
+def test_component_history_access(client, history):
+    assert client.get(f'/components/{history}').status_code == 302
+    sign_in(client)
+    assert client.get('/components/999999').status_code == 404
+
+
+def test_history_migration_preserves_existing_transactions(app, history):
+    from app import ROOT
+
+    # Recreate the old table constraint around existing stock-in/out history.
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        db.execute("DELETE FROM inventory_transactions WHERE transaction_type = 'adjustment'")
+        original = db.execute('SELECT * FROM inventory_transactions ORDER BY id').fetchall()
+        db.execute('ALTER TABLE inventory_transactions RENAME TO legacy_transactions')
+        schema = (ROOT / 'schema.sql').read_text(encoding='utf-8')
+        db.executescript(schema.replace("'stock-in', 'stock-out', 'adjustment'", "'stock-in', 'stock-out'"))
+        db.execute('INSERT INTO inventory_transactions SELECT * FROM legacy_transactions')
+        db.execute('DROP TABLE legacy_transactions')
+    create_app(dict(app.config))
+    create_app(dict(app.config))
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        assert db.execute('SELECT * FROM inventory_transactions ORDER BY id').fetchall() == original
+        assert db.execute("PRAGMA foreign_key_check").fetchall() == []
+        db.execute("""INSERT INTO inventory_transactions
+            (component_id, user_id, transaction_type, quantity, previous_quantity, new_quantity)
+            VALUES (?, 1, 'adjustment', 1, 1, 0)""", (history,))
+
+
 def test_inventory_requires_login(client):
     response = client.get("/components")
     assert response.status_code == 302

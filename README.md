@@ -13,6 +13,7 @@ A Flask + SQLite inventory management application for electronics components. Sp
 - Admins can set or update each component's minimum stock threshold directly on its details page. Thresholds are non-negative whole numbers; positive stock at or below the threshold is Low Stock, and zero is Out of Stock. Changes immediately appear in inventory views and reports and are recorded in the audit log.
 - Component CSV export and an Admin-only availability report with category, supplier, and status filters and CSV/PDF export.
 - Audit entries for authentication and inventory-changing actions, a `/health` endpoint, and automated tests.
+- Component transaction history with inclusive UTC date filters, transaction type filters, saved resulting balances, and pagination (20 per page), ordered newest first. History supports stock additions, removals, and adjustment records; the stock entry form records additions and removals.
 
 ## Local setup (macOS/Linux)
 

@@ -56,10 +56,46 @@
     </form>
   </section>
   <section class="panel history-panel">
-    <div class="panel-header"><div><h2>Recent stock movements</h2><p class="muted">Latest 20 recorded adjustments for this component.</p></div></div>
+    <div class="panel-header"><div><h2>Transaction history</h2><p class="muted">{{ total }} transactions. Most recent first. Dates are in UTC.</p></div></div>
+    <form method="get" class="stock-adjust-form" action="{{ url_for('component_detail', component_id=component['id']) }}">
+      <label for="start-date">Start date</label>
+      <input id="start-date" name="start_date" type="date" value="{{ start_date }}">
+      <label for="end-date">End date</label>
+      <input id="end-date" name="end_date" type="date" value="{{ end_date }}">
+      <label for="transaction-type">Transaction type</label>
+      <select id="transaction-type" name="transaction_type">
+        <option value="">All types</option>
+        {% for value, label in [('stock-in', 'Stock addition'), ('stock-out', 'Stock removal'), ('adjustment', 'Adjustment')] %}
+        <option value="{{ value }}" {% if transaction_type == value %}selected{% endif %}>{{ label }}</option>
+        {% endfor %}
+      </select>
+      <button class="button button-primary" type="submit">Filter transactions</button>
+      <a class="text-link" href="{{ url_for('component_detail', component_id=component['id']) }}">Clear filters</a>
+    </form>
     {% if transactions %}
-      <div class="history-list">{% for item in transactions %}<div class="history-item"><div class="history-symbol {{ 'history-in' if item['transaction_type'] == 'stock-in' else 'history-out' }}">{{ '＋' if item['transaction_type'] == 'stock-in' else '−' }}</div><div class="history-main"><strong>{{ 'Stock in' if item['transaction_type'] == 'stock-in' else 'Stock out' }}</strong><span>{{ item['username'] }}{% if item['note'] %} · {{ item['note'] }}{% endif %}</span><small>{{ item['created_at'] }}</small></div><div class="history-quantity"><strong>{{ '+' if item['transaction_type'] == 'stock-in' else '−' }}{{ item['quantity'] }}</strong><span>{{ item['previous_quantity'] }} → {{ item['new_quantity'] }}</span></div></div>{% endfor %}</div>
-    {% else %}<div class="history-empty"><div class="empty-symbol">↔</div><strong>No movements recorded yet</strong><p>Use the stock form to record the first stock-in or stock-out.</p></div>{% endif %}
+      <div class="table-wrap">
+        <table class="inventory-table">
+          <thead><tr><th scope="col">Date (UTC)</th><th scope="col">Type</th><th scope="col">Quantity</th><th scope="col">Responsible user</th><th scope="col">Resulting balance</th><th scope="col">Note</th></tr></thead>
+          <tbody>{% for item in transactions %}
+            <tr>
+              <td>{{ item['created_at'] }}</td>
+              <td>{{ {'stock-in': 'Stock addition', 'stock-out': 'Stock removal', 'adjustment': 'Adjustment'}[item['transaction_type']] }}</td>
+              <td>{{ '+' if item['new_quantity'] >= item['previous_quantity'] else '-' }}{{ item['quantity'] }}</td>
+              <td>{{ item['username'] or 'Unknown user' }}</td>
+              <td>{{ item['new_quantity'] }}</td>
+              <td>{{ item['note'] or '-' }}</td>
+            </tr>
+          {% endfor %}</tbody>
+        </table>
+      </div>
+      <div class="table-footer">
+        <span>Page {{ page }} of {{ pages }}</span>
+        <nav class="pagination" aria-label="Transaction history pages">
+          {% if page > 1 %}<a href="{{ url_for('component_detail', component_id=component['id'], start_date=start_date, end_date=end_date, transaction_type=transaction_type, page=page-1) }}">Previous</a>{% endif %}
+          {% if page < pages %}<a href="{{ url_for('component_detail', component_id=component['id'], start_date=start_date, end_date=end_date, transaction_type=transaction_type, page=page+1) }}">Next</a>{% endif %}
+        </nav>
+      </div>
+    {% else %}<div class="history-empty"><strong>No transactions found</strong><p>No recorded transactions match the selected filters.</p></div>{% endif %}
   </section>
 </div>
 <div class="rule-note"><span class="rule-note-icon">i</span><div><strong>Availability rule</strong><p>Quantity <b>0</b> is Out of Stock. Positive quantity <b>≤ {{ component['reorder_level'] }}</b> is Low Stock. Quantity <b>&gt; {{ component['reorder_level'] }}</b> is In Stock.</p></div></div>
