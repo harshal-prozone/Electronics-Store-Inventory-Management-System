@@ -17,6 +17,9 @@
     <nav class="topnav" aria-label="Main navigation">
       <a href="{{ url_for('components') }}" class="{{ 'active' if request.endpoint in ['components', 'component_detail', 'component_edit', 'component_new'] else '' }}">Inventory</a>
       {% if g.user['role'] == 'Admin' %}
+      <a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' else '' }}">Dashboard</a>
+      {% endif %}
+      {% if g.user['role'] == 'Admin' %}
       <a href="{{ url_for('categories') }}" class="{{ 'active' if request.endpoint in ['categories', 'category_new', 'category_edit'] else '' }}">Categories</a>
       <a href="{{ url_for('suppliers') }}" class="{{ 'active' if request.endpoint in ['suppliers', 'supplier_new', 'supplier_edit'] else '' }}">Suppliers</a>
       {% endif %}
