@@ -2,6 +2,8 @@
 
 A Flask + SQLite inventory management application for electronics components. Sprint 1 core functionality is merged into `main`; see the validation record for evidence and remaining manual closeout items.
 
+For complete developer setup, database, application, testing, and troubleshooting instructions, see **[Setup and Testing Guide](docs/SETUP_AND_TESTING.md)**.
+
 ## Implemented functionality
 
 - Username/email authentication, Admin and Staff roles, password hashing, session expiry, and CSRF protection.
