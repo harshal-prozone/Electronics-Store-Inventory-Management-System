@@ -144,6 +144,34 @@ def run() -> None:
                 for value in ("Stock addition", "+4", "admin", "7"):
                     expect(movement.get_by_role("cell", name=value, exact=True)).to_be_visible()
 
+                # Bulk CSV upload creates/updates by SKU and reports rejected rows.
+                page.goto(f"{base_url}/components")
+                page.get_by_role("link", name="Import CSV", exact=True).click()
+                with page.expect_download() as template_download:
+                    page.get_by_role("link", name="Download CSV template").click()
+                assert template_download.value.suggested_filename == "inventory-import-template.csv"
+                page.get_by_label("CSV file").set_input_files({
+                    "name": "inventory.csv", "mimeType": "text/csv",
+                    "buffer": (
+                        "sku,name,category,supplier,quantity,reorder_level,unit_price\n"
+                        "BROWSER-IMPORT-001,CSV browser board,Microcontrollers,Maker Supplies,2,5,9.50\n"
+                        "BROWSER-SMOKE-001,Browser Smoke Component,Microcontrollers,Maker Supplies,6,5,19.50\n"
+                        "BROWSER-INVALID,Invalid board,Microcontrollers,Maker Supplies,invalid,5,9.50\n"
+                    ).encode("utf-8"),
+                })
+                page.get_by_role("button", name="Import inventory", exact=True).click()
+                expect(page.get_by_role("heading", name="Import results")).to_be_visible()
+                expect(page.get_by_text("2 imported", exact=True)).to_be_visible()
+                expect(page.get_by_text("1 rejected", exact=True)).to_be_visible()
+                expect(page.get_by_role("row").filter(has_text="BROWSER-INVALID")).to_contain_text("whole numbers")
+                page.get_by_role("link", name="View inventory", exact=True).click()
+                page.get_by_label("Search components").fill("BROWSER-SMOKE-001")
+                page.get_by_label("Search components").press("Enter")
+                page.get_by_role("link", name="Browser Smoke Component", exact=True).click()
+                imported_movement = page.get_by_role("row").filter(has_text="CSV inventory import, line 3")
+                expect(imported_movement.get_by_role("cell", name="Adjustment", exact=True)).to_be_visible()
+                expect(imported_movement.get_by_role("cell", name="6", exact=True)).to_be_visible()
+
                 # Category and supplier CRUD pages are usable through visible controls.
                 page.goto(f"{base_url}/categories")
                 page.get_by_role("link", name="Add category").click()
@@ -176,6 +204,9 @@ def run() -> None:
                 # Staff can sign in but cannot visit Admin-only management.
                 staff_page = browser.new_page(viewport={"width": 1365, "height": 900})
                 login(staff_page, "browserstaff", STAFF_PASSWORD, base_url)
+                expect(staff_page.get_by_role("link", name="Import CSV", exact=True)).to_have_count(0)
+                forbidden_import = staff_page.goto(f"{base_url}/components/import")
+                assert forbidden_import is not None and forbidden_import.status == 403
                 forbidden = staff_page.goto(f"{base_url}/admin/users")
                 assert forbidden is not None and forbidden.status == 403
                 forbidden_component_form = staff_page.goto(f"{base_url}/components/new")

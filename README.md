@@ -12,6 +12,7 @@ A Flask + SQLite inventory management application for electronics components. Sp
 - Availability classification derived from quantity and reorder level.
 - Admins can set or update each component's minimum stock threshold directly on its details page. Thresholds are non-negative whole numbers; positive stock at or below the threshold is Low Stock, and zero is Out of Stock. Changes immediately appear in inventory views and reports and are recorded in the audit log.
 - Component CSV export and an Admin-only availability report with category, supplier, and status filters and CSV/PDF export.
+- Admin-only bulk CSV import with SKU-based creation/updates, row error reports, imported/rejected counts, and audited stock adjustments.
 - Audit entries for authentication and inventory-changing actions, a `/health` endpoint, and automated tests.
 - Component transaction history with inclusive UTC date filters, transaction type filters, saved resulting balances, and pagination (20 per page), ordered newest first. History supports stock additions, removals, and adjustment records; the stock entry form records additions and removals.
 
@@ -39,6 +40,23 @@ Open <http://127.0.0.1:5000>. The `create-admin` command prompts for a username,
 Set `SECRET_KEY` persistently. Development generates an ephemeral random key if one is absent, which invalidates sessions on restart. `APP_ENV=production` requires an explicit `SECRET_KEY`; set `COOKIE_SECURE=1` when served over HTTPS. Do not use Flask's development server for production.
 
 For a fresh local database, point `DATABASE_PATH` to a new path before initializing. Existing administrator passwords are not changed by later environment-variable changes.
+
+## Bulk inventory CSV import (Issue #19)
+
+Sign in as an Admin, open **Inventory > Import CSV**, and download the header template. Upload a comma-separated UTF-8 CSV (a UTF-8 BOM is supported), up to 1 MiB and 5,000 nonblank records:
+
+```csv
+sku,name,description,category,supplier,quantity,reorder_level,unit_price
+IMPORT-001,Example board,Imported component,Microcontrollers,Maker Supplies,10,5,19.50
+```
+
+All columns except `description` are required. Headers ignore case and surrounding spaces; `Reorder Level` and `Unit Price` are also accepted. The optional exported `Availability` column is ignored because availability is calculated from quantity and threshold. Category and supplier must already exist in their catalogues; names match case-insensitively and are stored with the catalogue's spelling.
+
+The existing SKU rules apply: trim surrounding whitespace, normalize to uppercase, maximum 40 characters, start with a letter/number, and allow letters, numbers, dots, underscores, slashes and hyphens. A new SKU creates a component; an existing active SKU updates its details and **replaces its quantity with the supplied balance**, recording any stock change as an adjustment with the administrator and previous/resulting balances. Omitting `description` clears it. A deleted component's SKU remains reserved. Later occurrences of the same SKU within a file are rejected, including when the first occurrence has invalid field values.
+
+Quantity and reorder level must be non-negative whole numbers within SQLite's signed 64-bit range; price must be finite and non-negative. Component names and text lengths follow the same validation as the component form. Empty lines are ignored. Incorrect field counts, invalid values, unknown catalogue entries and duplicate rows appear in the on-screen error report with their CSV line number and SKU; valid records still import. The result shows imported, created, updated and rejected counts. Correct and resubmit only rejected rows.
+
+Invalid/missing/duplicate headers, unrecognized columns, encoding errors, malformed CSV quoting and file/record limits reject the whole file before writing. Database failures roll back the complete import, including history and audit records. Uploads use the existing Admin authorization and CSRF protection; the total HTTP request limit is 2 MiB to allow multipart overhead for a 1 MiB CSV.
 
 ## Automated tests
 

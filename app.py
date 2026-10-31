@@ -9,7 +9,6 @@ from __future__ import annotations
 
 import csv
 import io
-import math
 import os
 import re
 import secrets
@@ -33,7 +32,8 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 from xml.sax.saxutils import escape
 from werkzeug.security import check_password_hash, generate_password_hash
 
-from inventory_service import adjust_stock, availability_status
+from inventory_service import adjust_stock, availability_status, validate_component_form
+from inventory_import import CSV_COLUMNS, MAX_CSV_BYTES, import_inventory_csv
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_DB = ROOT / "instance" / "inventory.db"
@@ -70,6 +70,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "1" if environment == "production" else "0") == "1",
         PERMANENT_SESSION_LIFETIME=60 * 60,
         WTF_CSRF_TIME_LIMIT=None,
+        MAX_CONTENT_LENGTH=2 * 1024 * 1024,
     )
     if test_config:
         app.config.update(test_config)
@@ -320,6 +321,55 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         if not supplier:
             return "Select a valid supplier from the catalogue."
         return None
+
+    @app.errorhandler(413)
+    def upload_too_large(error):
+        if request.endpoint == "import_components":
+            return render_template(
+                "component_import.html", result=None,
+                error="Upload is too large. Choose a CSV file no larger than 1 MiB.",
+            ), 413
+        return error.get_response()
+
+    @app.route("/components/import", methods=("GET", "POST"))
+    @login_required
+    @admin_required
+    def import_components():
+        result = None
+        error = None
+        status = 200
+        if request.method == "POST":
+            upload = request.files.get("file")
+            if upload is None or not upload.filename:
+                error = "Choose a CSV file to import."
+            elif not upload.filename.lower().endswith(".csv"):
+                error = "Choose a file with a .csv extension."
+            else:
+                try:
+                    result = import_inventory_csv(
+                        get_db(), user_id=g.user["id"],
+                        content=upload.stream.read(MAX_CSV_BYTES + 1),
+                    )
+                except ValueError as exc:
+                    error = str(exc)
+                except sqlite3.Error:
+                    app.logger.exception("Inventory CSV import failed")
+                    error = "The import could not be saved. No records were imported. Please try again."
+                    status = 503
+            if error and status == 200:
+                status = 400
+        return render_template("component_import.html", result=result, error=error), status
+
+    @app.get("/components/import/template.csv")
+    @login_required
+    @admin_required
+    def component_import_template():
+        buffer = io.StringIO(newline="")
+        csv.writer(buffer).writerow(CSV_COLUMNS)
+        response = make_response(buffer.getvalue())
+        response.headers["Content-Type"] = "text/csv; charset=utf-8"
+        response.headers["Content-Disposition"] = 'attachment; filename="inventory-import-template.csv"'
+        return response
 
     @app.route("/components/new", methods=("GET", "POST"))
     @login_required
@@ -1069,29 +1119,6 @@ def write_audit(user_id: int | None, event_type: str, details: str) -> None:
         (user_id, event_type, details[:500]),
     )
     db.commit()
-
-
-def validate_component_form(form) -> tuple[tuple[Any, ...] | None, str | None]:
-    sku = form.get("sku", "").strip().upper()
-    name = form.get("name", "").strip()
-    description = form.get("description", "").strip()
-    category = form.get("category", "").strip()
-    supplier = form.get("supplier", "").strip()
-    try:
-        quantity = int(form.get("quantity", ""))
-        reorder_level = int(form.get("reorder_level", ""))
-        unit_price = float(form.get("unit_price", "0"))
-    except (TypeError, ValueError):
-        return None, "Quantity and reorder level must be whole numbers, and price must be numeric."
-    if not sku or len(sku) > 40 or not re.fullmatch(r"[A-Z0-9][A-Z0-9._/-]*", sku):
-        return None, "SKU is required and may contain letters, numbers, dots, underscores, slashes and hyphens."
-    if not name or len(name) > 120:
-        return None, "Component name is required and must be 120 characters or fewer."
-    if len(description) > 1000 or len(category) > 80 or len(supplier) > 120:
-        return None, "Description, category or supplier exceeds the allowed length."
-    if quantity < 0 or reorder_level < 0 or not math.isfinite(unit_price) or unit_price < 0:
-        return None, "Quantity, reorder level and price must be non-negative finite values."
-    return (sku, name, description, category, supplier, quantity, reorder_level, round(unit_price, 2)), None
 
 
 def get_component_or_404(component_id: int):
