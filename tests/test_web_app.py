@@ -148,6 +148,134 @@ def test_inventory_requires_login(client):
     assert "/login" in response.headers["Location"]
 
 
+
+def _dashboard_metric_value(page, name):
+    marker = f'data-testid="{name}">'
+    assert marker in page, f"Dashboard metric {name!r} is missing."
+    return page.split(marker, 1)[1].split("</div>", 1)[0].strip()
+
+
+def test_admin_dashboard_metrics_match_active_inventory_and_chart(client, app):
+    sign_in(client)
+
+    # Add records with known stock states and prices to the isolated test database.
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.executemany(
+            """
+            INSERT INTO components
+                (sku, name, category, supplier, quantity, reorder_level, unit_price)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            [
+                ("DASH-IN-001", "Dashboard In Stock", "Test", "Test", 10, 3, 25.50),
+                ("DASH-LOW-001", "Dashboard Low Stock", "Test", "Test", 2, 3, 10.00),
+                ("DASH-OUT-001", "Dashboard Out of Stock", "Test", "Test", 0, 5, 100.00),
+            ],
+        )
+
+        rows = db.execute(
+            """
+            SELECT quantity, reorder_level, unit_price
+            FROM components
+            WHERE deleted_at IS NULL
+            """
+        ).fetchall()
+
+    expected_total = len(rows)
+    expected_value = sum(
+        int(row[0]) * float(row[2]) for row in rows
+    )
+    expected_low = sum(
+        1 for quantity, threshold, _ in rows
+        if quantity > 0 and quantity <= threshold
+    )
+    expected_out = sum(1 for quantity, _, _ in rows if quantity == 0)
+
+    response = client.get("/")
+    assert response.status_code == 200
+
+    page = response.get_data(as_text=True)
+    assert "Inventory dashboard" in page
+    assert _dashboard_metric_value(page, "metric-total-components") == str(expected_total)
+    assert _dashboard_metric_value(page, "metric-stock-value") == f"₹{expected_value:,.2f}"
+    assert _dashboard_metric_value(page, "metric-low-stock") == str(expected_low)
+    assert _dashboard_metric_value(page, "metric-out-of-stock") == str(expected_out)
+
+    assert "Stock availability" in page
+    assert 'role="img"' in page
+    assert "dashboard-bar-in-stock" in page
+    assert "dashboard-bar-low-stock" in page
+    assert "dashboard-bar-out-of-stock" in page
+
+
+def test_dashboard_metrics_refresh_after_stock_quantity_changes(client, app):
+    sign_in(client)
+
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.execute(
+            """
+            INSERT INTO components
+                (sku, name, category, supplier, quantity, reorder_level, unit_price)
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            ("DASH-REFRESH-001", "Dashboard Refresh Sample", "Test", "Test", 5, 2, 20.00),
+        )
+
+    before_page = client.get("/").get_data(as_text=True)
+    before_out = int(_dashboard_metric_value(before_page, "metric-out-of-stock"))
+    before_value = float(
+        _dashboard_metric_value(before_page, "metric-stock-value")
+        .replace("₹", "").replace(",", "")
+    )
+
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.execute(
+            "UPDATE components SET quantity = 0 WHERE sku = ?",
+            ("DASH-REFRESH-001",),
+        )
+
+    after_page = client.get("/").get_data(as_text=True)
+    after_out = int(_dashboard_metric_value(after_page, "metric-out-of-stock"))
+    after_value = float(
+        _dashboard_metric_value(after_page, "metric-stock-value")
+        .replace("₹", "").replace(",", "")
+    )
+
+    assert after_out == before_out + 1
+    assert round(before_value - after_value, 2) == 100.00
+
+
+def test_staff_cannot_view_admin_dashboard(client, app):
+    from werkzeug.security import generate_password_hash
+
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.execute(
+            """
+            INSERT INTO users (username, email, password_hash, role)
+            VALUES (?, ?, ?, ?)
+            """,
+            (
+                "dashboard-staff",
+                "dashboard-staff@example.test",
+                generate_password_hash("DashboardStaff123!"),
+                "Staff",
+            ),
+        )
+
+    client.post(
+        "/login",
+        data={
+            "identity": "dashboard-staff",
+            "password": "DashboardStaff123!",
+        },
+        follow_redirects=True,
+    )
+
+    response = client.get("/", follow_redirects=False)
+    assert response.status_code == 302
+    assert "/components" in response.headers["Location"]
+
+
 def test_inventory_page_shows_seeded_availability(client):
     sign_in(client)
     response = client.get("/components")

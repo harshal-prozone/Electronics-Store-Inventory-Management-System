@@ -99,7 +99,58 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     def index():
         if g.user is None:
             return redirect(url_for("login"))
-        return redirect(url_for("components"))
+        if g.user["role"] != "Admin":
+            return redirect(url_for("components"))
+
+        metrics = get_db().execute(
+            """
+            SELECT
+                COUNT(*) AS total_components,
+                COALESCE(SUM(quantity * unit_price), 0) AS stock_value,
+                COALESCE(SUM(
+                    CASE WHEN quantity > 0 AND quantity <= reorder_level
+                    THEN 1 ELSE 0 END
+                ), 0) AS low_stock,
+                COALESCE(SUM(
+                    CASE WHEN quantity = 0 THEN 1 ELSE 0 END
+                ), 0) AS out_of_stock,
+                COALESCE(SUM(
+                    CASE WHEN quantity > reorder_level THEN 1 ELSE 0 END
+                ), 0) AS in_stock
+            FROM components
+            WHERE deleted_at IS NULL
+            """
+        ).fetchone()
+
+        total = int(metrics["total_components"])
+        chart_items = [
+            {
+                "label": "In Stock",
+                "count": int(metrics["in_stock"]),
+                "class_name": "dashboard-bar-in-stock",
+            },
+            {
+                "label": "Low Stock",
+                "count": int(metrics["low_stock"]),
+                "class_name": "dashboard-bar-low-stock",
+            },
+            {
+                "label": "Out of Stock",
+                "count": int(metrics["out_of_stock"]),
+                "class_name": "dashboard-bar-out-of-stock",
+            },
+        ]
+
+        for item in chart_items:
+            item["percentage"] = (
+                round(item["count"] * 100 / total, 1) if total else 0
+            )
+
+        return render_template(
+            "dashboard.html",
+            metrics=metrics,
+            chart_items=chart_items,
+        )
 
     @app.route("/login", methods=("GET", "POST"))
     def login():

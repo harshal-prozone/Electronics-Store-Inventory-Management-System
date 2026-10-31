@@ -1,0 +1,97 @@
+{% extends 'base.html' %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<section class="page-heading">
+  <div>
+    <div class="eyebrow">OVERVIEW / DASHBOARD</div>
+    <h1>Inventory dashboard</h1>
+    <p>Monitor inventory value, stock availability and replenishment needs.</p>
+  </div>
+  <a class="button button-primary" href="{{ url_for('components') }}">View inventory <span aria-hidden="true">→</span></a>
+</section>
+
+<div class="summary-grid dashboard-kpis">
+  <div class="summary-card">
+    <div class="summary-title">Total components</div>
+    <div class="summary-value" data-testid="metric-total-components">{{ metrics['total_components'] }}</div>
+    <div class="summary-foot">Active inventory records</div>
+    <div class="summary-icon icon-blue" aria-hidden="true">▦</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-title">Inventory stock value</div>
+    <div class="summary-value summary-small" data-testid="metric-stock-value">{{ "₹{:,.2f}".format(metrics['stock_value'] or 0) }}</div>
+    <div class="summary-foot">Quantity × unit price · INR</div>
+    <div class="summary-icon icon-green" aria-hidden="true">₹</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-title">Low stock</div>
+    <div class="summary-value" data-testid="metric-low-stock">{{ metrics['low_stock'] }}</div>
+    <div class="summary-foot">Positive stock at or below threshold</div>
+    <div class="summary-icon icon-amber" aria-hidden="true">!</div>
+  </div>
+  <div class="summary-card">
+    <div class="summary-title">Out of stock</div>
+    <div class="summary-value" data-testid="metric-out-of-stock">{{ metrics['out_of_stock'] }}</div>
+    <div class="summary-foot">Components with zero quantity</div>
+    <div class="summary-icon icon-red" aria-hidden="true">×</div>
+  </div>
+</div>
+
+<div class="dashboard-layout">
+  <section class="panel dashboard-chart-panel">
+    <div class="panel-header">
+      <div>
+        <h2>Stock availability</h2>
+        <p class="muted">Active components by current stock status.</p>
+      </div>
+      <span class="result-count">{{ metrics['total_components'] }} total</span>
+    </div>
+
+    <div class="dashboard-chart-list"
+         role="img"
+         aria-label="Distribution of active components by stock availability">
+      {% for item in chart_items %}
+      <div class="dashboard-chart-row"
+           aria-label="{{ item['label'] }}: {{ item['count'] }} components">
+        <span class="dashboard-chart-label">{{ item['label'] }}</span>
+        <div class="dashboard-bar-track" aria-hidden="true">
+          <div class="dashboard-bar-fill {{ item['class_name'] }}"
+               style="width: {{ item['percentage'] }}%;"></div>
+        </div>
+        <strong class="dashboard-chart-count">{{ item['count'] }}</strong>
+      </div>
+      {% endfor %}
+    </div>
+    <div class="dashboard-chart-note">
+      Availability is recalculated from quantity and each component's reorder threshold.
+    </div>
+  </section>
+
+  <section class="panel dashboard-actions">
+    <div class="panel-header">
+      <div>
+        <h2>Quick actions</h2>
+        <p class="muted">Go directly to common inventory tasks.</p>
+      </div>
+    </div>
+    <div class="dashboard-action-list">
+      <a class="dashboard-action" href="{{ url_for('components') }}">
+        <span class="dashboard-action-copy"><strong>Manage inventory</strong><span>Search, filter and update components</span></span>
+        <span class="dashboard-action-arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="dashboard-action" href="{{ url_for('availability_report') }}">
+        <span class="dashboard-action-copy"><strong>Availability report</strong><span>Review stock levels and export results</span></span>
+        <span class="dashboard-action-arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="dashboard-action" href="{{ url_for('categories') }}">
+        <span class="dashboard-action-copy"><strong>Categories</strong><span>Maintain inventory categories</span></span>
+        <span class="dashboard-action-arrow" aria-hidden="true">→</span>
+      </a>
+      <a class="dashboard-action" href="{{ url_for('suppliers') }}">
+        <span class="dashboard-action-copy"><strong>Suppliers</strong><span>Maintain supplier records</span></span>
+        <span class="dashboard-action-arrow" aria-hidden="true">→</span>
+      </a>
+    </div>
+  </section>
+</div>
+{% endblock %}
