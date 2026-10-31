@@ -42,6 +42,18 @@ For a fresh local database, point `DATABASE_PATH` to a new path before initializ
 
 ## Automated tests
 
+Issue #13 usability and stable-browser evidence, including the representative-user report, is documented in [`docs/Issue-13-usability-compatibility.md`](docs/Issue-13-usability-compatibility.md). The CI browser matrix resolves vendor stable Chrome, Edge and Firefox versions and retains JSON results and screenshots on success or failure.
+
+To repeat a stable-browser run in Windows PowerShell:
+
+```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-browser.txt
+$env:ESIMS_BROWSER='chrome' # use edge or firefox for the other browsers
+.\.venv\Scripts\python.exe scripts/browser_compatibility.py
+```
+
+Results are saved under `instance/browser-evidence/<browser>`. First runs need network access for release metadata and browser/driver downloads. The test uses its own temporary inventory. The original Playwright script remains available as an additional smoke test; the vendor-stable acceptance gate is `scripts/browser_compatibility.py`.
+
 ```bash
 source .venv/bin/activate
 pytest -q

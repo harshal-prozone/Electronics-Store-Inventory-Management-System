@@ -25,7 +25,7 @@ This file reflects the merged Sprint 1 implementation rather than the initial av
 
 - Issue #10: audit writes exist, but a dedicated audit-log browsing workflow and its acceptance evidence need review.
 - Issue #12: server-side validation, parameterized database operations, CSRF and CSV formula escaping are present; XSS/malicious-payload acceptance still needs explicit security-test mapping.
-- Issue #13: automated Chrome/Edge/Firefox smoke coverage is added by the closeout workflow. A genuine representative-user usability session is still a human acceptance activity.
+- Issue #13: see `docs/Issue-13-usability-compatibility.md` for the participant-reported three-screen creation result, vendor-stable browser checks, retained evidence and compatibility issue register.
 - Issue #15: dashboard/KPI charts have not been verified as complete.
 - Issue #16: `inventory_service.py` and unit tests provide modular services, but close Issue #16 only after every criterion in its body is mapped and reviewed.
 - Issue #17: `/health` exists and is tested; no operational observation proving 99% availability has been supplied.
@@ -40,6 +40,6 @@ This file reflects the merged Sprint 1 implementation rather than the initial av
 ## Remaining human/coursework evidence
 
 - A teammate should review the Sprint 1 closeout pull request and record a formal GitHub review.
-- A representative user should complete the component-add workflow and record whether it can be completed within three primary screens; automation checks the screen path but is not a substitute for a real user.
+- The participant-reported component-add usability test and its three-screen result are recorded in `docs/Issue-13-usability-compatibility.md`, alongside the separate automated stable-browser evidence.
 - Reconcile this matrix against the submitted SRS, SAD and Test Plan documents and append any additional discrepancy. The current matrix is based on the GitHub issue acceptance criteria and CI evidence; it should not be represented as a signed-off line-by-line PDF review yet.
 - The actual one-minute demonstration video is intentionally not produced by the closeout automation; the storyboard remains a recording aid only.

@@ -61,21 +61,19 @@ jobs:
           exit 1
 
   browser-acceptance:
-    name: Browser acceptance (${{ matrix.name }})
-    runs-on: ubuntu-latest
+    name: Stable browser acceptance (${{ matrix.name }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         include:
           - name: Chrome
             browser: chrome
-            install_target: chrome
           - name: Edge
             browser: edge
-            install_target: msedge
           - name: Firefox
             browser: firefox
-            install_target: firefox
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -85,12 +83,21 @@ jobs:
           python-version: '3.12'
           cache: pip
       - name: Install application and browser-test dependencies
+        run: python -m pip install -r requirements-browser.txt
+      - name: Install browser system libraries
         run: |
-          python -m pip install -r requirements.txt
-          python -m pip install playwright
-      - name: Install browser
-        run: python -m playwright install --with-deps ${{ matrix.install_target }}
-      - name: Run browser acceptance flow
+          sudo apt-get update
+          sudo apt-get install -y libasound2t64 libatk-bridge2.0-0t64 libdbus-glib-1-2 libgbm1 libgtk-3-0t64 libnss3 libxss1
+      - name: Run vendor stable browser acceptance flow
         env:
           ESIMS_BROWSER: ${{ matrix.browser }}
-        run: python scripts/browser_acceptance.py
+          ESIMS_EVIDENCE_DIR: ${{ runner.temp }}/browser-evidence
+        run: python scripts/browser_compatibility.py
+      - name: Retain browser versions, screenshots and failure reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: browser-evidence-${{ matrix.browser }}
+          path: ${{ runner.temp }}/browser-evidence/
+          if-no-files-found: warn
+          retention-days: 30

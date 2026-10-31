@@ -5,6 +5,8 @@
 **Closeout audit:** 24 October 2026
 **Scope source:** The Sprint 1 acceptance map in this repository covers Issues #5, #6, #7, #8, #9, #11 and #14. This record distinguishes code/CI evidence from human acceptance.
 
+**31 October follow-up:** Issue #13 now has a participant-reported successful three-screen creation test and passing local vendor-stable Chrome, Edge and Firefox runs. See [`Issue-13-usability-compatibility.md`](Issue-13-usability-compatibility.md) for exact versions, execution records, scope and the current CI evidence mechanism. The closeout statements below describe the earlier 24 October audit.
+
 ## Latest merged-main automated verification
 
 - GitHub Actions: [run 40113760398](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/actions/runs/40113760398)

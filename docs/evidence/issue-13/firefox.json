@@ -1,0 +1,73 @@
+{
+  "browser": "firefox",
+  "started_at_utc": "2026-10-31T06:09:11.001578+00:00",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.14.8",
+  "result": "PASS",
+  "commit": "22f22edfe28e1be12d3e54aa72bf7f2a658cb913",
+  "checks": [
+    "login, search, combined filters and pagination",
+    "component creation in three primary screens; keyboard focus and persisted low-stock status",
+    "editing, stock-in/out, resulting balances and oversell rejection",
+    "category/supplier creation and filtered CSV/PDF downloads",
+    "required-field validation and narrow inventory/form/detail layout",
+    "staff search/detail/stock operations and Admin-only access restrictions"
+  ],
+  "primary_screens": [
+    "/components",
+    "/components/new",
+    "/components/20"
+  ],
+  "screenshots": [
+    "01-inventory-desktop.png",
+    "02-component-form-desktop.png",
+    "03-component-details-desktop.png",
+    "04-inventory-narrow.png",
+    "05-component-form-narrow.png",
+    "06-component-details-narrow.png"
+  ],
+  "layout_checks": [
+    {
+      "screen": "01-inventory-desktop",
+      "documentWidth": 1365,
+      "height": 915,
+      "width": 1365
+    },
+    {
+      "screen": "02-component-form-desktop",
+      "documentWidth": 1365,
+      "height": 915,
+      "width": 1365
+    },
+    {
+      "screen": "03-component-details-desktop",
+      "documentWidth": 1365,
+      "height": 915,
+      "width": 1365
+    },
+    {
+      "screen": "04-inventory-narrow",
+      "documentWidth": 500,
+      "height": 915,
+      "width": 500
+    },
+    {
+      "screen": "05-component-form-narrow",
+      "documentWidth": 500,
+      "height": 915,
+      "width": 500
+    },
+    {
+      "screen": "06-component-details-narrow",
+      "documentWidth": 500,
+      "height": 915,
+      "width": 500
+    }
+  ],
+  "step": "staff permissions and usable stock workflow",
+  "expected_stable_version": "159.0",
+  "release_source": "https://product-details.mozilla.org/1.0/firefox_versions.json",
+  "browser_version": "159.0",
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0",
+  "finished_at_utc": "2026-10-31T06:13:33.574423+00:00"
+}
