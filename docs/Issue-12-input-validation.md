@@ -54,7 +54,9 @@ On 1 November 2026, **63 security cases passed** as part of the complete **233-t
 | Integrity and compatibility | Service-level overflow checks, database rollback/no-write assertions, duplicate parameters, unsupported formats, CSRF protection, valid Unicode/punctuation/password whitespace and zero-padded numeric input. |
 | Browser behavior | The Chrome/Edge/Firefox smoke includes actual stored/reflected XSS attempts, checks that no injected DOM or execution marker appears, and verifies cancel/accept delete confirmation under CSP. |
 
-Local Chrome, Edge and Firefox smoke runs all passed on 1 November 2026, including the stored/reflected XSS checks and both delete-confirmation paths. The existing CI matrix runs the same expanded browser script.
+Local Chrome, Edge and Firefox Playwright smoke runs all passed on 1 November 2026, including the stored/reflected XSS checks and both delete-confirmation paths. After merging PR #44 from `main`, the same security checks are also included in the vendor-stable Selenium runner used by CI, `scripts/browser_compatibility.py`.
+
+The synchronization with `main` at `d625ca6` was verified again: all 233 Python tests passed, and stable Chrome 156.0.8078.80, Edge 156.0.4314.58 and regular Firefox 159.0 passed all eight workflow groups, including the XSS and CSP-compatible delete-confirmation checks.
 
 Performance acceptance passed with 5,000 components, 10 workers and 100 requests: 100 successes, no failures, p95 299.54 ms, and 100% within two seconds. This is a loopback coursework workload, not a production-network measurement.
 
@@ -65,14 +67,15 @@ Repeat the server/security checks:
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-Repeat browser smoke with the existing Playwright setup:
+Repeat the vendor-stable browser checks used by CI:
 
 ```powershell
+.\.venv\Scripts\python.exe -m pip install -r requirements-browser.txt
 $env:ESIMS_BROWSER='chrome' # repeat with edge and firefox
-.\.venv\Scripts\python.exe scripts/browser_acceptance.py
+.\.venv\Scripts\python.exe scripts/browser_compatibility.py
 ```
 
-The browser script uses a temporary database and test accounts. Playwright Firefox is its patched engine; this security check does not claim verification of the regular vendor Firefox binary. Issue #13 tracks vendor-stable compatibility evidence separately.
+The browser script uses a temporary database and test accounts, resolves current vendor stable versions and retains results/screenshots. The optional Playwright smoke remains available as `scripts/browser_acceptance.py`; its Firefox engine is patched. See the Issue #13 record for version-resolution and evidence details.
 
 ## References
 

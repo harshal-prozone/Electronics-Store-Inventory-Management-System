@@ -1,0 +1,78 @@
+{
+  "browser": "edge",
+  "started_at_utc": "2026-11-01T06:40:50.497518+00:00",
+  "platform": "Windows-11-10.0.26200-SP0",
+  "python": "3.14.8",
+  "result": "PASS",
+  "commit": "20ea230ce236a47b8a65ffec2c0d99eb66201fc5",
+  "runner_sha256": "3d70d3c5511e1e445a652cad808e66a660102680b037e4bcbe80ab46c6d652eb",
+  "chromium_no_sandbox": false,
+  "webdriver_log": "webdriver.log",
+  "checks": [
+    "login, search, combined filters and pagination",
+    "component creation in three primary screens; keyboard focus and persisted low-stock status",
+    "editing, stock-in/out, resulting balances and oversell rejection",
+    "CSV template download, mixed create/update/rejection and adjustment history",
+    "category/supplier creation and filtered CSV/PDF downloads",
+    "required-field validation and narrow inventory/form/detail layout",
+    "staff search/detail/stock operations and Admin-only access restrictions"
+  ],
+  "primary_screens": [
+    "/components",
+    "/components/new",
+    "/components/20"
+  ],
+  "screenshots": [
+    "01-inventory-desktop.png",
+    "02-component-form-desktop.png",
+    "03-component-details-desktop.png",
+    "07-csv-import-results.png",
+    "04-inventory-narrow.png",
+    "05-component-form-narrow.png",
+    "06-component-details-narrow.png"
+  ],
+  "layout_checks": [
+    {
+      "screen": "01-inventory-desktop",
+      "documentWidth": 1320,
+      "height": 858,
+      "width": 1335
+    },
+    {
+      "screen": "02-component-form-desktop",
+      "documentWidth": 1320,
+      "height": 858,
+      "width": 1335
+    },
+    {
+      "screen": "03-component-details-desktop",
+      "documentWidth": 1320,
+      "height": 858,
+      "width": 1335
+    },
+    {
+      "screen": "04-inventory-narrow",
+      "documentWidth": 489,
+      "height": 858,
+      "width": 504
+    },
+    {
+      "screen": "05-component-form-narrow",
+      "documentWidth": 489,
+      "height": 858,
+      "width": 504
+    },
+    {
+      "screen": "06-component-details-narrow",
+      "documentWidth": 489,
+      "height": 858,
+      "width": 504
+    }
+  ],
+  "step": "staff permissions and usable stock workflow",
+  "expected_stable_version": "156.0.4314.58",
+  "release_source": "https://edgeupdates.microsoft.com/api/products?view=enterprise",
+  "browser_version": "156.0.4314.58",
+  "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/156.0.0.0 Safari/537.36 Edg/156.0.0.0",
+  "finished_at_utc": "2026-11-01T06:41:19.636647+00:00"
+}
