@@ -84,7 +84,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.before_request
     def load_logged_in_user() -> None:
-        if request.endpoint == "health":
+        if request.endpoint in {"health", "health_live", "health_ready"}:
             g.user = None
             return
         user_id = session.get("user_id")
@@ -751,13 +751,24 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         return redirect(url_for("suppliers"))
 
 
-    @app.get("/health")
-    def health():
+    @app.get("/health/live")
+    def health_live():
+        """Report whether the Flask process can serve requests."""
+        return jsonify(status="ok"), 200
+
+    @app.get("/health/ready")
+    def health_ready():
+        """Report whether the application can reach its database."""
         try:
             get_db().execute("SELECT 1").fetchone()
             return jsonify(status="ok", database="ok"), 200
         except sqlite3.Error:
             return jsonify(status="error", database="unavailable"), 503
+
+    @app.get("/health")
+    def health():
+        """Backward-compatible alias for the readiness check."""
+        return health_ready()
 
     @app.get("/reports/availability")
     @login_required

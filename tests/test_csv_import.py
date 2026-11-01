@@ -8,7 +8,12 @@ from concurrent.futures import ThreadPoolExecutor
 import pytest
 
 from app import create_app
-from inventory_import import CSV_COLUMNS, MAX_CSV_BYTES, import_inventory_csv
+from inventory_import import (
+    CSV_COLUMNS,
+    MAX_CSV_BYTES,
+    import_inventory_csv,
+    parse_inventory_csv,
+)
 from inventory_service import adjust_stock
 
 
@@ -308,3 +313,111 @@ def test_import_serializes_with_stock_movements(app):
         assert movements[0][0] == 12
         assert movements[0][1] == movements[1][0]
         assert db.execute("SELECT quantity FROM components WHERE id=1").fetchone()[0] == movements[1][1]
+
+
+
+# Direct service-layer tests (independent of Flask routes).
+
+def test_parse_inventory_csv_returns_normalized_records():
+    records, errors = parse_inventory_csv(
+        csv_bytes(record(sku=" import-001 ", quantity="7"))
+    )
+
+    assert errors == []
+    assert len(records) == 1
+    line, values = records[0]
+    assert line == 2
+    assert values[0] == "IMPORT-001"
+    assert values[1] == "Imported board"
+    assert values[5] == 7
+
+
+def test_parse_inventory_csv_returns_row_errors_without_rejecting_valid_rows():
+    records, errors = parse_inventory_csv(
+        csv_bytes(
+            record(sku="IMPORT-001"),
+            record(sku="IMPORT-002", quantity="invalid"),
+            record(sku="IMPORT-003"),
+        )
+    )
+
+    assert len(records) == 2
+    assert len(errors) == 1
+    assert errors[0].sku == "IMPORT-002"
+    assert errors[0].line == 3
+    assert "whole numbers" in errors[0].message
+
+
+def test_import_inventory_csv_directly_returns_import_result(app):
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.row_factory = sqlite3.Row
+        db.execute("PRAGMA foreign_keys = ON")
+
+        result = import_inventory_csv(
+            db,
+            user_id=1,
+            content=csv_bytes(record(sku="DIRECT-001", quantity="4")),
+        )
+
+        assert result.created == 1
+        assert result.updated == 0
+        assert result.imported == 1
+        assert result.rejected == 0
+        assert result.errors == []
+
+        component = db.execute(
+            "SELECT sku, quantity FROM components WHERE sku = ?",
+            ("DIRECT-001",),
+        ).fetchone()
+
+        assert component["sku"] == "DIRECT-001"
+        assert component["quantity"] == 4
+
+
+def test_import_inventory_csv_rolls_back_on_database_failure(app):
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        before_components = db.execute(
+            "SELECT COUNT(*) FROM components"
+        ).fetchone()[0]
+        before_transactions = db.execute(
+            "SELECT COUNT(*) FROM inventory_transactions"
+        ).fetchone()[0]
+        before_audits = db.execute(
+            "SELECT COUNT(*) FROM audit_log"
+        ).fetchone()[0]
+
+        db.execute("""
+            CREATE TRIGGER fail_direct_import
+            BEFORE INSERT ON audit_log
+            WHEN NEW.event_type = 'inventory-imported'
+            BEGIN
+                SELECT RAISE(ABORT, 'simulated import failure');
+            END
+        """)
+
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.row_factory = sqlite3.Row
+        db.execute("PRAGMA foreign_keys = ON")
+
+        with pytest.raises(sqlite3.IntegrityError):
+            import_inventory_csv(
+                db,
+                user_id=1,
+                content=csv_bytes(record(sku="DIRECT-FAIL", quantity="9")),
+            )
+
+        assert db.execute(
+            "SELECT COUNT(*) FROM components"
+        ).fetchone()[0] == before_components
+
+        assert db.execute(
+            "SELECT COUNT(*) FROM inventory_transactions"
+        ).fetchone()[0] == before_transactions
+
+        assert db.execute(
+            "SELECT COUNT(*) FROM audit_log"
+        ).fetchone()[0] == before_audits
+
+        assert db.execute(
+            "SELECT COUNT(*) FROM components WHERE sku = 'DIRECT-FAIL'"
+        ).fetchone()[0] == 0

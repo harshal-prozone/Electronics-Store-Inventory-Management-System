@@ -103,3 +103,37 @@ The core Sprint 1 feature integration is merged. The latest automated verificati
 ## Contributor workflow
 
 Work on a feature branch, add tests for acceptance criteria, run the full suite and `git diff --check`, and submit a pull request to `main`. Close issues only when their acceptance evidence is linked and the issue's scope has been checked.
+
+
+## Deployment health checks and availability (Issue #17)
+
+The application exposes three unauthenticated health endpoints:
+
+| Endpoint | Purpose | Healthy response |
+|---|---|---|
+| `/health/live` | Process liveness; does not depend on SQLite | HTTP 200 |
+| `/health/ready` | Application and SQLite readiness | HTTP 200 |
+| `/health` | Backward-compatible readiness endpoint | HTTP 200 |
+
+Readiness returns HTTP 503 with `{"status":"error","database":"unavailable"}` when the SQLite query fails. A deployment should use `/health/live` for process liveness and `/health/ready` for readiness or traffic admission. Do not restart a process solely because its database is temporarily unavailable; use readiness to remove it from service while investigating the dependency.
+
+For production deployment:
+- Run behind a production WSGI server and HTTPS reverse proxy; do not use Flask's development server.
+- Configure the platform's liveness probe to request `/health/live`.
+- Configure its readiness probe to request `/health/ready`.
+- Set probe timeouts and retry thresholds appropriate to the hosting platform.
+- Keep `SECRET_KEY` persistent and secret; use non-demo credentials.
+- Back up the database and monitor disk space, application errors, and database failures.
+- SQLite is intended for coursework and light single-instance use. Evaluate a server database before multi-instance or higher-concurrency deployment.
+
+### Measuring the 99% availability target
+
+The SRS target is at least 99% availability during store operating hours, excluding planned maintenance. Automated tests and local performance benchmarks do not establish operational uptime.
+
+Record probe results at a consistent interval throughout the agreed measurement period. Define store operating hours and the measurement period before collecting evidence. Exclude only documented planned-maintenance intervals.
+
+Availability percentage:
+
+`((eligible operating minutes - unplanned unavailable minutes) / eligible operating minutes) * 100`
+
+The target is met when the measured result is at least 99%. Retain timestamped probe results, incident records, planned-maintenance records, and the calculation as evidence. Report the measurement period and actual result; do not claim compliance until sufficient observations exist.
