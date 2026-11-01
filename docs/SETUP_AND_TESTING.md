@@ -180,20 +180,28 @@ This script creates a temporary database with at least 5,000 components, starts 
 
 ### Optional cross-browser acceptance test
 
-The browser script requires Playwright and a matching installed browser. Playwright is not part of the runtime requirements:
+The stable-browser acceptance runner uses Selenium and resolves the current vendor stable Chrome, Edge or regular Firefox release. Browser-test dependencies are separate from runtime requirements:
 
 ```bash
-python -m pip install playwright
-python -m playwright install chromium
+python -m pip install -r requirements-browser.txt
 ```
 
-For an installed Google Chrome channel:
+Run Chrome, then repeat with `edge` and `firefox`:
 
 ```bash
-ESIMS_BROWSER=chrome python scripts/browser_acceptance.py
+ESIMS_BROWSER=chrome python scripts/browser_compatibility.py
 ```
 
-The script accepts `chrome`, `edge`, or `firefox`; install the corresponding browser and set `ESIMS_BROWSER` accordingly. It creates a temporary database and test accounts. GitHub Actions runs this matrix on Python 3.12.
+In PowerShell:
+
+```powershell
+$env:ESIMS_BROWSER='chrome'
+.\.venv\Scripts\python.exe scripts/browser_compatibility.py
+```
+
+The first run requires network access for vendor release metadata and browser/driver downloads. On Windows, Edge must already be installed. The script creates a temporary database and test accounts and saves versions, results, screenshots and WebDriver logs under `instance/browser-evidence/<browser>`. GitHub Actions runs this matrix on Python 3.12 and retains the evidence as workflow artifacts. See [Issue #13's validation record](Issue-13-usability-compatibility.md) for coverage and results.
+
+The original `scripts/browser_acceptance.py` is an optional additional Playwright smoke test. To run it, install `playwright` and the selected browser (`python -m playwright install chrome`, `msedge`, or `firefox`), then set `ESIMS_BROWSER` and run that script. Installing only Playwright's `chromium` does not supply the script's branded `chrome` channel.
 
 ## 7. Troubleshooting
 

@@ -7,6 +7,7 @@ uses a temporary database and isolated browser profile; normal inventory is unto
 """
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -22,6 +23,9 @@ from pathlib import Path
 from urllib.parse import urlparse
 
 from selenium import webdriver
+from selenium.webdriver.chrome.service import Service as ChromeService
+from selenium.webdriver.edge.service import Service as EdgeService
+from selenium.webdriver.firefox.service import Service as FirefoxService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.support import expected_conditions as EC
@@ -54,7 +58,7 @@ def latest_stable(browser):
     return version, url
 
 
-def launch(browser, version, downloads):
+def launch(browser, version, downloads, output):
     options = {"chrome": webdriver.ChromeOptions, "edge": webdriver.EdgeOptions,
                "firefox": webdriver.FirefoxOptions}[browser]()
     options.browser_version = version
@@ -67,11 +71,16 @@ def launch(browser, version, downloads):
     else:
         options.add_argument("--headless=new")
         options.add_argument("--disable-dev-shm-usage")
+        if os.environ.get("ESIMS_CHROMIUM_NO_SANDBOX") == "1":
+            # Only opted into by the isolated hosted-CI job, not normal runs.
+            options.add_argument("--no-sandbox")
         options.add_experimental_option("prefs", {
             "download.default_directory": str(downloads), "download.prompt_for_download": False,
             "plugins.always_open_pdf_externally": True,
         })
-    driver = {"chrome": webdriver.Chrome, "edge": webdriver.Edge, "firefox": webdriver.Firefox}[browser](options=options)
+    service_class = {"chrome": ChromeService, "edge": EdgeService, "firefox": FirefoxService}[browser]
+    service = service_class(log_output=str(output / "webdriver.log"))
+    driver = {"chrome": webdriver.Chrome, "edge": webdriver.Edge, "firefox": webdriver.Firefox}[browser](options=options, service=service)
     driver.set_page_load_timeout(30)
     driver.set_script_timeout(30)
     driver.set_window_size(1365, 1000)
@@ -85,13 +94,16 @@ def run():
     output = Path(os.environ.get("ESIMS_EVIDENCE_DIR", ROOT / "instance" / "browser-evidence")) / browser
     output.mkdir(parents=True, exist_ok=True)
     os.environ.setdefault("SE_CACHE_PATH", str(ROOT / "instance" / "selenium-cache"))
-    os.environ.setdefault("SE_TIMEOUT", "120")
+    os.environ.setdefault("SE_TIMEOUT", "300")
     os.environ.setdefault("SE_AVOID_STATS", "true")
     os.environ.setdefault("SE_SKIP_DRIVER_IN_PATH", "true")
     evidence = {
         "browser": browser, "started_at_utc": datetime.now(timezone.utc).isoformat(),
         "platform": platform.platform(), "python": platform.python_version(), "result": "FAIL",
         "commit": subprocess.check_output(["git", "rev-parse", "HEAD"], cwd=ROOT, text=True).strip(),
+        "runner_sha256": hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
+        "chromium_no_sandbox": browser != "firefox" and os.environ.get("ESIMS_CHROMIUM_NO_SANDBOX") == "1",
+        "webdriver_log": "webdriver.log",
         "checks": [], "primary_screens": [], "screenshots": [], "layout_checks": [],
     }
     driver = server = server_thread = None
@@ -101,7 +113,7 @@ def run():
         version, source = latest_stable(browser)
         evidence.update(expected_stable_version=version, release_source=source)
         evidence["step"] = "start stable browser"
-        driver = launch(browser, version, Path(temporary.name))
+        driver = launch(browser, version, Path(temporary.name), output)
         evidence["browser_version"] = driver.capabilities["browserVersion"]
         assert evidence["browser_version"] == version, "Browser does not match the vendor stable release"
         evidence["user_agent"] = driver.execute_script("return navigator.userAgent")
@@ -147,12 +159,16 @@ def run():
             element.clear()
             element.send_keys(value)
 
-        def click(text, tag="button"):
+        def click(text, tag="button", navigate=True):
             # Match normalized text, including decorative child spans in Add component.
-            wait.until(EC.element_to_be_clickable((By.XPATH, f"//{tag}[contains(normalize-space(.), '{text}')]"))).click()
+            target = wait.until(EC.element_to_be_clickable((By.XPATH, f"//{tag}[contains(normalize-space(.), '{text}')]")))
+            previous_document = driver.find_element(By.TAG_NAME, "html")
+            target.click()
+            if navigate:
+                wait.until(EC.staleness_of(previous_document))
 
         def heading(text):
-            wait.until(lambda _: visible("h1").text == text)
+            wait.until(EC.visibility_of_element_located((By.XPATH, f"//h1[normalize-space(.)='{text}']")))
 
         def passed(name):
             evidence["checks"].append(name)
@@ -179,7 +195,9 @@ def run():
         evidence["step"] = "login, search and combined filters"
         login("admin", "ChangeMe123!")
         search = visible("input[name=q]")
+        previous_listing = visible("tbody")
         search.send_keys("Arduino Uno R3", Keys.ENTER)
+        wait.until(EC.staleness_of(previous_listing))
         assert "Arduino Uno R3" in visible("tbody").text
         driver.get(base + "/components")
         for name, value in [("category", "Browser Matrix"), ("supplier", "Browser Matrix Supplier"), ("status", "In Stock")]:
@@ -236,6 +254,34 @@ def run():
         assert visible(".detail-stat strong").text.startswith("5 ")
         passed("editing, stock-in/out, resulting balances and oversell rejection")
 
+        evidence["step"] = "CSV import and recorded adjustments"
+        driver.get(base + "/components")
+        click("Import CSV", "a")
+        click("Download CSV template", "a", navigate=False)
+        template = Path(temporary.name) / "inventory-import-template.csv"
+        wait.until(lambda _: template.exists() and template.stat().st_size > 0)
+        assert "sku,name,description,category,supplier,quantity,reorder_level,unit_price" in template.read_text(encoding="utf-8")
+        upload = Path(temporary.name) / "inventory-upload.csv"
+        upload.write_text(
+            "sku,name,category,supplier,quantity,reorder_level,unit_price\n"
+            "BROWSER-IMPORT-001,CSV browser board,Microcontrollers,Maker Supplies,2,5,9.50\n"
+            "BROWSER-SMOKE-001,Browser Smoke Component,Microcontrollers,Maker Supplies,6,5,19.50\n"
+            "BROWSER-INVALID,Invalid board,Microcontrollers,Maker Supplies,invalid,5,9.50\n",
+            encoding="utf-8",
+        )
+        visible("#csv-file").send_keys(str(upload))
+        click("Import inventory")
+        results = visible("section[aria-labelledby='import-results-heading']").text
+        assert "2 imported" in results and "1 created, 1 updated" in results and "1 rejected" in results
+        assert "BROWSER-INVALID" in results and "whole numbers" in results
+        snapshot("07-csv-import-results")
+        driver.get(detail_url)
+        row = wait.until(lambda _: next((r for r in driver.find_elements(By.CSS_SELECTOR, ".history-panel tbody tr")
+                                        if "CSV inventory import, line 3" in r.text), None))
+        cells = row.find_elements(By.TAG_NAME, "td")
+        assert cells[1].text == "Adjustment" and cells[4].text == "6"
+        passed("CSV template download, mixed create/update/rejection and adjustment history")
+
         evidence["step"] = "catalogue creation and report downloads"
         for path, singular in [("categories", "category"), ("suppliers", "supplier")]:
             driver.get(base + "/" + path)
@@ -249,7 +295,7 @@ def run():
         assert "Raspberry Pi Pico" in visible("tbody").text
         for label, filename, signature in [("Download CSV", "availability-report.csv", b"SKU"),
                                              ("Download PDF", "availability-report.pdf", b"%PDF")]:
-            click(label, "a")
+            click(label, "a", navigate=False)
             file = Path(temporary.name) / filename
             wait.until(lambda _: file.exists() and file.stat().st_size > 0)
             assert file.read_bytes().startswith(signature)
@@ -257,7 +303,7 @@ def run():
 
         evidence["step"] = "form validation and narrow layout"
         driver.get(base + "/components/new")
-        click("Save component")
+        click("Save component", navigate=False)
         assert driver.execute_script("return document.querySelector('#sku').validity.valueMissing")
         assert urlparse(driver.current_url).path == "/components/new"
         driver.set_window_size(500, 1000)
@@ -272,7 +318,8 @@ def run():
         click("Sign out")
         login("browserstaff", "BrowserStaff123!")
         assert not driver.find_elements(By.CSS_SELECTOR, "a[href='/components/new']")
-        for path in ("/components/new", "/admin/users", "/reports/availability"):
+        assert not driver.find_elements(By.CSS_SELECTOR, "a[href='/components/import']")
+        for path in ("/components/new", "/components/import", "/admin/users", "/reports/availability"):
             status = driver.execute_async_script("const done=arguments[arguments.length-1]; fetch(arguments[0]).then(r=>done(r.status)).catch(()=>done(0))", base + path)
             assert status == 403, f"Staff access to {path}: {status}"
         driver.get(detail_url)

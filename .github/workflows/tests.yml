@@ -92,6 +92,9 @@ jobs:
         env:
           ESIMS_BROWSER: ${{ matrix.browser }}
           ESIMS_EVIDENCE_DIR: ${{ runner.temp }}/browser-evidence
+          # Ubuntu's hosted image restricts user namespaces for downloaded
+          # Chromium binaries. This job only visits its temporary local app.
+          ESIMS_CHROMIUM_NO_SANDBOX: '1'
         run: python scripts/browser_compatibility.py
       - name: Retain browser versions, screenshots and failure reports
         if: always()
