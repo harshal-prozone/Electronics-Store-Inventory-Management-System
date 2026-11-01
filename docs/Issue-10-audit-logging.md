@@ -72,12 +72,13 @@ directory, and CI retains browser evidence as artifacts.
 
 Local execution on 2026-11-01:
 
-- Full backend suite: **208 passed**, including **38 new audit tests** (205.16 s).
-  The restricted Windows runner used `--basetemp=instance/pytest-issue10-full2
+- After merging latest main (`b6bcd4c`, including input validation): full backend
+  suite **271 passed**, including **38 new audit tests** (324.55 s).
+  The restricted Windows runner used `--basetemp=instance/pytest-issue10-merged1
   -p no:cacheprovider` to keep temporary files inside the workspace.
 - Stable Chrome **156.0.8078.80**, Edge **156.0.4314.58** and Firefox **159.0**:
-  all eight browser workflow groups passed with CSRF enabled, including the audit
-  review/deletion group. Evidence: `instance/issue10-browser-evidence/<browser>/`.
+  all nine browser workflow groups passed with CSRF enabled, including XSS and
+  audit review/deletion checks. Evidence: `instance/issue10-browser-evidence/<browser>/`.
 - Desktop and narrow screenshots were inspected; the navigation wraps at narrow
   widths and the audit table uses the existing inventory table spacing.
 

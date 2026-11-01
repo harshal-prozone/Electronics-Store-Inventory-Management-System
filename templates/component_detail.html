@@ -15,7 +15,7 @@
 
     <form method="post"
           action="{{ url_for('component_delete', component_id=component['id']) }}"
-          onsubmit="return confirm('Soft-delete this component from active inventory?');">
+          data-confirm="Soft-delete this component from active inventory?">
       <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
       <button class="button button-secondary" type="submit">
         Delete component

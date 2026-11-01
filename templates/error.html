@@ -1,0 +1,10 @@
+{% extends 'base.html' %}
+{% block title %}Invalid request{% endblock %}
+{% block content %}
+<section class="panel form-panel">
+  <h1>Invalid request</h1>
+  <p role="alert">{{ message }}</p>
+  <p>Check the supplied values and try again.</p>
+  <a class="button button-secondary" href="{{ url_for('components') if g.user else url_for('login') }}">{{ 'Return to inventory' if g.user else 'Return to sign in' }}</a>
+</section>
+{% endblock %}

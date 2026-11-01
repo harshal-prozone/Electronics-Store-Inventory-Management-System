@@ -17,6 +17,7 @@ For complete developer setup, database, application, testing, and troubleshootin
 - Admin-only bulk CSV import with SKU-based creation/updates, row error reports, imported/rejected counts, and audited stock adjustments.
 - Admin-only, read-only audit log with UTC timestamps, responsible users, event/user filters and pagination. Security rejections and component deletions are recorded; database triggers protect history against updates/deletion. See [Issue #10 audit logging](docs/Issue-10-audit-logging.md).
 - Audit entries for authentication and inventory-changing actions, a `/health` endpoint, and automated tests.
+- Server-side input validation, bounded stock arithmetic, parameterized SQLite queries, escaped user content, and an enforced Content Security Policy. See [Issue #12 security coverage](docs/Issue-12-input-validation.md) for validation rules, error responses and malicious-input tests.
 - Component transaction history with inclusive UTC date filters, transaction type filters, saved resulting balances, and pagination (20 per page), ordered newest first. History supports stock additions, removals, and adjustment records; the stock entry form records additions and removals.
 
 ## Local setup (macOS/Linux)

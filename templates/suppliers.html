@@ -27,7 +27,7 @@
               <form method="post"
                     action="{{ url_for('supplier_delete', supplier_id=supplier['id']) }}"
                     style="display:inline"
-                    onsubmit="return confirm('Delete this supplier?');">
+                    data-confirm="Delete this supplier?">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit">Delete</button>
               </form>

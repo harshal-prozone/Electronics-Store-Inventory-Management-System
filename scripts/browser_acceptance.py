@@ -124,13 +124,19 @@ def run() -> None:
                 page.locator("#name").fill("Browser Smoke Component")
                 page.locator("#category").select_option(label="Microcontrollers")
                 page.locator("#supplier").select_option(label="Maker Supplies")
-                page.locator("#description").fill("Cross-browser acceptance component")
+                xss_description = '<img src=x onerror="window.__securityExecuted=1"><script>window.__securityExecuted=1</script>'
+                page.locator("#description").fill(xss_description)
                 page.locator("#quantity").fill("3")
                 page.locator("#reorder_level").fill("5")
                 page.locator("#unit_price").fill("19.50")
                 page.get_by_role("button", name="Save component").click()
                 assert page.get_by_text("Low Stock", exact=True).first.is_visible()
                 assert page.get_by_role("heading", name="Browser Smoke Component").is_visible()
+                # Stored markup stays literal text and never creates executable DOM.
+                expect(page.locator(".detail-heading-text p")).to_have_text(xss_description)
+                expect(page.locator(".detail-heading-text img")).to_have_count(0)
+                assert page.evaluate("window.__securityExecuted === undefined")
+                component_url = page.url
 
                 # Stock movement persists and recalculates status.
                 page.locator("#adjustment").select_option("stock-in")
@@ -200,6 +206,28 @@ def run() -> None:
                 pdf_file = pdf_download.value
                 assert pdf_file.suggested_filename.endswith(".pdf")
                 assert Path(pdf_file.path()).stat().st_size > 0
+
+                # Reflected search input cannot break out of its quoted attribute.
+                page.goto(f"{base_url}/components")
+                reflected = '\"><img src=x onerror="window.__securityExecuted=1">'
+                page.get_by_label("Search components").fill(reflected)
+                page.get_by_label("Search components").press("Enter")
+                expect(page.get_by_label("Search components")).to_have_value(reflected)
+                expect(page.locator("img")).to_have_count(0)
+                assert page.evaluate("window.__securityExecuted === undefined")
+
+                # CSP permits the external confirmation script. Cancelling keeps
+                # the record; accepting submits the ordinary CSRF-protected form.
+                page.goto(component_url)
+                page.once("dialog", lambda dialog: dialog.dismiss())
+                page.get_by_role("button", name="Delete component", exact=True).click()
+                expect(page.get_by_role("heading", name="Browser Smoke Component")).to_be_visible()
+                page.once("dialog", lambda dialog: dialog.accept())
+                page.get_by_role("button", name="Delete component", exact=True).click()
+                page.wait_for_url("**/components")
+                page.get_by_label("Search components").fill("BROWSER-SMOKE-001")
+                page.get_by_label("Search components").press("Enter")
+                expect(page.get_by_text("No components found", exact=True)).to_be_visible()
 
                 # Staff can sign in but cannot visit Admin-only management.
                 staff_page = browser.new_page(viewport={"width": 1365, "height": 900})
