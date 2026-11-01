@@ -368,6 +368,55 @@ def test_health_endpoint(client):
     assert response.get_json() == {"status": "ok", "database": "ok"}
 
 
+def test_health_live_does_not_depend_on_database(client, monkeypatch):
+    def unavailable_database():
+        raise sqlite3.OperationalError("database unavailable")
+
+    monkeypatch.setattr("app.get_db", unavailable_database)
+
+    response = client.get("/health/live")
+
+    assert response.status_code == 200
+    assert response.get_json() == {"status": "ok"}
+
+
+def test_health_ready_reports_database_failure(client, monkeypatch):
+    def unavailable_database():
+        raise sqlite3.OperationalError("database unavailable")
+
+    monkeypatch.setattr("app.get_db", unavailable_database)
+
+    response = client.get("/health/ready")
+
+    assert response.status_code == 503
+    assert response.get_json() == {
+        "status": "error",
+        "database": "unavailable",
+    }
+
+
+def test_legacy_health_reports_database_failure(client, monkeypatch):
+    def unavailable_database():
+        raise sqlite3.OperationalError("database unavailable")
+
+    monkeypatch.setattr("app.get_db", unavailable_database)
+
+    response = client.get("/health")
+
+    assert response.status_code == 503
+    assert response.get_json() == {
+        "status": "error",
+        "database": "unavailable",
+    }
+
+
+def test_health_ready_reports_success(client):
+    response = client.get("/health/ready")
+
+    assert response.status_code == 200
+    assert response.get_json() == {"status": "ok", "database": "ok"}
+
+
 def test_search_is_parameterized_and_handles_special_characters(client):
     sign_in(client)
     response = client.get("/components?q=%25%27%20OR%201%3D1--")

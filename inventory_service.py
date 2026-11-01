@@ -2,10 +2,38 @@
 
 from __future__ import annotations
 
+import math
+import re
 import sqlite3
-from typing import Literal
+from typing import Any, Literal
 
 Availability = Literal["Out of Stock", "Low Stock", "In Stock"]
+
+
+def validate_component_form(form) -> tuple[tuple[Any, ...] | None, str | None]:
+    """Apply the same component and SKU rules to forms and CSV imports."""
+    sku = form.get("sku", "").strip().upper()
+    name = form.get("name", "").strip()
+    description = form.get("description", "").strip()
+    category = form.get("category", "").strip()
+    supplier = form.get("supplier", "").strip()
+    try:
+        quantity = int(form.get("quantity", ""))
+        reorder_level = int(form.get("reorder_level", ""))
+        unit_price = float(form.get("unit_price", "0"))
+    except (TypeError, ValueError):
+        return None, "Quantity and reorder level must be whole numbers, and price must be numeric."
+    if not sku or len(sku) > 40 or not re.fullmatch(r"[A-Z0-9][A-Z0-9._/-]*", sku):
+        return None, "SKU is required and may contain letters, numbers, dots, underscores, slashes and hyphens."
+    if not name or len(name) > 120:
+        return None, "Component name is required and must be 120 characters or fewer."
+    if len(description) > 1000 or len(category) > 80 or len(supplier) > 120:
+        return None, "Description, category or supplier exceeds the allowed length."
+    if quantity < 0 or reorder_level < 0 or not math.isfinite(unit_price) or unit_price < 0:
+        return None, "Quantity, reorder level and price must be non-negative finite values."
+    if quantity > 2**63 - 1 or reorder_level > 2**63 - 1:
+        return None, "Quantity and reorder level must be at most 9223372036854775807."
+    return (sku, name, description, category, supplier, quantity, reorder_level, round(unit_price, 2)), None
 
 
 def availability_status(quantity: int, reorder_level: int) -> Availability:

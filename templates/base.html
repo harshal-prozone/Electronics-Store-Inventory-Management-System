@@ -15,7 +15,7 @@
     {% if g.user %}
     
     <nav class="topnav" aria-label="Main navigation">
-      <a href="{{ url_for('components') }}" class="{{ 'active' if request.endpoint in ['components', 'component_detail', 'component_edit', 'component_new'] else '' }}">Inventory</a>
+      <a href="{{ url_for('components') }}" class="{{ 'active' if request.endpoint in ['components', 'component_detail', 'component_edit', 'component_new', 'import_components'] else '' }}">Inventory</a>
       {% if g.user['role'] == 'Admin' %}
       <a href="{{ url_for('index') }}" class="{{ 'active' if request.endpoint == 'index' else '' }}">Dashboard</a>
       {% endif %}

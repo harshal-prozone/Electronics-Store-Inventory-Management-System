@@ -5,6 +5,12 @@
 @media(max-width:640px){.topbar{height:auto;min-height:69px;padding:12px 15px;gap:10px;flex-wrap:wrap}.brand{font-size:14px}.brand-mark{width:30px;height:30px}.topnav{order:3;flex-basis:100%;height:auto;margin-top:3px}.topnav a{padding:7px 10px;font-size:11px}.account-area{margin-left:auto}.page-shell{padding:24px 14px 0;min-height:calc(100vh - 100px)}.page-heading{align-items:flex-start;flex-direction:column}.page-heading h1{font-size:25px}.summary-grid{grid-template-columns:1fr;gap:9px}.summary-card{min-height:105px}.panel-header{padding:17px 15px 14px}.filter-form{margin:0 12px 13px;padding:8px;gap:7px}.filter-form select{flex-basis:45%;min-width:0}.filter-form .button{flex:1}.clear-link{padding:4px}.inventory-table th:first-child,.inventory-table td:first-child{padding-left:15px}.inventory-table td,.inventory-table th{padding-left:12px;padding-right:12px}.table-footer{padding:13px 15px}.rule-note{padding:12px}.form-panel{padding:20px 16px}.form-grid,.form-grid-stock{grid-template-columns:1fr;gap:16px}.field-wide{grid-column:auto}.form-divider{margin:23px 0}.form-actions{margin-top:22px}.detail-heading{align-items:flex-start;flex-wrap:wrap}.detail-heading h1{font-size:22px}.detail-heading-actions{flex-basis:100%;margin-left:65px}.detail-stats-grid{gap:9px}.detail-stat{padding:13px}.detail-stat>strong{font-size:21px}.detail-columns{grid-template-columns:1fr}.login-layout{grid-template-columns:1fr;gap:20px;padding:10px 0 30px}.login-intro{padding:5px 2px}.login-intro h1{font-size:30px}.login-intro>p{font-size:12px}.feature-points{grid-template-columns:1fr 1fr;gap:10px;margin-top:20px;font-size:10px}.login-panel{justify-self:stretch;max-width:none;padding:24px 19px}.footer{padding:25px 0 18px}}
 
 
+.inventory-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.import-guidance { padding-left: 20px; line-height: 1.7; }
+.import-guidance li { margin-bottom: 8px; }
+.import-errors td { white-space: normal; overflow-wrap: anywhere; }
+.import-errors caption { text-align: left; font-weight: 700; padding: 12px 0; }
+
 /* Sprint 2: inventory dashboard */
 .dashboard-kpis {
   grid-template-columns: repeat(4, minmax(0, 1fr));

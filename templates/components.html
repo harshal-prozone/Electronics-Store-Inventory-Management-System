@@ -3,7 +3,12 @@
 {% block content %}
 <section class="page-heading">
   <div><div class="eyebrow">INVENTORY / OVERVIEW</div><h1>Component inventory</h1><p>Monitor stock levels and identify components that need replenishment.</p></div>
-  {% if g.user['role'] == 'Admin' %}<a class="button button-primary" href="{{ url_for('component_new') }}"><span class="button-plus">+</span> Add component</a>{% endif %}
+  {% if g.user['role'] == 'Admin' %}
+  <div class="inventory-actions">
+    <a class="button button-secondary" href="{{ url_for('import_components') }}">Import CSV</a>
+    <a class="button button-primary" href="{{ url_for('component_new') }}"><span class="button-plus">+</span> Add component</a>
+  </div>
+  {% endif %}
 </section>
 
 {% set out_count = namespace(value=0) %}{% set low_count = namespace(value=0) %}{% set in_count = namespace(value=0) %}
