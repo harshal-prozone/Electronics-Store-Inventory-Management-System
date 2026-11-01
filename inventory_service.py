@@ -7,20 +7,44 @@ import re
 import sqlite3
 from typing import Any, Literal
 
+from input_validation import CONTROL_CHARACTERS, MAX_SQLITE_INTEGER, text_value
+
 Availability = Literal["Out of Stock", "Low Stock", "In Stock"]
 
 
 def validate_component_form(form) -> tuple[tuple[Any, ...] | None, str | None]:
     """Apply the same component and SKU rules to forms and CSV imports."""
+    fields = ("sku", "name", "description", "category", "supplier", "quantity", "reorder_level", "unit_price")
+    for field in fields:
+        raw = form.get(field, "")
+        if not isinstance(raw, str) or CONTROL_CHARACTERS.search(raw):
+            return None, "Component fields must be text without control characters."
+        if field != "description" and any(character in raw for character in "\t\r\n"):
+            return None, "Component fields other than description must be single-line values."
     sku = form.get("sku", "").strip().upper()
     name = form.get("name", "").strip()
     description = form.get("description", "").strip()
     category = form.get("category", "").strip()
     supplier = form.get("supplier", "").strip()
     try:
-        quantity = int(form.get("quantity", ""))
-        reorder_level = int(form.get("reorder_level", ""))
-        unit_price = float(form.get("unit_price", "0"))
+        for field in ("quantity", "reorder_level"):
+            raw = form.get(field, "").strip()
+            if not re.fullmatch(r"-?[0-9]+", raw):
+                raise ValueError("invalid integer")
+            significant = raw.lstrip("-0") or "0"
+            if len(significant) > 19:
+                return None, "Quantity and reorder level must be at most 9223372036854775807."
+        # Strip leading zeroes before int() so long decimal representations
+        # cannot trip Python's integer-string conversion limit.
+        raw_quantity = form.get("quantity", "").strip()
+        raw_reorder = form.get("reorder_level", "").strip()
+        quantity = int(("-" if raw_quantity.startswith("-") else "") + (raw_quantity.lstrip("-0") or "0"))
+        reorder_level = int(("-" if raw_reorder.startswith("-") else "") + (raw_reorder.lstrip("-0") or "0"))
+        raw_price = form.get("unit_price", "0").strip()
+        special_float = raw_price.lower().lstrip("+-") in {"nan", "inf", "infinity"}
+        if not special_float and not re.fullmatch(r"[+-]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)(?:[eE][+-]?[0-9]+)?", raw_price):
+            raise ValueError("invalid price")
+        unit_price = float(raw_price)
     except (TypeError, ValueError):
         return None, "Quantity and reorder level must be whole numbers, and price must be numeric."
     if not sku or len(sku) > 40 or not re.fullmatch(r"[A-Z0-9][A-Z0-9._/-]*", sku):
@@ -31,7 +55,7 @@ def validate_component_form(form) -> tuple[tuple[Any, ...] | None, str | None]:
         return None, "Description, category or supplier exceeds the allowed length."
     if quantity < 0 or reorder_level < 0 or not math.isfinite(unit_price) or unit_price < 0:
         return None, "Quantity, reorder level and price must be non-negative finite values."
-    if quantity > 2**63 - 1 or reorder_level > 2**63 - 1:
+    if quantity > MAX_SQLITE_INTEGER or reorder_level > MAX_SQLITE_INTEGER:
         return None, "Quantity and reorder level must be at most 9223372036854775807."
     return (sku, name, description, category, supplier, quantity, reorder_level, round(unit_price, 2)), None
 
@@ -82,6 +106,9 @@ def adjust_stock(
         raise TypeError("adjustment quantity must be an integer")
     if quantity <= 0:
         raise ValueError("adjustment quantity must be greater than zero")
+    if quantity > MAX_SQLITE_INTEGER:
+        raise ValueError("adjustment quantity exceeds the supported range")
+    note = text_value(note, "Stock note", 250, multiline=True)
 
     try:
         db.execute("BEGIN IMMEDIATE")
@@ -95,6 +122,8 @@ def adjust_stock(
         new_quantity = previous + quantity if adjustment == "stock-in" else previous - quantity
         if new_quantity < 0:
             raise ValueError("stock-out quantity exceeds available stock")
+        if new_quantity > MAX_SQLITE_INTEGER:
+            raise ValueError("resulting stock exceeds the supported range")
 
         db.execute(
             "UPDATE components SET quantity = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",

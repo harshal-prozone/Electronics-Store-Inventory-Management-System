@@ -485,7 +485,7 @@ def test_duplicate_username_is_rejected(client, app):
         follow_redirects=True,
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 409
     assert "already registered" in response.get_data(as_text=True)
 
     with app.app_context():
@@ -657,7 +657,7 @@ def test_duplicate_component_sku_is_rejected(client, app):
         follow_redirects=True,
     )
 
-    assert response.status_code == 200
+    assert response.status_code == 409
     assert "already exists" in response.get_data(as_text=True)
 
     with app.app_context():
@@ -948,7 +948,7 @@ def test_duplicate_email_is_rejected(client, app):
         },
         follow_redirects=True,
     )
-    assert response.status_code == 200
+    assert response.status_code == 409
     assert "already registered" in response.get_data(as_text=True)
     with app.app_context():
         db = sqlite3.connect(app.config["DATABASE"])
@@ -985,7 +985,7 @@ def test_component_creation_rejects_invalid_values(client, app, field, invalid_v
     }
     payload[field] = invalid_value
     response = client.post("/components/new", data=payload, follow_redirects=True)
-    assert response.status_code == 200
+    assert response.status_code == 400
     with app.app_context():
         db = sqlite3.connect(app.config["DATABASE"])
         count = db.execute(
@@ -1206,7 +1206,7 @@ def test_catalog_rejects_blank_names(client, app, url, table):
         data={"name": "   "},
         follow_redirects=True,
     )
-    assert response.status_code == 200
+    assert response.status_code == 400
 
     with app.app_context():
         from flask import current_app
@@ -1419,6 +1419,7 @@ def test_admin_updates_threshold_and_availability_views(client, app, threshold_c
 def test_invalid_threshold_leaves_inventory_unchanged(client, app, threshold_component, value):
     sign_in(client)
     response = client.post(f'/components/{threshold_component}/threshold', data={'reorder_level': value}, follow_redirects=True)
+    assert response.status_code == 400
     assert 'must be a non-negative whole number' in response.get_data(as_text=True)
     with sqlite3.connect(app.config['DATABASE']) as db:
         assert db.execute('SELECT quantity, reorder_level FROM components WHERE id = ?', (threshold_component,)).fetchone() == (12, 5)

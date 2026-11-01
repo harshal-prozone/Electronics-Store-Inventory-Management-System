@@ -34,6 +34,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from inventory_service import adjust_stock, availability_status, validate_component_form
 from inventory_import import CSV_COLUMNS, MAX_CSV_BYTES, import_inventory_csv
+from input_validation import CONTROL_CHARACTERS, MAX_SQLITE_INTEGER, account_values, text_value, whole_number
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_DB = ROOT / "instance" / "inventory.db"
@@ -71,6 +72,8 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         PERMANENT_SESSION_LIFETIME=60 * 60,
         WTF_CSRF_TIME_LIMIT=None,
         MAX_CONTENT_LENGTH=2 * 1024 * 1024,
+        MAX_FORM_MEMORY_SIZE=128 * 1024,
+        MAX_FORM_PARTS=32,
     )
     if test_config:
         app.config.update(test_config)
@@ -81,6 +84,42 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     with app.app_context():
         init_db()
+
+    @app.before_request
+    def validate_request_fields():
+        if request.endpoint is None or request.endpoint in {"static", "health", "health_live", "health_ready"}:
+            return
+        if any(isinstance(value, int) and value > MAX_SQLITE_INTEGER
+               for value in (request.view_args or {}).values()):
+            abort(404)
+        if request.method == "POST" and request.mimetype not in (None, "", "application/x-www-form-urlencoded", "multipart/form-data"):
+            abort(415, description="Submit this operation using form fields or a CSV file upload.")
+        for mapping in (request.args, request.form):
+            for key, values in mapping.lists():
+                if len(values) != 1:
+                    abort(400, description="Supply each input field only once.")
+                if CONTROL_CHARACTERS.search(key) or CONTROL_CHARACTERS.search(values[0]):
+                    # Passwords may contain arbitrary whitespace, but not nulls.
+                    if key != "password" or "\x00" in values[0] or CONTROL_CHARACTERS.search(key):
+                        abort(400, description="Input contains unsupported control characters.")
+        for key in request.files:
+            if len(request.files.getlist(key)) != 1:
+                abort(400, description="Supply each uploaded file only once.")
+
+    @app.after_request
+    def protect_rendered_content(response):
+        response.headers["Content-Security-Policy"] = (
+            "default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; "
+            "font-src 'self' https://fonts.gstatic.com; "
+            "img-src 'self' data:; object-src 'none'; base-uri 'none'; "
+            "frame-ancestors 'none'; form-action 'self'"
+        )
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        return response
+
+    @app.errorhandler(400)
+    def invalid_request(error):
+        return render_template("error.html", message=error.description), 400
 
     @app.before_request
     def load_logged_in_user() -> None:
@@ -158,8 +197,15 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         if g.user is not None:
             return redirect(url_for("components"))
         if request.method == "POST":
-            identity = request.form.get("identity", "").strip()
+            try:
+                identity = text_value(request.form.get("identity", ""), "Username/email", 254, required=True)
+            except ValueError as exc:
+                flash(str(exc), "error")
+                return render_template("login.html"), 400
             password = request.form.get("password", "")
+            if not password or len(password) > 1024:
+                flash("Enter a password of at most 1024 characters.", "error")
+                return render_template("login.html"), 400
             user = get_db().execute(
                 "SELECT * FROM users WHERE username = ? OR email = ?",
                 (identity, identity),
@@ -167,6 +213,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             if user is None or not check_password_hash(user["password_hash"], password):
                 flash("Invalid username/email or password.", "error")
                 write_audit(None, "login-failed", f"identity={identity[:120]}")
+                return render_template("login.html"), 401
             else:
                 session.clear()
                 session.permanent = True
@@ -190,27 +237,14 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     @admin_required
     def manage_users():
         db = get_db()
+        status = 200
 
         if request.method == "POST":
-            username = request.form.get("username", "").strip()
-            email = request.form.get("email", "").strip()
-            password = request.form.get("password", "")
-            role = request.form.get("role", "Staff").strip()
-
-            if (
-                not username
-                or len(username) > 80
-                or not email
-                or len(email) > 254
-                or "@" not in email
-                or len(password) < 10
-                or role not in ("Admin", "Staff")
-            ):
-                flash(
-                    "Enter a valid username, email, role, and password "
-                    "of at least 10 characters.",
-                    "error",
-                )
+            try:
+                username, email, password, role = account_values(request.form)
+            except ValueError as exc:
+                flash(str(exc), "error")
+                status = 400
             else:
                 try:
                     cursor = db.execute(
@@ -234,6 +268,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                     return redirect(url_for("manage_users"))
                 except sqlite3.IntegrityError:
                     db.rollback()
+                    status = 409
                     flash(
                         "That username or email is already registered.",
                         "error",
@@ -244,17 +279,23 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                FROM users ORDER BY username COLLATE NOCASE"""
         ).fetchall()
 
-        return render_template("user_management.html", users=users)
+        return render_template("user_management.html", users=users), status
     @app.get("/components")
     @login_required
     def components():
         db = get_db()
-        query = request.args.get("q", "").strip()[:100]
-        status_filter = request.args.get("status", "").strip()
-        category_filter = request.args.get("category", "").strip()[:80]
-        supplier_filter = request.args.get("supplier", "").strip()[:80]
-        page = max(request.args.get("page", 1, type=int) or 1, 1)
         per_page = 10
+        try:
+            query = text_value(request.args.get("q", ""), "Search", 100)
+            category_filter = text_value(request.args.get("category", ""), "Category", 80)
+            supplier_filter = text_value(request.args.get("supplier", ""), "Supplier", 120)
+            status_filter = request.args.get("status", "").strip()
+            page = whole_number(request.args.get("page", "1"), "Page", minimum=1,
+                                maximum=MAX_SQLITE_INTEGER // per_page + 1)
+            if status_filter not in ("", "Out of Stock", "Low Stock", "In Stock"):
+                raise ValueError("Select a valid availability status.")
+        except ValueError as exc:
+            abort(400, description=str(exc))
         where: list[str] = ["deleted_at IS NULL"]
         params: list[Any] = []
         if query:
@@ -375,12 +416,14 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     @login_required
     @admin_required
     def component_new():
+        status = 200
         if request.method == "POST":
             values, error = validate_component_form(request.form)
             if not error:
                 error = validate_catalog_selection(values)
             if error:
                 flash(error, "error")
+                status = 400
             else:
                 try:
                     cursor = get_db().execute(
@@ -396,15 +439,17 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 except sqlite3.IntegrityError:
                     get_db().rollback()
                     flash("That SKU already exists. Use a unique SKU.", "error")
+                    status = 409
         categories, suppliers = get_catalog_options()
         return render_template("component_form.html", component=None, page_title="Add component",
-                               categories=categories, suppliers=suppliers)
+                               categories=categories, suppliers=suppliers), status
 
     @app.route("/components/<int:component_id>/edit", methods=("GET", "POST"))
     @login_required
     @admin_required
     def component_edit(component_id: int):
         component = get_component_or_404(component_id)
+        status = 200
         if request.method == "POST":
             form_data = request.form.copy()
             form_data["quantity"] = str(component["quantity"])
@@ -413,6 +458,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 error = validate_catalog_selection(values)
             if error:
                 flash(error, "error")
+                status = 400
             else:
                 try:
                     get_db().execute(
@@ -427,9 +473,10 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 except sqlite3.IntegrityError:
                     get_db().rollback()
                     flash("That SKU is already in use by another component.", "error")
+                    status = 409
         categories, suppliers = get_catalog_options()
         return render_template("component_form.html", component=component, page_title="Edit component",
-                               categories=categories, suppliers=suppliers)
+                               categories=categories, suppliers=suppliers), status
 
     
     @app.get("/components/<int:component_id>")
@@ -473,7 +520,11 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             "SELECT COUNT(*) FROM inventory_transactions t WHERE " + where, params,
         ).fetchone()[0]
         pages = max(1, (total + 19) // 20)
-        page = min(max(1, request.args.get("page", 1, type=int) or 1), pages)
+        try:
+            page = min(whole_number(request.args.get("page", "1"), "Page", minimum=1,
+                                    maximum=MAX_SQLITE_INTEGER // 20 + 1), pages)
+        except ValueError as exc:
+            abort(400, description=str(exc))
         transactions = db.execute(
             """SELECT t.*, u.username FROM inventory_transactions t
                LEFT JOIN users u ON u.id = t.user_id WHERE """ + where +
@@ -488,19 +539,21 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             page=page, pages=pages, total=total,
         ), 400 if error else 200
 
+    def component_error(component_id, message):
+        flash(message, "error")
+        response = make_response(component_detail(component_id=component_id))
+        response.status_code = 400
+        return response
+
     @app.post("/components/<int:component_id>/threshold")
     @login_required
     @admin_required
     def component_threshold(component_id: int):
         get_component_or_404(component_id)
-        raw_threshold = request.form.get("reorder_level", "").strip()
-        # SQLite INTEGER values are signed 64-bit; reject oversized inputs too.
-        if (not re.fullmatch(r"[0-9]{1,19}", raw_threshold)
-                or int(raw_threshold) > 9223372036854775807):
-            flash("Minimum stock threshold must be a non-negative whole number within the supported range.", "error")
-            return redirect(url_for("component_detail", component_id=component_id))
-
-        threshold = int(raw_threshold)
+        try:
+            threshold = whole_number(request.form.get("reorder_level", ""), "Minimum stock threshold")
+        except ValueError as exc:
+            return component_error(component_id, str(exc))
         db = get_db()
         with db:
             previous = db.execute(
@@ -548,13 +601,9 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     def component_stock(component_id: int):
         get_component_or_404(component_id)
         adjustment = request.form.get("adjustment", "")
-        raw_quantity = request.form.get("quantity", "").strip()
-        note = request.form.get("note", "").strip()[:250]
-        if not raw_quantity.isdigit():
-            flash("Enter a whole-number quantity greater than zero.", "error")
-            return redirect(url_for("component_detail", component_id=component_id))
-        quantity = int(raw_quantity)
         try:
+            quantity = whole_number(request.form.get("quantity", ""), "Stock quantity", minimum=1)
+            note = text_value(request.form.get("note", ""), "Stock note", 250, multiline=True)
             _, new_quantity = adjust_stock(
                 get_db(), component_id=component_id, user_id=g.user["id"],
                 adjustment=adjustment, quantity=quantity, note=note,
@@ -563,7 +612,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             status = availability_status(new_quantity, int(new_component["reorder_level"]))
             flash(f"Stock updated. New quantity: {new_quantity}. Status: {status}.", "success")
         except (ValueError, LookupError, TypeError) as exc:
-            flash(str(exc), "error")
+            return component_error(component_id, str(exc))
         return redirect(url_for("component_detail", component_id=component_id))
     
     @app.get("/categories")
@@ -579,10 +628,13 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     @login_required
     @admin_required
     def category_new():
+        status = 200
         if request.method == "POST":
-            name = request.form.get("name", "").strip()
-            if not name or len(name) > 80:
-                flash("Category name is required and must be 80 characters or fewer.", "error")
+            try:
+                name = text_value(request.form.get("name", ""), "Category name", 80, required=True)
+            except ValueError as exc:
+                flash(str(exc), "error")
+                status = 400
             else:
                 try:
                     db = get_db()
@@ -596,13 +648,15 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 except sqlite3.IntegrityError:
                     get_db().rollback()
                     flash("A category with that name already exists.", "error")
-        return render_template("catalog_form.html", page_title="Add category", item_type="Category")
+                    status = 409
+        return render_template("catalog_form.html", page_title="Add category", item_type="Category"), status
 
     @app.route("/categories/<int:category_id>/edit", methods=("GET", "POST"))
     @login_required
     @admin_required
     def category_edit(category_id: int):
         db = get_db()
+        status = 200
         category = db.execute(
             "SELECT * FROM categories WHERE id = ?", (category_id,)
         ).fetchone()
@@ -610,9 +664,11 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             abort(404)
 
         if request.method == "POST":
-            name = request.form.get("name", "").strip()
-            if not name or len(name) > 80:
-                flash("Category name is required and must be 80 characters or fewer.", "error")
+            try:
+                name = text_value(request.form.get("name", ""), "Category name", 80, required=True)
+            except ValueError as exc:
+                flash(str(exc), "error")
+                status = 400
             else:
                 old_name = category["name"]
                 try:
@@ -632,7 +688,8 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 except sqlite3.IntegrityError:
                     db.rollback()
                     flash("A category with that name already exists.", "error")
-        return render_template("catalog_form.html", page_title="Edit category", item_type="Category", item=category)
+                    status = 409
+        return render_template("catalog_form.html", page_title="Edit category", item_type="Category", item=category), status
 
     @app.post("/categories/<int:category_id>/delete")
     @login_required
@@ -671,10 +728,13 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     @login_required
     @admin_required
     def supplier_new():
+        status = 200
         if request.method == "POST":
-            name = request.form.get("name", "").strip()
-            if not name or len(name) > 120:
-                flash("Supplier name is required and must be 120 characters or fewer.", "error")
+            try:
+                name = text_value(request.form.get("name", ""), "Supplier name", 120, required=True)
+            except ValueError as exc:
+                flash(str(exc), "error")
+                status = 400
             else:
                 try:
                     db = get_db()
@@ -688,13 +748,15 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 except sqlite3.IntegrityError:
                     get_db().rollback()
                     flash("A supplier with that name already exists.", "error")
-        return render_template("catalog_form.html", page_title="Add supplier", item_type="Supplier")
+                    status = 409
+        return render_template("catalog_form.html", page_title="Add supplier", item_type="Supplier"), status
 
     @app.route("/suppliers/<int:supplier_id>/edit", methods=("GET", "POST"))
     @login_required
     @admin_required
     def supplier_edit(supplier_id: int):
         db = get_db()
+        status = 200
         supplier = db.execute(
             "SELECT * FROM suppliers WHERE id = ?", (supplier_id,)
         ).fetchone()
@@ -702,9 +764,11 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             abort(404)
 
         if request.method == "POST":
-            name = request.form.get("name", "").strip()
-            if not name or len(name) > 120:
-                flash("Supplier name is required and must be 120 characters or fewer.", "error")
+            try:
+                name = text_value(request.form.get("name", ""), "Supplier name", 120, required=True)
+            except ValueError as exc:
+                flash(str(exc), "error")
+                status = 400
             else:
                 old_name = supplier["name"]
                 try:
@@ -724,7 +788,8 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 except sqlite3.IntegrityError:
                     db.rollback()
                     flash("A supplier with that name already exists.", "error")
-        return render_template("catalog_form.html", page_title="Edit supplier", item_type="Supplier", item=supplier)
+                    status = 409
+        return render_template("catalog_form.html", page_title="Edit supplier", item_type="Supplier", item=supplier), status
 
     @app.post("/suppliers/<int:supplier_id>/delete")
     @login_required
@@ -929,8 +994,12 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     @click.password_option()
     def create_admin_command(username: str, email: str, password: str):
         """Create another administrator account."""
-        if len(password) < 10:
-            raise click.ClickException("Password must be at least 10 characters long.")
+        try:
+            username, email, password, _ = account_values({
+                "username": username, "email": email, "password": password, "role": "Admin",
+            })
+        except ValueError as exc:
+            raise click.ClickException(str(exc)) from exc
         try:
             get_db().execute(
                 "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, 'Admin')",
@@ -1069,12 +1138,15 @@ def init_db() -> None:
 
 def get_availability_report_filters():
     """Read and normalize report filters from the query string."""
-    category = request.args.get("category", "").strip()[:80]
-    supplier = request.args.get("supplier", "").strip()[:120]
+    try:
+        category = text_value(request.args.get("category", ""), "Category", 80)
+        supplier = text_value(request.args.get("supplier", ""), "Supplier", 120)
+    except ValueError as exc:
+        abort(400, description=str(exc))
     status = request.args.get("status", "").strip()
     valid_statuses = {"", "In Stock", "Low Stock", "Out of Stock"}
     if status not in valid_statuses:
-        status = ""
+        abort(400, description="Select a valid availability status.")
     return category, supplier, status
 
 
