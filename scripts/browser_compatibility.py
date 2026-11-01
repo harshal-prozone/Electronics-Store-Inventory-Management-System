@@ -18,6 +18,7 @@ import tempfile
 import threading
 import traceback
 import urllib.request
+import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
@@ -159,13 +160,25 @@ def run():
             element.clear()
             element.send_keys(value)
 
+        def document_token():
+            token = uuid.uuid4().hex
+            driver.execute_script("window.__esimsDocumentToken = arguments[0]", token)
+            return token
+
+        def wait_for_navigation(token):
+            # Edge can report detached nodes as a generic inspector error rather
+            # than StaleElementReferenceException. Observe the new document
+            # without querying any WebElement belonging to the previous one.
+            wait.until(lambda _: driver.execute_script("return window.__esimsDocumentToken !== arguments[0]", token))
+            wait.until(lambda _: driver.execute_script("return document.readyState") == "complete")
+
         def click(text, tag="button", navigate=True):
             # Match normalized text, including decorative child spans in Add component.
             target = wait.until(EC.element_to_be_clickable((By.XPATH, f"//{tag}[contains(normalize-space(.), '{text}')]")))
-            previous_document = driver.find_element(By.TAG_NAME, "html")
+            previous_document = document_token() if navigate else None
             target.click()
             if navigate:
-                wait.until(EC.staleness_of(previous_document))
+                wait_for_navigation(previous_document)
 
         def heading(text):
             wait.until(EC.visibility_of_element_located((By.XPATH, f"//h1[normalize-space(.)='{text}']")))
@@ -195,9 +208,9 @@ def run():
         evidence["step"] = "login, search and combined filters"
         login("admin", "ChangeMe123!")
         search = visible("input[name=q]")
-        previous_listing = visible("tbody")
+        previous_document = document_token()
         search.send_keys("Arduino Uno R3", Keys.ENTER)
-        wait.until(EC.staleness_of(previous_listing))
+        wait_for_navigation(previous_document)
         assert "Arduino Uno R3" in visible("tbody").text
         driver.get(base + "/components")
         for name, value in [("category", "Browser Matrix"), ("supplier", "Browser Matrix Supplier"), ("status", "In Stock")]:

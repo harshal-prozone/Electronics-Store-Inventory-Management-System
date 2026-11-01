@@ -1,11 +1,11 @@
 {
   "browser": "firefox",
-  "started_at_utc": "2026-11-01T06:35:54.345034+00:00",
+  "started_at_utc": "2026-11-01T06:40:50.627650+00:00",
   "platform": "Windows-11-10.0.26200-SP0",
   "python": "3.14.8",
   "result": "PASS",
-  "commit": "5f00c28104c081360716145fe1c0097aba036044",
-  "runner_sha256": "539113d69bf4eb61207a2f226805e568931f2745d8499c84b7711fb7ea207953",
+  "commit": "20ea230ce236a47b8a65ffec2c0d99eb66201fc5",
+  "runner_sha256": "3d70d3c5511e1e445a652cad808e66a660102680b037e4bcbe80ab46c6d652eb",
   "chromium_no_sandbox": false,
   "webdriver_log": "webdriver.log",
   "checks": [
@@ -74,5 +74,5 @@
   "release_source": "https://product-details.mozilla.org/1.0/firefox_versions.json",
   "browser_version": "159.0",
   "user_agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:159.0) Gecko/20100101 Firefox/159.0",
-  "finished_at_utc": "2026-11-01T06:36:35.302354+00:00"
+  "finished_at_utc": "2026-11-01T06:41:38.195859+00:00"
 }
