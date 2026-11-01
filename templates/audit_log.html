@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}Audit log{% endblock %}
+{% block content %}
+<section class="page-heading">
+  <div><div class="eyebrow">ADMINISTRATION</div><h1>Audit log</h1>
+    <p>Review security events and inventory actions. Records are read-only. All timestamps are UTC.</p></div>
+</section>
+<section class="panel">
+  <form class="filter-form" method="get" action="{{ url_for('audit_log') }}">
+    <label>Event
+      <select name="event_type">
+        <option value="">All events</option>
+        {% for event in events %}<option value="{{ event['event_type'] }}" {{ 'selected' if event_type == event['event_type'] else '' }}>{{ event['event_type'] }}</option>{% endfor %}
+      </select>
+    </label>
+    <label>Responsible user
+      <select name="user_id">
+        <option value="">All users</option>
+        {% for user in users %}<option value="{{ user['id'] }}" {{ 'selected' if user_id == user['id']|string else '' }}>{{ user['username'] }}</option>{% endfor %}
+      </select>
+    </label>
+    <button class="button button-secondary" type="submit">Apply</button>
+    <a class="clear-link" href="{{ url_for('audit_log') }}">Clear</a>
+  </form>
+  <p class="audit-count">{{ total }} record{{ '' if total == 1 else 's' }}</p>
+  <div class="table-wrap">
+    <table class="inventory-table">
+      <thead><tr><th>ID</th><th>Timestamp (UTC)</th><th>Event</th><th>Responsible user</th><th>Details</th></tr></thead>
+      <tbody>
+        {% for record in records %}
+        <tr>
+          <td>{{ record['id'] }}</td><td>{{ record['created_at'] }}</td>
+          <td>{{ record['event_type'] }}</td>
+          <td>{{ record['username'] or 'Anonymous / system' }}{% if record['user_id'] %} (#{{ record['user_id'] }}){% endif %}</td>
+          <td class="audit-details">{{ record['details'] }}</td>
+        </tr>
+        {% else %}<tr><td colspan="5">No audit records match these filters.</td></tr>{% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <div class="table-footer"><span>Page {{ page }} of {{ pages }}</span><div class="pagination">
+    {% if page > 1 %}<a href="{{ url_for('audit_log', event_type=event_type, user_id=user_id, page=page-1) }}">Previous</a>{% endif %}
+    {% if page < pages %}<a href="{{ url_for('audit_log', event_type=event_type, user_id=user_id, page=page+1) }}">Next</a>{% endif %}
+  </div></div>
+</section>
+{% endblock %}

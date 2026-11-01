@@ -63,3 +63,21 @@ CREATE INDEX IF NOT EXISTS idx_components_category ON components(category);
 CREATE INDEX IF NOT EXISTS idx_components_supplier ON components(supplier);
 CREATE INDEX IF NOT EXISTS idx_transactions_component_date
     ON inventory_transactions(component_id, created_at DESC);
+
+CREATE INDEX IF NOT EXISTS idx_audit_date ON audit_log(created_at DESC, id DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_event_date ON audit_log(event_type, created_at DESC, id DESC);
+CREATE INDEX IF NOT EXISTS idx_audit_user_date ON audit_log(user_id, created_at DESC, id DESC);
+
+-- Application audit history is append-only, including for Admin accounts.
+-- Database owners must still protect the database file and backups.
+CREATE TRIGGER IF NOT EXISTS audit_log_no_update
+BEFORE UPDATE ON audit_log
+BEGIN
+    SELECT RAISE(ABORT, 'Audit records cannot be modified');
+END;
+
+CREATE TRIGGER IF NOT EXISTS audit_log_no_delete
+BEFORE DELETE ON audit_log
+BEGIN
+    SELECT RAISE(ABORT, 'Audit records cannot be deleted');
+END;

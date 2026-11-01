@@ -222,7 +222,9 @@ def test_record_and_request_limits_reject_without_writes(client, app):
     response = upload(client, b"x" * (2 * MAX_CSV_BYTES + 1))
     assert response.status_code == 413
     assert "Upload is too large" in response.get_data(as_text=True)
-    assert snapshot(app) == before
+    assert snapshot(app)[:2] == before[:2]
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        assert db.execute("SELECT event_type, user_id FROM audit_log ORDER BY id DESC LIMIT 1").fetchone() == ("request-rejected", 1)
 
 
 def test_missing_file_wrong_extension_and_template(client, app):
@@ -253,7 +255,9 @@ def test_admin_only_pages_upload_and_template(client, app):
         assert client.get(path).status_code == 403
     assert upload(client, csv_bytes(record())).status_code == 403
     assert 'href="/components/import"' not in client.get("/components").get_data(as_text=True)
-    assert snapshot(app) == before
+    assert snapshot(app)[:2] == before[:2]
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        assert db.execute("SELECT COUNT(*) FROM audit_log WHERE event_type='access-denied' AND user_id=?", (staff_id,)).fetchone()[0] == 3
 
 
 def test_upload_requires_valid_csrf_token(client, app):
@@ -261,7 +265,9 @@ def test_upload_requires_valid_csrf_token(client, app):
     before = snapshot(app)
     assert upload(client, csv_bytes(record())).status_code == 400
     assert upload(client, csv_bytes(record()), csrf_token="invalid").status_code == 400
-    assert snapshot(app) == before
+    assert snapshot(app)[:2] == before[:2]
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        assert db.execute("SELECT COUNT(*) FROM audit_log WHERE event_type='csrf-rejected' AND user_id=1").fetchone()[0] == 2
     page = client.get("/components/import").get_data(as_text=True)
     token = re.search(r'name="csrf_token" value="([^"]+)"', page).group(1)
     response = upload(client, csv_bytes(record()), csrf_token=token)

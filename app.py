@@ -24,6 +24,7 @@ from flask import (
     request, session, url_for,
 )
 from flask_wtf.csrf import CSRFProtect
+from flask_wtf.csrf import CSRFError
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import landscape, letter
 from reportlab.lib.styles import getSampleStyleSheet
@@ -82,15 +83,34 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     with app.app_context():
         init_db()
 
+    @app.errorhandler(CSRFError)
+    def csrf_rejected(error):
+        write_audit(audit_actor_id(), "csrf-rejected", security_request_details())
+        return render_template("audit_error.html", message="The security token is missing or expired. Reload the form and try again."), 400
+
+    @app.after_request
+    def record_security_rejections(response):
+        if response.status_code in {403, 413, 415}:
+            event = "access-denied" if response.status_code == 403 else "request-rejected"
+            write_audit(audit_actor_id(), event,
+                        f"{security_request_details()}; status={response.status_code}")
+        if request.endpoint == "audit_log":
+            response.headers["Cache-Control"] = "no-store"
+        return response
+
     @app.before_request
     def load_logged_in_user() -> None:
         if request.endpoint in {"health", "health_live", "health_ready"}:
             g.user = None
             return
         user_id = session.get("user_id")
+        valid_id = isinstance(user_id, int) and not isinstance(user_id, bool) and 0 < user_id <= 9223372036854775807
         g.user = get_db().execute(
             "SELECT id, username, email, role FROM users WHERE id = ?", (user_id,)
-        ).fetchone() if user_id else None
+        ).fetchone() if valid_id else None
+        if user_id and g.user is None:
+            session.clear()
+            write_audit(None, "session-rejected", security_request_details())
 
     @app.context_processor
     def inject_helpers() -> dict[str, Any]:
@@ -168,22 +188,56 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 flash("Invalid username/email or password.", "error")
                 write_audit(None, "login-failed", f"identity={identity[:120]}")
             else:
+                write_audit(user["id"], "login-success", f"username={user['username']}")
                 session.clear()
                 session.permanent = True
                 session["user_id"] = user["id"]
-                write_audit(user["id"], "login-success", f"username={user['username']}")
                 flash(f"Welcome back, {user['username']}.", "success")
                 return redirect(url_for("components"))
         return render_template("login.html")
 
     @app.post("/logout")
     def logout():
-        user_id = session.get("user_id")
+        user_id = audit_actor_id()
         if user_id:
             write_audit(user_id, "logout", "user logged out")
         session.clear()
         flash("You have been signed out.", "success")
         return redirect(url_for("login"))
+
+    @app.get("/admin/audit-log")
+    @login_required
+    @admin_required
+    def audit_log():
+        db = get_db()
+        event_type = request.args.get("event_type", "").strip()
+        raw_user = request.args.get("user_id", "").strip()
+        raw_page = request.args.get("page", "1")
+        if (len(event_type) > 80 or any(len(values) != 1 for _, values in request.args.lists())
+                or not re.fullmatch(r"[1-9][0-9]{0,8}", raw_page)
+                or (raw_user and not re.fullmatch(r"[1-9][0-9]{0,18}", raw_user))
+                or (raw_user and int(raw_user) > 9223372036854775807)):
+            return render_template("audit_error.html", message="Invalid audit log filters or page number."), 400
+        where, params = [], []
+        if event_type:
+            where.append("a.event_type = ?")
+            params.append(event_type)
+        if raw_user:
+            where.append("a.user_id = ?")
+            params.append(int(raw_user))
+        clause = " WHERE " + " AND ".join(where) if where else ""
+        total = db.execute("SELECT COUNT(*) FROM audit_log a" + clause, params).fetchone()[0]
+        pages = max(1, (total + 24) // 25)
+        page = min(int(raw_page), pages)
+        records = db.execute(
+            """SELECT a.*, u.username FROM audit_log a LEFT JOIN users u ON u.id = a.user_id"""
+            + clause + " ORDER BY a.created_at DESC, a.id DESC LIMIT 25 OFFSET ?",
+            [*params, (page - 1) * 25],
+        ).fetchall()
+        events = db.execute("SELECT DISTINCT event_type FROM audit_log ORDER BY event_type").fetchall()
+        users = db.execute("SELECT id, username FROM users ORDER BY username COLLATE NOCASE").fetchall()
+        return render_template("audit_log.html", records=records, events=events, users=users,
+                               event_type=event_type, user_id=raw_user, page=page, pages=pages, total=total)
 
     @app.route("/admin/users", methods=("GET", "POST"))
     @login_required
@@ -224,7 +278,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                             role,
                         ),
                     )
-                    db.commit()
                     write_audit(
                         g.user["id"],
                         "user-created",
@@ -389,7 +442,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                            VALUES (?, ?, ?, ?, ?, ?, ?, ?)""",
                         values,
                     )
-                    get_db().commit()
                     write_audit(g.user["id"], "component-created", f"component_id={cursor.lastrowid}; sku={values[0]}")
                     flash("Component added successfully.", "success")
                     return redirect(url_for("component_detail", component_id=cursor.lastrowid))
@@ -420,7 +472,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                            quantity=?, reorder_level=?, unit_price=?, updated_at=CURRENT_TIMESTAMP WHERE id=?""",
                         (*values, component_id),
                     )
-                    get_db().commit()
                     write_audit(g.user["id"], "component-updated", f"component_id={component_id}; sku={values[0]}")
                     flash("Component updated. Its availability label reflects the saved quantity and threshold.", "success")
                     return redirect(url_for("component_detail", component_id=component_id))
@@ -523,22 +574,16 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     @admin_required
     def component_delete(component_id: int):
         db = get_db()
-        component = get_component_or_404(component_id)
-
-        db.execute(
-            """UPDATE components
-               SET deleted_at = CURRENT_TIMESTAMP,
-                   updated_at = CURRENT_TIMESTAMP
-               WHERE id = ? AND deleted_at IS NULL""",
-            (component_id,),
-        )
-        db.commit()
-
-        write_audit(
-            g.user["id"],
-            "component-deleted",
-            f"component_id={component_id}; sku={component['sku']}",
-        )
+        with db:
+            db.execute("BEGIN IMMEDIATE")
+            component = get_component_or_404(component_id)
+            db.execute(
+                """UPDATE components
+                   SET deleted_at = CURRENT_TIMESTAMP, updated_at = CURRENT_TIMESTAMP
+                   WHERE id = ? AND deleted_at IS NULL""", (component_id,),
+            )
+            write_audit(g.user["id"], "component-deleted",
+                        f"component_id={component_id}; sku={component['sku']}", commit=False)
 
         flash("Component moved out of active inventory.", "success")
         return redirect(url_for("components"))
@@ -589,7 +634,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                     cursor = db.execute(
                         "INSERT INTO categories (name) VALUES (?)", (name,)
                     )
-                    db.commit()
                     write_audit(g.user["id"], "category-created", f"category_id={cursor.lastrowid}; name={name}")
                     flash("Category created successfully.", "success")
                     return redirect(url_for("categories"))
@@ -625,7 +669,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                         "UPDATE components SET category = ? WHERE category = ?",
                         (name, old_name),
                     )
-                    db.commit()
                     write_audit(g.user["id"], "category-updated", f"category_id={category_id}; name={name}")
                     flash("Category updated successfully.", "success")
                     return redirect(url_for("categories"))
@@ -653,7 +696,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             flash("Cannot delete a category assigned to an active component.", "error")
         else:
             db.execute("DELETE FROM categories WHERE id = ?", (category_id,))
-            db.commit()
             write_audit(g.user["id"], "category-deleted", f"category_id={category_id}; name={category['name']}")
             flash("Category deleted successfully.", "success")
         return redirect(url_for("categories"))
@@ -681,7 +723,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                     cursor = db.execute(
                         "INSERT INTO suppliers (name) VALUES (?)", (name,)
                     )
-                    db.commit()
                     write_audit(g.user["id"], "supplier-created", f"supplier_id={cursor.lastrowid}; name={name}")
                     flash("Supplier created successfully.", "success")
                     return redirect(url_for("suppliers"))
@@ -717,7 +758,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                         "UPDATE components SET supplier = ? WHERE supplier = ?",
                         (name, old_name),
                     )
-                    db.commit()
                     write_audit(g.user["id"], "supplier-updated", f"supplier_id={supplier_id}; name={name}")
                     flash("Supplier updated successfully.", "success")
                     return redirect(url_for("suppliers"))
@@ -745,7 +785,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             flash("Cannot delete a supplier assigned to an active component.", "error")
         else:
             db.execute("DELETE FROM suppliers WHERE id = ?", (supplier_id,))
-            db.commit()
             write_audit(g.user["id"], "supplier-deleted", f"supplier_id={supplier_id}; name={supplier['name']}")
             flash("Supplier deleted successfully.", "success")
         return redirect(url_for("suppliers"))
@@ -932,11 +971,12 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         if len(password) < 10:
             raise click.ClickException("Password must be at least 10 characters long.")
         try:
-            get_db().execute(
+            db = get_db()
+            cursor = db.execute(
                 "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, 'Admin')",
                 (username.strip(), email.strip(), generate_password_hash(password)),
             )
-            get_db().commit()
+            write_audit(None, "user-created", f"user_id={cursor.lastrowid}; role=Admin; source=create-admin-cli")
             click.echo(f"Administrator '{username}' created.")
         except sqlite3.IntegrityError as exc:
             raise click.ClickException("Username or email is already in use.") from exc
@@ -1123,13 +1163,36 @@ def availability_report_data(rows):
     ]
 
 
-def write_audit(user_id: int | None, event_type: str, details: str) -> None:
+def write_audit(user_id: int | None, event_type: str, details: str, *, commit: bool = True) -> None:
+    """Append an event; mutations can share its transaction with commit=False.
+
+    Do not pass passwords, tokens, cookies, or complete request bodies here.
+    """
     db = get_db()
-    db.execute(
-        "INSERT INTO audit_log (user_id, event_type, details) VALUES (?, ?, ?)",
-        (user_id, event_type, details[:500]),
-    )
-    db.commit()
+    details = re.sub(r"[\x00-\x1f\x7f-\x9f]", " ", details)[:500]
+    try:
+        db.execute(
+            "INSERT INTO audit_log (user_id, event_type, details) VALUES (?, ?, ?)",
+            (user_id, event_type, details),
+        )
+        if commit:
+            db.commit()
+    except sqlite3.Error:
+        db.rollback()
+        raise
+
+
+def audit_actor_id() -> int | None:
+    """Resolve a surviving account even when CSRF runs before user loading."""
+    user_id = session.get("user_id")
+    if not isinstance(user_id, int) or isinstance(user_id, bool) or not 0 < user_id <= 9223372036854775807:
+        return None
+    return user_id if get_db().execute("SELECT 1 FROM users WHERE id = ?", (user_id,)).fetchone() else None
+
+
+def security_request_details() -> str:
+    # Endpoint names are application-owned; omit raw URLs, queries and bodies.
+    return f"method={request.method}; endpoint={request.endpoint or 'unmatched'}"
 
 
 def get_component_or_404(component_id: int):
@@ -1146,6 +1209,7 @@ def login_required(view):
     @wraps(view)
     def wrapped_view(**kwargs):
         if g.user is None:
+            write_audit(None, "authentication-required", security_request_details())
             return redirect(url_for("login", next=request.path))
         return view(**kwargs)
     return wrapped_view
