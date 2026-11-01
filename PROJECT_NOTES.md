@@ -24,7 +24,7 @@ This file reflects the merged Sprint 1 implementation rather than the initial av
 ## Related backlog items that must not be marked complete by inference
 
 - Issue #10: audit writes exist, but a dedicated audit-log browsing workflow and its acceptance evidence need review.
-- Issue #12: server-side validation, parameterized database operations, CSRF and CSV formula escaping are present; XSS/malicious-payload acceptance still needs explicit security-test mapping.
+- Issue #12: `docs/Issue-12-input-validation.md` maps server validation, SQL parameter binding, output escaping, CSP and malicious-input/browser tests to SEC-003.
 - Issue #13: see `docs/Issue-13-usability-compatibility.md` for the participant-reported three-screen creation result, vendor-stable browser checks, retained evidence and compatibility issue register.
 - Issue #15: dashboard/KPI charts have not been verified as complete.
 - Issue #16: `inventory_service.py` and unit tests provide modular services, but close Issue #16 only after every criterion in its body is mapped and reviewed.

@@ -27,7 +27,7 @@
               <form method="post"
                     action="{{ url_for('category_delete', category_id=category['id']) }}"
                     style="display:inline"
-                    onsubmit="return confirm('Delete this category?');">
+                    data-confirm="Delete this category?">
                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit">Delete</button>
               </form>

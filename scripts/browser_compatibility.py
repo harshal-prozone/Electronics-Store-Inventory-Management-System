@@ -231,8 +231,9 @@ def run():
         heading("Add component")
         visible("#sku").send_keys(Keys.TAB)
         assert driver.switch_to.active_element.get_attribute("id") == "name"
+        xss_description = '<img src=x onerror="window.__securityExecuted=1"><script>window.__securityExecuted=1</script>'
         for identifier, value in [("sku", "BROWSER-SMOKE-001"), ("name", "Browser Smoke Component"),
-                                  ("description", "Issue 13 browser acceptance"), ("quantity", "3"),
+                                  ("description", xss_description), ("quantity", "3"),
                                   ("reorder_level", "5"), ("unit_price", "19.50")]:
             fill(identifier, value)
         Select(visible("#category")).select_by_visible_text("Microcontrollers")
@@ -244,6 +245,9 @@ def run():
         measure_creation = False
         assert evidence["primary_screens"] == ["/components", "/components/new", urlparse(detail_url).path]
         assert "Low Stock" in visible(".detail-stats-grid").text
+        assert visible(".detail-heading-text p").text == xss_description
+        assert not driver.find_elements(By.CSS_SELECTOR, ".detail-heading-text img, .detail-heading-text script")
+        assert driver.execute_script("return window.__securityExecuted === undefined")
         layout("03-component-details-desktop")
         passed("component creation in three primary screens; keyboard focus and persisted low-stock status")
 
@@ -343,6 +347,30 @@ def run():
         assert "Staff browser movement" in visible(".history-panel tbody").text
         assert "browserstaff" in visible(".history-panel tbody").text
         passed("staff search/detail/stock operations and Admin-only access restrictions")
+
+        evidence["step"] = "XSS protection and CSP-compatible delete confirmation"
+        click("Sign out")
+        login("admin", "ChangeMe123!")
+        reflected = '\"><img src=x onerror="window.__securityExecuted=1">'
+        previous_document = document_token()
+        visible("input[name=q]").send_keys(reflected, Keys.ENTER)
+        wait_for_navigation(previous_document)
+        assert visible("input[name=q]").get_attribute("value") == reflected
+        assert not driver.find_elements(By.TAG_NAME, "img")
+        assert driver.execute_script("return window.__securityExecuted === undefined")
+        driver.get(detail_url)
+        click("Delete component", navigate=False)
+        wait.until(EC.alert_is_present()).dismiss()
+        heading("Browser Smoke Component")
+        assert driver.current_url == detail_url
+        previous_document = document_token()
+        click("Delete component", navigate=False)
+        wait.until(EC.alert_is_present()).accept()
+        wait_for_navigation(previous_document)
+        heading("Component inventory")
+        driver.get(base + "/components?q=BROWSER-SMOKE-001")
+        assert "No components found" in visible(".empty-cell").text
+        passed("stored/reflected XSS remains inert; delete confirmation cancel/accept works under CSP")
         evidence["result"] = "PASS"
     except Exception:
         evidence["error"] = traceback.format_exc()

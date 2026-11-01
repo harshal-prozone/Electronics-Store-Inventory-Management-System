@@ -16,6 +16,7 @@ For complete developer setup, database, application, testing, and troubleshootin
 - Component CSV export and an Admin-only availability report with category, supplier, and status filters and CSV/PDF export.
 - Admin-only bulk CSV import with SKU-based creation/updates, row error reports, imported/rejected counts, and audited stock adjustments.
 - Audit entries for authentication and inventory-changing actions, a `/health` endpoint, and automated tests.
+- Server-side input validation, bounded stock arithmetic, parameterized SQLite queries, escaped user content, and an enforced Content Security Policy. See [Issue #12 security coverage](docs/Issue-12-input-validation.md) for validation rules, error responses and malicious-input tests.
 - Component transaction history with inclusive UTC date filters, transaction type filters, saved resulting balances, and pagination (20 per page), ordered newest first. History supports stock additions, removals, and adjustment records; the stock entry form records additions and removals.
 
 ## Local setup (macOS/Linux)
