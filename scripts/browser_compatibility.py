@@ -336,7 +336,7 @@ def run():
         login("browserstaff", "BrowserStaff123!")
         assert not driver.find_elements(By.CSS_SELECTOR, "a[href='/components/new']")
         assert not driver.find_elements(By.CSS_SELECTOR, "a[href='/components/import']")
-        for path in ("/components/new", "/components/import", "/admin/users", "/reports/availability"):
+        for path in ("/components/new", "/components/import", "/admin/users", "/reports/availability", "/admin/audit-log"):
             status = driver.execute_async_script("const done=arguments[arguments.length-1]; fetch(arguments[0]).then(r=>done(r.status)).catch(()=>done(0))", base + path)
             assert status == 403, f"Staff access to {path}: {status}"
         driver.get(detail_url)
@@ -348,6 +348,7 @@ def run():
         assert "browserstaff" in visible(".history-panel tbody").text
         passed("staff search/detail/stock operations and Admin-only access restrictions")
 
+        assert not driver.find_elements(By.CSS_SELECTOR, "a[href='/admin/audit-log']")
         evidence["step"] = "XSS protection and CSP-compatible delete confirmation"
         click("Sign out")
         login("admin", "ChangeMe123!")
@@ -371,6 +372,23 @@ def run():
         driver.get(base + "/components?q=BROWSER-SMOKE-001")
         assert "No components found" in visible(".empty-cell").text
         passed("stored/reflected XSS remains inert; delete confirmation cancel/accept works under CSP")
+
+        evidence["step"] = "Admin audit review and recorded deletion"
+        click("Audit log", "a")
+        heading("Audit log")
+        assert "component-deleted" in visible("tbody").text
+        assert "BROWSER-SMOKE-001" in visible("tbody").text
+        Select(visible("select[name=event_type]")).select_by_value("component-deleted")
+        Select(visible("select[name=user_id]")).select_by_visible_text("admin")
+        click("Apply")
+        assert "1 record" in visible("main").text
+        assert "admin (#1)" in visible("tbody").text
+        assert "stock-adjustment" not in visible("tbody").text
+        driver.set_window_size(1365, 1000)
+        layout("08-audit-log-desktop")
+        driver.set_window_size(500, 1000)
+        layout("09-audit-log-narrow")
+        passed("Admin-only audit review, event/user filters and attributed component deletion")
         evidence["result"] = "PASS"
     except Exception:
         evidence["error"] = traceback.format_exc()

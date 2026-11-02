@@ -126,3 +126,6 @@
   .dashboard-chart-list { padding: 6px 15px 18px; }
   .dashboard-chart-note { padding: 12px 15px; }
 }
+.audit-details { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 40rem; }
+.audit-count { padding: 0 22px; }
+@media (max-width: 640px) { .topnav { flex-wrap: wrap; row-gap: 4px; } }
