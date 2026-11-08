@@ -43,7 +43,7 @@
 ## Development freeze
 
 - Freeze date/time and timezone: **No explicit development-freeze decision or timestamp was found. Do not infer one from the commit date.**
-- Latest documented branch/commit: `main` at [`d6f62c859e86fa248c21291e571f80d81c2b2db4`](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/commit/d6f62c859e86fa248c21291e571f80d81c2b2db4), a documentation closeout commit pushed on 8 November 2026. This is a repository state reference, **not evidence that the team formally declared a freeze**.
+- Latest documented branch/commit: `main` at [`7efc5fc`](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/commit/7efc5fc), a documentation closeout commit pushed on 8 November 2026. This is a repository state reference, **not evidence that the team formally declared a freeze**.
 - Owner-run automated verification: on the fresh-clone checkout based on commit `38eec1d`, Python 3.12.16 and `Flask-WTF 1.3.0`, **271 tests passed in 32.43 seconds** on 8 November 2026. This local test was run before the documentation-only commit above; it is not a GitHub Actions result.
 - Previously audited CI evidence: workflow run #75 was recorded as passing backend, clean-setup smoke, Chrome, Edge and Firefox jobs in the 8 November validation audit. The exact run URL/ID was not available in the material reviewed for this record; add the direct run link before submission.
 - Manual validation completed: Issue #13 participant-reported three-screen task; local vendor-stable browser execution records in `docs/Issue-13-usability-compatibility.md`; issue-specific manual evidence linked from Issues #10–#12. These are not a substitute for the outstanding independent teammate verification.
@@ -60,3 +60,12 @@
 - Prepared by: **Not recorded in repository evidence.**
 - Reviewed by: **No formal reviewer sign-off found.**
 - Review date: **Not recorded.**
+
+
+## Companion closeout artifacts
+
+- [Sprint 2 acceptance traceability](Sprint-2-acceptance-traceability.md)
+- [Sprint 2 demo run sheet](Sprint-2-demo-run-sheet.md)
+- [Issue #17 availability measurement procedure](Sprint-2-availability-measurement.md) and `scripts/measure_availability.py`
+
+These artifacts organize and prepare the remaining verification work. They do not claim that a demo was recorded, an independent teammate verification was performed, or the operational availability target was measured.
