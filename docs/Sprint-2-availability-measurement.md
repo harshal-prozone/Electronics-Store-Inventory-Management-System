@@ -1,37 +1,68 @@
 # Availability measurement procedure (Issue #17 / NFR-002)
 
-## Purpose
+## Requirement
 
-Issue #17 requires at least 99% availability during store operating hours, excluding planned maintenance, measured over a defined period and evaluated against the SRS conditions. The `/health` endpoint is implemented, but a passing health-check unit test or one successful HTTP request does **not** demonstrate this non-functional requirement.
+Issue #17 states: at least 99% availability during store operating hours, excluding planned maintenance. It also requires measurement over a defined test period and evaluation against the SRS measurement conditions.
 
-## Measurement protocol
+The `/health` endpoint, a passing health-check test, or one successful HTTP request does **not** demonstrate this requirement.
 
-1. Obtain the exact operating-hours definition, timezone, exclusions and minimum observation period from the approved SRS. Record them below before running the measurement.
-2. Run the application in the environment that the SRS expects to evaluate. A localhost run is useful as a diagnostic exercise but must not be presented as production availability.
-3. Run `python scripts/measure_availability.py --url http://127.0.0.1:5000/health --duration-seconds 3600 --interval-seconds 5 --csv availability-results.csv` for a one-hour diagnostic sample, or replace the duration with the approved SRS period.
-4. Keep the CSV output, application logs, environment description, start/end timestamps and any planned-maintenance intervals.
-5. Calculate availability using the SRS's prescribed method. The included script reports the proportion of successful probes; this is a sampled estimate, not continuous monitoring and not a replacement for the SRS definition.
-6. Repeat over the required store operating hours if the SRS requires multiple days. Do not count planned maintenance as downtime only if the SRS explicitly excludes it.
-7. Record the measured result and compare it to 99%. If the observation period or environment is insufficient, report “not demonstrated”.
+## Preconditions — obtain from the approved SRS
 
-## Measurement record (complete only after running)
+Record these before running a formal measurement:
+
+- SRS clause / exact wording:
+- Store operating hours:
+- Timezone:
+- Required observation period:
+- Required deployment environment:
+- Definition of successful availability:
+- Planned-maintenance exclusion rules:
+- Required calculation method:
+- Responsible operator / reviewer:
+
+If these are unavailable, a local sampler run is diagnostic only and the NFR remains **not demonstrated**.
+
+## Diagnostic sampler
+
+```bash
+python scripts/measure_availability.py \
+  --url http://127.0.0.1:5000/health \
+  --duration-seconds 3600 \
+  --interval-seconds 5 \
+  --target-percent 99 \
+  --csv availability-results.csv
+```
+
+This one-hour localhost sample is not a substitute for the approved operational period or environment.
+
+## Evidence retention
+
+Retain raw CSV, application/server logs, deployment description, start/end timestamps, monitoring configuration, planned-maintenance records, and reviewer sign-off. The sampler uses periodic probes and may miss outages between probes.
+
+## Measurement record — fill only after the real run
 
 - SRS reference / clause:
-- Environment (host, OS, app server, database):
+- Environment (host, OS, app server, database, deployment):
 - Store operating-hours definition and timezone:
-- Observation start (ISO 8601 with timezone):
-- Observation end (ISO 8601 with timezone):
+- Observation start (actual ISO 8601 with timezone):
+- Observation end (actual ISO 8601 with timezone):
 - Planned-maintenance intervals and source:
-- Probe interval:
+- Probe interval and timeout:
 - Total probes:
 - Successful probes:
 - Failed probes:
 - Sampled availability:
 - SRS calculation method:
 - Result against 99% target:
-- Evidence file / logs:
-- Run by / reviewed by:
+- Raw CSV and logs:
+- Run by:
+- Reviewed by:
+- Limitations / deviations:
 
-## Interpretation warning
+## Interpretation
 
-A one-hour sample at a five-second interval contains about 720 probes. A sampled success ratio can miss short failures between probes. For a formal operational NFR, use the monitoring/measurement method prescribed by the SRS and retain raw evidence. Do not extrapolate a short local test into a claim about long-term production uptime.
+The sampler's success ratio is an estimate from periodic probes, not continuous uptime. Do not extrapolate a short local run to a multi-day/month operational requirement. If the observation period or environment does not match the SRS, report **not demonstrated**.
+
+## Tracker status
+
+GitHub Issue #17 is currently closed, but its body explicitly requires defined-period availability measurement. Reconcile the tracker state with the actual evidence; do not claim the criterion is met without a valid measurement.

@@ -1,9 +1,8 @@
-\
 #!/usr/bin/env python3
 """Sample an HTTP health endpoint and write timestamped probe results to CSV.
 
-This is a diagnostic sampler, not continuous monitoring. Use the measurement
-method and observation period required by the project's approved SRS.
+This is a periodic diagnostic sampler, not continuous monitoring. The result
+must be interpreted using the approved SRS environment, period and method.
 """
 from __future__ import annotations
 
@@ -26,28 +25,38 @@ def main() -> int:
     parser.add_argument("--duration-seconds", type=int, default=3600)
     parser.add_argument("--interval-seconds", type=float, default=5.0)
     parser.add_argument("--timeout-seconds", type=float, default=3.0)
+    parser.add_argument("--target-percent", type=float, default=99.0)
     parser.add_argument("--csv", default="availability-results.csv")
     args = parser.parse_args()
 
     if args.duration_seconds <= 0 or args.interval_seconds <= 0 or args.timeout_seconds <= 0:
         parser.error("duration, interval and timeout must all be positive")
+    if not 0 < args.target_percent <= 100:
+        parser.error("target-percent must be greater than 0 and at most 100")
 
-    started = time.monotonic()
-    deadline = started + args.duration_seconds
+    start_wall = datetime.now(timezone.utc)
+    start_mono = time.monotonic()
+    deadline = start_mono + args.duration_seconds
     total = successes = failures = 0
 
     with open(args.csv, "w", newline="", encoding="utf-8") as handle:
         writer = csv.writer(handle)
-        writer.writerow(["timestamp_utc", "url", "success", "http_status", "latency_ms", "error"])
+        writer.writerow([
+            "timestamp_utc", "url", "success", "http_status",
+            "latency_ms", "error",
+        ])
         while time.monotonic() < deadline:
             probe_start = time.monotonic()
             stamp = utc_now()
             total += 1
-            status = ""
+            status: int | str = ""
             error = ""
             ok = False
             try:
-                request = Request(args.url, headers={"User-Agent": "ESIMS-availability-probe/1.0"})
+                request = Request(
+                    args.url,
+                    headers={"User-Agent": "ESIMS-availability-probe/1.1"},
+                )
                 with urlopen(request, timeout=args.timeout_seconds) as response:
                     status = response.status
                     body = response.read(65536)
@@ -68,15 +77,26 @@ def main() -> int:
 
             remaining = deadline - time.monotonic()
             if remaining > 0:
-                time.sleep(min(max(0.0, args.interval_seconds - (time.monotonic() - probe_start)), remaining))
+                sleep_for = max(0.0, args.interval_seconds - (time.monotonic() - probe_start))
+                time.sleep(min(sleep_for, remaining))
 
+    end_wall = datetime.now(timezone.utc)
+    elapsed = time.monotonic() - start_mono
     availability = 100.0 * successes / total if total else 0.0
-    print(f"Started: {datetime.fromtimestamp(time.time() - args.duration_seconds, timezone.utc).isoformat()} (nominal)")
-    print(f"Probes: {total}; successful: {successes}; failed: {failures}")
+    passed = total > 0 and availability >= args.target_percent
+
+    print(f"Started (UTC): {start_wall.isoformat()}")
+    print(f"Ended (UTC):   {end_wall.isoformat()}")
+    print(f"Elapsed:       {elapsed:.2f} seconds")
+    print(f"Probes:        {total}")
+    print(f"Successful:    {successes}")
+    print(f"Failed:        {failures}")
     print(f"Sampled availability: {availability:.4f}%")
-    print(f"CSV: {args.csv}")
-    print("NOTE: sampled probe ratio only; interpret using the approved SRS measurement method.")
-    return 0 if total and failures == 0 else 1
+    print(f"Target:        {args.target_percent:.4f}%")
+    print(f"Target met by sampled probes: {'YES' if passed else 'NO'}")
+    print(f"CSV:           {args.csv}")
+    print("WARNING: periodic sampled ratio only; not proof of continuous or long-term uptime.")
+    return 0 if passed else 1
 
 
 if __name__ == "__main__":
