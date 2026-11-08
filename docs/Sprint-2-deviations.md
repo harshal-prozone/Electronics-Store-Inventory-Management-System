@@ -1,45 +1,62 @@
 # Sprint 2 deviations and development-freeze record
 
-> Status: template awaiting project-team facts. Complete this record from the actual Sprint 2 plan, issue history, and freeze decision. Do not invent dates, scope changes, or completion claims.
+> Status: partially completed from repository issue records, validation documents, and the 8 November 2026 owner-run verification. Fields without evidence remain explicitly unrecorded. This is not a signed-off freeze or acceptance record.
 
 ## Sprint 2 plan
 
-- Planned sprint dates: **[enter actual dates]**
-- Planned scope / issue IDs: **[enter actual scope]**
-- Acceptance criteria source: **[link the approved plan]**
+- Working sprint window recorded in project planning context: **26–30 October 2026**. The approved sprint-plan artifact/link was not located in the repository audit; confirm against the team's submitted plan before treating these dates as authoritative.
+- Tracked Sprint 2 work items identified in repository history: Issues **#10, #12, #13, #15, #16, #17, #19, #20, #21, #23 and #24**. The exact approved scope baseline was not located; this list is the observed delivery/backlog set, not proof that every item was in the original commitment.
+- Acceptance criteria source: the individual GitHub issue bodies linked in the delivery table below. A single approved Sprint 2 plan document was not found.
 
 ## Delivery summary
 
-| Planned item | Delivered result | Evidence (issue/PR/commit/demo) | Status |
-|---|---|---|---|
-| [requirement] | [actual result] | [link] | [complete / partial / not done] |
+| Tracked item | Delivered result / evidence | Status |
+|---|---|---|
+| [Issue #10](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/10) — audit logging | Audit events, Admin-only read-only audit review, append-only safeguards and atomic audit transactions; `docs/Issue-10-audit-logging.md`, `tests/test_audit_logging.py`. Local validation recorded 38 audit tests within the 271-test suite on 1 November. | Issue closed; implementation evidence documented |
+| [Issue #12](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/12) — input validation | Server-side validation, parameterized SQL, output escaping/CSP and security tests; `docs/Issue-12-input-validation.md`, `tests/test_input_security.py`. The issue record documents 63 security cases within a 233-test suite on 1 November. | Issue closed; implementation evidence documented |
+| [Issue #13](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/13) — usability/browser compatibility | Selenium stable-browser workflow for Chrome, Edge and Firefox, with retained evidence; participant-reported three-screen Chrome task is recorded in `docs/Issue-13-usability-compatibility.md`. Participant name, exact session time/environment and screenshots were not supplied. | Issue closed; participant evidence exists but is incomplete for a fully auditable usability sign-off |
+| [Issue #15](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/15) — dashboard/KPI charts | Dashboard implementation and test evidence are recorded in repository history; issue is closed. | Issue closed |
+| [Issue #16](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/16) — modular services/unit tests | Core service logic and automated tests are present, including `inventory_service.py` and `tests/test_inventory_service.py`. The issue is closed; retain the issue body as the acceptance source. | Issue closed |
+| [Issue #17](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/17) — health checks/availability | `/health` endpoint and dependency status checks are implemented and tested. No defined operational measurement period or uptime evidence for the 99% target was found. | Issue closed in tracker; 99% availability criterion is **not demonstrated** |
+| [Issue #19](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/19) — CSV import | Bulk CSV import, validation/error reporting and duplicate-SKU handling are implemented; see `tests/test_csv_import.py` and README. | Issue closed |
+| [Issue #20](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/20) — custom low-stock thresholds | Per-component reorder thresholds and availability classification are implemented; see application and service tests. | Issue closed |
+| [Issue #21](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/21) — component transaction history | Component-level transaction history, date/type filters and resulting balances are documented and implemented. | Issue closed |
+| [Issue #23](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/23) — integration testing | Inventory workflow integration tests cover persistence, stock movement, history and error/rollback scenarios; see `tests/test_inventory_workflow_integration.py`. | Issue closed |
+| [Issue #24](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/24) — setup/testing documentation | Setup, database initialization, application startup, test execution and troubleshooting are documented in `docs/SETUP_AND_TESTING.md`. Owner-run fresh-clone test passed, but the issue explicitly requires another team member to verify the instructions. | **Open / partial** — independent teammate verification remains outstanding |
 
 ## Deviations and scope changes
 
-| Date | Planned item | Actual deviation | Reason / decision owner | Impact |
+| Date / period | Planned item | Observed deviation or qualification | Reason / decision owner | Impact |
 |---|---|---|---|---|
-| [date] | [item] | [what changed] | [reason] | [impact] |
+| 26–30 October 2026 (working window; confirm approved plan) | Sprint 2 tracked issues | Issue #24 remains open because its independent teammate verification criterion has not been met. | No independent verification record was found; no decision owner/deferment approval recorded. | Setup documentation is delivered, but Issue #24 acceptance is incomplete. |
+| By 8 November 2026 | Issue #13 usability sign-off | The repository contains a participant-reported successful three-screen test, but participant/session metadata and screenshots were not supplied. | Participant report; formal evidence owner/approval not recorded. | Browser automation is documented; representative-user evidence remains limited. |
+| By 8 November 2026 | Issue #17 availability target | Health checks exist, but no operational observation period demonstrating 99% availability was found. | No measurement period or availability decision record found. | Do not claim the 99% availability NFR was validated, even though the issue is closed in GitHub. |
 
 ## Defects and known limitations
 
-- [Record only observed defects or known limitations; link each issue.]
+- No open application defect is asserted here without a linked reproduction record.
+- **Availability evidence gap:** `/health` is a health-check endpoint, not proof of 99% uptime. See [Issue #17](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/17).
+- **Usability evidence gap:** Issue #13's participant report lacks a supplied participant name, exact session time/environment and screenshots. See `docs/Issue-13-usability-compatibility.md`.
+- **Setup acceptance gap:** Issue #24 remains open pending an independent teammate fresh-clone verification.
+- The formal SRS/SAD/Test Plan PDFs were not available in the repository audit for signed-off line-by-line traceability; `docs/Sprint-1-requirement-traceability.md` is issue-based and explicitly not a formal PDF sign-off.
 
 ## Development freeze
 
-- Freeze date/time and timezone: **[enter actual decision]**
-- Frozen branch and commit SHA: **[enter actual ref]**
-- Final automated test result: **[link exact CI run and summary]**
-- Manual validation completed: **[evidence links]**
-- Outstanding work accepted/deferred: **[list with rationale]**
+- Freeze date/time and timezone: **No explicit development-freeze decision or timestamp was found. Do not infer one from the commit date.**
+- Latest documented branch/commit: `main` at [`d6f62c859e86fa248c21291e571f80d81c2b2db4`](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/commit/d6f62c859e86fa248c21291e571f80d81c2b2db4), a documentation closeout commit pushed on 8 November 2026. This is a repository state reference, **not evidence that the team formally declared a freeze**.
+- Owner-run automated verification: on the fresh-clone checkout based on commit `38eec1d`, Python 3.12.16 and `Flask-WTF 1.3.0`, **271 tests passed in 32.43 seconds** on 8 November 2026. This local test was run before the documentation-only commit above; it is not a GitHub Actions result.
+- Previously audited CI evidence: workflow run #75 was recorded as passing backend, clean-setup smoke, Chrome, Edge and Firefox jobs in the 8 November validation audit. The exact run URL/ID was not available in the material reviewed for this record; add the direct run link before submission.
+- Manual validation completed: Issue #13 participant-reported three-screen task; local vendor-stable browser execution records in `docs/Issue-13-usability-compatibility.md`; issue-specific manual evidence linked from Issues #10–#12. These are not a substitute for the outstanding independent teammate verification.
+- Outstanding work: independent teammate setup verification for Issue #24; complete auditable representative-user evidence for Issue #13 if required by the rubric; measure the 99% availability NFR if it remains an acceptance requirement; formal SRS/SAD/Test Plan traceability; actual demo recording; peer review/sign-off. No approved deferment rationale was found for these items.
 
 ## Demonstration
 
-- Sprint 2 demo recording URL: **[add actual recording link]**
-- Recording date: **[date]**
-- Duration: **[approximately 2 minutes, if required by the course]**
+- Sprint 2 demo recording URL: **Not found in the repository audit.**
+- Recording date: **Not recorded.**
+- Duration: **Not recorded.** The prior project planning context called for an approximately two-minute Sprint 2 demonstration; confirm the course rubric and attach the actual recording.
 
 ## Sign-off
 
-- Prepared by: **[name/team]**
-- Reviewed by: **[reviewer]**
-- Review date: **[date]**
+- Prepared by: **Not recorded in repository evidence.**
+- Reviewed by: **No formal reviewer sign-off found.**
+- Review date: **Not recorded.**
