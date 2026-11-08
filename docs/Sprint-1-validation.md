@@ -7,13 +7,13 @@
 
 **31 October follow-up:** Issue #13 now has a participant-reported successful three-screen creation test and passing local vendor-stable Chrome, Edge and Firefox runs. See [`Issue-13-usability-compatibility.md`](Issue-13-usability-compatibility.md) for exact versions, execution records, scope and the current CI evidence mechanism. The closeout statements below describe the earlier 24 October audit.
 
-## Latest merged-main automated verification
+## Latest recorded verification (audit snapshot: 8 November 2026)
 
-- GitHub Actions: [run 40113760398](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/actions/runs/40113760398)
-- Result: **65 tests passed** on Python 3.12; the performance acceptance step passed.
-- Performance inputs: 5,000 active components, 10 concurrent workers, 100 HTTP listing/search/filter requests.
-- Results: 100 successful, 0 failed; p50 54.93 ms; p95 194.24 ms; max 254.45 ms; 100% completed within two seconds. Acceptance is at least 95% within two seconds.
-- Environment qualification: temporary SQLite database and loopback threaded Flask WSGI server. This is a coursework acceptance test, not a production-network load test or proof of 99% availability.
+- Historical GitHub Actions baseline: [run 40113760398](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/actions/runs/40113760398), with 65 tests passed on Python 3.12 and the original performance acceptance step passed.
+- Owner-run fresh-clone verification: commit [`38eec1d`](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/commit/38eec1d), Python 3.12.16, **271 tests passed in 21.73 seconds**. This was run by the repository owner; it is not the independent teammate verification required by Issue #24 and is not a GitHub Actions run.
+- Latest audited GitHub Actions workflow run #75 passed the backend suite, clean-setup smoke test, and stable Chrome, Edge, and Firefox jobs. Link the exact workflow run from GitHub when recording final submission evidence.
+- Latest audited performance run #75: 5,000 active components, 10 concurrent workers, 100 listing/search/filter requests, 100 successes, 0 failures, p95 215.05 ms, and 100% completed within the 2-second threshold (acceptance threshold: at least 95%).
+- Environment qualification: the performance test uses a temporary SQLite database and loopback threaded Flask WSGI server. It is a coursework acceptance test, not a production-network load test or proof of 99% availability.
 
 ## Sprint 1 issue acceptance map
 
@@ -30,7 +30,7 @@
 ## Additional quality gates added by the closeout change
 
 - **Clean setup smoke:** a fresh CI job installs `requirements.txt`, initializes a new database, creates an administrator, starts Flask and requests `/health`. Actual pass/fail is recorded by the pull-request workflow.
-- **Cross-browser smoke:** a Playwright matrix exercises inventory search/filter/pagination, component creation in the three-view path (inventory → form → detail), stock adjustment/history, catalogue CRUD, filtered report CSV/PDF downloads, and Staff denial on Chrome, Edge and Firefox. Do not claim those browsers passed until every matrix job is green.
+- **Cross-browser smoke:** `scripts/browser_compatibility.py` is the vendor-stable Selenium runner. It resolves stable Chrome, Edge, and regular Firefox releases and retains browser versions, JSON results, screenshots, and WebDriver logs. The latest audited run #75 passed all three browser jobs. The separate `scripts/browser_acceptance.py` is an optional legacy Playwright smoke test. Do not conflate the two runners.
 - Existing unit/integration tests remain the principal automated regression suite.
 
 ## Issue tracking reconciliation
@@ -42,8 +42,8 @@
 
 ## Manual and team acceptance still required
 
-- A teammate must review the closeout PR and submit a real GitHub review. No review submission was recorded on original PR #33.
-- A representative user must complete the component-add workflow and record the usability result. The automated check verifies the three-view path but cannot attest to a person's experience.
+- A teammate must review the closeout PR and submit a real GitHub review. The audit did not find formal review submissions for PRs #40–#46; do not backdate or imply a review occurred before those merges.
+- The repository contains a participant-reported component-add usability result in `docs/Issue-13-usability-compatibility.md`. Confirm its participant/session metadata against the rubric; automated checks cannot independently validate a person's experience.
 - Compare the submitted SRS, SAD and Test Plan against the implementation line by line and update the traceability matrix. This record is currently grounded in GitHub issues/tests; it is not signed-off formal PDF traceability.
 - The actual one-minute video remains a separate recording task and is intentionally outside the automated closeout changes; the storyboard is not the video.
 

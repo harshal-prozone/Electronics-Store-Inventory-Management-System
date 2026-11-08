@@ -82,7 +82,7 @@ pytest -q
 git diff --check
 ```
 
-The post-merge GitHub Actions run [40113760398](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/actions/runs/40113760398) passed **65 tests** and the Sprint 1 performance acceptance check. The closeout workflow adds clean-setup and Chrome/Edge/Firefox browser smoke jobs; use the actual pull-request checks as the evidence for those new jobs. A requirement-to-test map is in [`docs/Sprint-1-requirement-traceability.md`](docs/Sprint-1-requirement-traceability.md).
+Historical baseline: GitHub Actions run [40113760398](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/actions/runs/40113760398) passed 65 tests and the original performance acceptance check. A later owner-run fresh-clone verification at commit [`38eec1d`](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/commit/38eec1d) passed **271 tests in 21.73 seconds** using Python 3.12.16. The latest audited workflow run #75 passed the backend suite, clean-setup smoke test, and stable Chrome, Edge, and Firefox jobs. Use the run attached to the exact commit/PR as authoritative CI evidence; do not treat the local clone run as a GitHub Actions result. A requirement-to-test map is in [`docs/Sprint-1-requirement-traceability.md`](docs/Sprint-1-requirement-traceability.md).
 
 ## Sprint 1 performance acceptance evidence
 
@@ -114,7 +114,7 @@ SQLite is suitable for coursework and light single-instance use. The Sprint 1 be
 
 ## Sprint 1 closeout status
 
-The core Sprint 1 feature integration is merged. The latest automated verification passed 65 tests and the performance acceptance test. The remaining process evidence is tracked in [`docs/Sprint-1-validation.md`](docs/Sprint-1-validation.md), including the representative-user check, independent teammate verification of setup instructions, formal review, requirements traceability, and the separately-recorded demo video.
+The core Sprint 1 feature integration is merged. The owner-run fresh-clone verification at commit `38eec1d` passed 271 tests in 21.73 seconds; the latest audited GitHub Actions run #75 passed the backend, clean-setup, Chrome, Edge, and Firefox jobs. These results do not replace the remaining human/coursework evidence tracked in [`docs/Sprint-1-validation.md`](docs/Sprint-1-validation.md): independent teammate setup verification for Issue #24, formal peer review, final comparison against the submitted SRS/SAD/Test Plan, and the actual demo recording.
 
 ## Contributor workflow
 

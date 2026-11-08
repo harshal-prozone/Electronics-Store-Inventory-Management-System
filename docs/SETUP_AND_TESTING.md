@@ -7,9 +7,9 @@ Run commands from the repository root (the directory containing `app.py` and `re
 ## 1. Prerequisites
 
 - Git.
-- Python 3.12 recommended: the GitHub Actions workflow uses Python 3.12. The project README specifies Python 3.10+; the maintainer has also run the project with Python 3.14.7.
+- Python 3.12 recommended and used by GitHub Actions. The owner also completed a fresh-clone test run with Python 3.12.16. The README's Python 3.10+ statement is a declared lower bound; versions other than the CI/runtime versions should be treated as less extensively verified.
 - `pip`, included with Python.
-- macOS, Linux, or Windows with a terminal.
+- macOS/Linux are the primary documented setup paths. Windows PowerShell commands are provided where explicitly shown; verify the complete workflow on Windows before treating Windows as independently validated.
 
 SQLite is included with Python. You do not need to install or run a separate database server.
 
@@ -52,7 +52,7 @@ python -m pip install --upgrade pip
 python -m pip install -r requirements.txt
 ```
 
-The requirements file installs Flask, Flask-WTF, pytest, and ReportLab. Playwright is optional and is only needed for the browser acceptance script.
+The requirements file installs the application and test dependencies. The stable-browser acceptance runner uses Selenium and the separate `requirements-browser.txt`; Playwright is only for the optional legacy `scripts/browser_acceptance.py` smoke test.
 
 ## 3. Configure environment variables
 
