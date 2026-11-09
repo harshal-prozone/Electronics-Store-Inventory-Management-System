@@ -529,7 +529,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.route("/components/new", methods=("GET", "POST"))
     @login_required
-    @admin_required
     def component_new():
         status = 200
         if request.method == "POST":
@@ -562,7 +561,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.route("/components/<int:component_id>/edit", methods=("GET", "POST"))
     @login_required
-    @admin_required
     def component_edit(component_id: int):
         component = get_component_or_404(component_id)
         status = 200
@@ -966,7 +964,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.get("/reports/availability")
     @login_required
-    @admin_required
     def availability_report():
         category_filter, supplier_filter, status_filter = get_availability_report_filters()
         db = get_db()
@@ -1000,7 +997,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.get("/reports/availability.csv")
     @login_required
-    @admin_required
     def export_availability_report_csv():
         category, supplier, status = get_availability_report_filters()
         rows = get_availability_report_rows(get_db(), category, supplier, status)
@@ -1020,7 +1016,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.get("/reports/availability.pdf")
     @login_required
-    @admin_required
     def export_availability_report_pdf():
         category, supplier, status = get_availability_report_filters()
         rows = get_availability_report_rows(get_db(), category, supplier, status)

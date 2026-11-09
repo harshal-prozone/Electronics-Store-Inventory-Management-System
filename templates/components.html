@@ -3,19 +3,17 @@
 {% block content %}
 <section class="page-heading">
   <div><div class="eyebrow">INVENTORY / OVERVIEW</div><h1>Component inventory</h1><p>Monitor stock levels and identify components that need replenishment.</p></div>
-  {% if g.user['role'] == 'Admin' %}
   <div class="inventory-actions">
-    <a class="button button-secondary" href="{{ url_for('import_components') }}">Import CSV</a>
+    {% if g.user['role'] == 'Admin' %}<a class="button button-secondary" href="{{ url_for('import_components') }}">Import CSV</a>{% endif %}
     <a class="button button-primary" href="{{ url_for('component_new') }}"><span class="button-plus">+</span> Add component</a>
   </div>
-  {% endif %}
 </section>
 
 {% set out_count = namespace(value=0) %}{% set low_count = namespace(value=0) %}{% set in_count = namespace(value=0) %}
 <div class="summary-grid">
   <div class="summary-card"><div class="summary-title">Matching components</div><div class="summary-value">{{ total }}</div><div class="summary-foot">Current filter result</div><div class="summary-icon icon-blue">▦</div></div>
   <div class="summary-card"><div class="summary-title">Availability rules</div><div class="summary-value summary-small">Quantity + threshold</div><div class="summary-foot">Status recalculates on every view</div><div class="summary-icon icon-purple">⌁</div></div>
-  <div class="summary-card"><div class="summary-title">Your access</div><div class="summary-value summary-small">{{ g.user['role'] }}</div><div class="summary-foot">{{ 'Catalogue administration enabled' if g.user['role'] == 'Admin' else 'Stock operations enabled' }}</div><div class="summary-icon icon-green">✓</div></div>
+  <div class="summary-card"><div class="summary-title">Your access</div><div class="summary-value summary-small">{{ g.user['role'] }}</div><div class="summary-foot">{{ 'Catalogue administration enabled' if g.user['role'] == 'Admin' else 'Component and stock operations enabled' }}</div><div class="summary-icon icon-green">✓</div></div>
 </div>
 
 <section class="panel inventory-panel">
@@ -43,7 +41,7 @@
           <td class="table-actions"><a class="text-link" href="{{ url_for('component_detail', component_id=component['id']) }}">View <span aria-hidden="true">→</span></a></td>
         </tr>
       {% else %}
-        <tr><td colspan="6" class="empty-cell"><div class="empty-symbol">⌕</div><strong>No components found</strong><p>Try changing the filters or add a component to your inventory.</p>{% if g.user['role'] == 'Admin' %}<a class="text-link" href="{{ url_for('component_new') }}">Add a component →</a>{% endif %}</td></tr>
+        <tr><td colspan="6" class="empty-cell"><div class="empty-symbol">⌕</div><strong>No components found</strong><p>Try changing the filters or add a component to your inventory.</p><a class="text-link" href="{{ url_for('component_new') }}">Add a component →</a></td></tr>
       {% endfor %}
       </tbody>
     </table>

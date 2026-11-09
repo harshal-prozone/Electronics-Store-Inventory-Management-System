@@ -31,7 +31,7 @@ Status key: **Related** = relevant implementation/tests exist but original case 
 | UT-INV-18 | initial availability | Related | tests/test_web_app.py; tests/test_input_security.py |
 | IT-INV-01 | staff creates and duplicates through API | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
 | IT-INV-02 | stored XSS text | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
-| ST-INV-01 | staff adds component via UI | Deviation | specified Staff workflow is Admin-only in current implementation; scripts/browser_compatibility.py |
+| ST-INV-01 | staff adds component via UI | Related | Staff Flask form and three-screen browser flow: `tests/test_web_app.py`, `scripts/browser_compatibility.py`; not original-stack case execution. |
 | UT-INV-07 | price and threshold edit | Related | tests/test_web_app.py; tests/test_input_security.py |
 | UT-INV-08 | threshold changes availability | Related | tests/test_web_app.py; tests/test_input_security.py |
 | UT-INV-09 | duplicate SKU on edit | Related | tests/test_web_app.py; tests/test_input_security.py |
@@ -85,7 +85,7 @@ Status key: **Related** = relevant implementation/tests exist but original case 
 | IT-RPT-01 | filtered report API | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
 | IT-RPT-02 | PDF export API | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
 | IT-RPT-03 | unsupported export format API | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
-| ST-RPT-01 | staff report and export | Deviation | specified Staff workflow is Admin-only in current implementation; scripts/browser_compatibility.py |
+| ST-RPT-01 | staff report and export | Related | Staff Flask report filters and CSV/PDF export: `tests/test_web_app.py`, `scripts/browser_compatibility.py`; not original-stack case execution. |
 | UT-DSH-01 | active component count | Related | tests/test_web_app.py |
 | UT-DSH-02 | stock-value calculation | Related | tests/test_web_app.py |
 | UT-DSH-03 | low/out counts | Related | tests/test_web_app.py |

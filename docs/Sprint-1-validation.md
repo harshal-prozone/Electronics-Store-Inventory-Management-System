@@ -1,5 +1,7 @@
 # Sprint 1 validation record
 
+> Historical record: Staff component creation/editing and availability reports were subsequently enabled to align with UC-02/03/08. For current behavior and validation, see [architecture reconciliation](Architecture-and-baseline-reconciliation.md) and [current delivery validation](Staff-Access-Validation-2026-11-09.md). Earlier test observations remain historical.
+
 **Scheduled sprint:** 19-23 October 2026
 
 **Closeout audit:** 24 October 2026

@@ -1,5 +1,7 @@
 # Issue #13: usability and browser compatibility
 
+> Historical record: Staff component creation/editing and availability reports were subsequently enabled to align with UC-02/03/08. For current behavior and validation, see [architecture reconciliation](Architecture-and-baseline-reconciliation.md) and [current delivery validation](Staff-Access-Validation-2026-11-09.md). Earlier test observations remain historical.
+
 ## Scope and acceptance
 
 NFR-003 requires a trained inventory operator to add a component in no more than three primary screens. NFR-007 requires core inventory operations to work in the latest stable Chrome, Edge and Firefox releases. This record separates the participant's reported experience from automated compatibility evidence.

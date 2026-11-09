@@ -351,11 +351,43 @@ def run():
         evidence["step"] = "staff permissions and usable stock workflow"
         click("Sign out")
         login("browserstaff", "BrowserStaff123!")
-        assert not driver.find_elements(By.CSS_SELECTOR, "a[href='/components/new']")
+        assert driver.find_elements(By.CSS_SELECTOR, "a[href='/components/new']")
+        assert driver.find_elements(By.CSS_SELECTOR, "a[href='/reports/availability']")
         assert not driver.find_elements(By.CSS_SELECTOR, "a[href='/components/import']")
-        for path in ("/components/new", "/components/import", "/admin/users", "/reports/availability", "/admin/audit-log"):
+        for path in ("/components/import", "/admin/users", "/admin/audit-log", "/categories/new", "/suppliers/new"):
             status = driver.execute_async_script("const done=arguments[arguments.length-1]; fetch(arguments[0]).then(r=>done(r.status)).catch(()=>done(0))", base + path)
             assert status == 403, f"Staff access to {path}: {status}"
+        evidence["admin_primary_screens"] = evidence["primary_screens"]
+        evidence["primary_screens"] = []
+        measure_creation = True
+        driver.get(base + "/components")
+        click("Add component", "a")
+        for identifier, value in [("sku", "BROWSER-STAFF-001"), ("name", "Browser Staff Component"),
+                                  ("quantity", "2"), ("reorder_level", "5"), ("unit_price", "10")]:
+            fill(identifier, value)
+        Select(visible("#category")).select_by_visible_text("Microcontrollers")
+        Select(visible("#supplier")).select_by_visible_text("Maker Supplies")
+        click("Save component")
+        heading("Browser Staff Component")
+        staff_detail = urlparse(driver.current_url).path
+        measure_creation = False
+        assert evidence["primary_screens"] == ["/components", "/components/new", staff_detail]
+        assert not driver.find_elements(By.XPATH, "//button[contains(., 'Delete component')]")
+        click("Edit details", "a")
+        fill("description", "Edited by browser staff")
+        click("Save component")
+        assert "Edited by browser staff" in visible(".detail-heading").text
+        driver.get(base + "/reports/availability")
+        Select(visible("select[name=status]")).select_by_visible_text("Low Stock")
+        click("Apply filters")
+        assert "Browser Staff Component" in visible("tbody").text
+        for label, filename, signature in [("Download CSV", "availability-report.csv", b"SKU"),
+                                             ("Download PDF", "availability-report.pdf", b"%PDF")]:
+            file = Path(temporary.name) / filename
+            file.unlink(missing_ok=True)
+            click(label, "a", navigate=False)
+            wait.until(lambda _: file.exists() and file.stat().st_size > 0)
+            assert file.read_bytes().startswith(signature)
         driver.get(detail_url)
         Select(visible("#adjustment")).select_by_value("stock-in")
         fill("stock-quantity", "1")
@@ -363,7 +395,7 @@ def run():
         click("Save stock movement")
         assert "Staff browser movement" in visible(".history-panel tbody").text
         assert "browserstaff" in visible(".history-panel tbody").text
-        passed("staff search/detail/stock operations and Admin-only access restrictions")
+        passed("staff three-screen create, edit, filtered CSV/PDF report, stock movement and admin restrictions")
 
         assert not driver.find_elements(By.CSS_SELECTOR, "a[href='/admin/audit-log']")
         evidence["step"] = "XSS protection and CSP-compatible delete confirmation"
