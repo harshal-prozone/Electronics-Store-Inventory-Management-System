@@ -4,7 +4,7 @@ A Flask + SQLite inventory management application for electronics components. Th
 
 For complete developer setup, database, application, testing, and troubleshooting instructions, see **[Setup and Testing Guide](docs/SETUP_AND_TESTING.md)**.
 
-For the submitted-baseline differences and outstanding acceptance decisions, see [Architecture and baseline reconciliation](docs/Architecture-and-baseline-reconciliation.md), [Original STP reconciliation](docs/Original-STP-reconciliation.md), [Final engineering validation](docs/Final-Engineering-Validation.md), [account-security validation](docs/Account-Security-Remediation.md), and [delivery validation](docs/Delivery-Validation-2026-11-09.md), and [latest validation](docs/Staff-Access-Validation-2026-11-09.md).
+For the submitted-baseline differences and outstanding acceptance decisions, see [Architecture and baseline reconciliation](docs/Architecture-and-baseline-reconciliation.md), [Original STP reconciliation](docs/Original-STP-reconciliation.md), [Final engineering validation](docs/Final-Engineering-Validation.md), [account-security validation](docs/Account-Security-Remediation.md), and [delivery validation](docs/Delivery-Validation-2026-11-09.md), and [latest verification and remaining acceptance dependencies](docs/Verification-Cleanup-2026-11-09.md).
 
 ## Implemented functionality
 
@@ -17,7 +17,7 @@ For the submitted-baseline differences and outstanding acceptance decisions, see
 - Admins can set or update each component's minimum stock threshold directly on its details page. Thresholds are non-negative whole numbers; positive stock at or below the threshold is Low Stock, and zero is Out of Stock. Changes immediately appear in inventory views and reports and are recorded in the audit log.
 - Component CSV export and an Admin and Staff availability report with category, supplier, and status filters and CSV/PDF export.
 - Admin-only bulk CSV import with SKU-based creation/updates, row error reports, imported/rejected counts, and audited stock adjustments.
-- Admin-only, read-only audit log with UTC timestamps, responsible users, event/user filters and pagination. Security rejections and component deletions are recorded; database triggers protect history against updates/deletion. See [Issue #10 audit logging](docs/Issue-10-audit-logging.md).
+- Admin-only, read-only audit log with UTC timestamps, responsible users, validated direct peer IP when available, event/user filters and pagination. Security rejections and component deletions are recorded; database triggers protect history against updates/deletion. See [Issue #10 audit logging](docs/Issue-10-audit-logging.md).
 - Audit entries for authentication and inventory-changing actions, a `/health` endpoint, and automated tests.
 - Server-side input validation, bounded stock arithmetic, parameterized SQLite queries, escaped user content, and an enforced Content Security Policy. See [Issue #12 security coverage](docs/Issue-12-input-validation.md) for validation rules, error responses and malicious-input tests.
 - Component transaction history with inclusive UTC date filters, transaction type filters, saved resulting balances, and pagination (20 per page), ordered newest first. History supports stock additions, removals, and adjustment records; the stock entry form records additions and removals.

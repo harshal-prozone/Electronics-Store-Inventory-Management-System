@@ -1,0 +1,3 @@
+Database initialized. If no administrator exists, run: flask --app app create-admin
+Administrator 'verify-admin' created.
+Database initialized. If no administrator exists, run: flask --app app create-admin

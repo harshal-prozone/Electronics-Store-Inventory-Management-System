@@ -1,0 +1,8 @@
+2026-11-09 13:19:42,752 [main ] ERROR CommandLine - No check for updates for over 3 month - add-ons may well be out of date
+2026-11-09 13:19:42,902 [main ] ERROR ExtensionClientIntegration - Failed to get or create Firefox profile zap-client-profile
+2026-11-09 13:19:48,001 [ZAP-Scanner-0] INFO  HostProcess - start host http://127.0.0.1:58584 | DomXssScanRule strength MEDIUM threshold MEDIUM
+2026-11-09 13:19:51,037 [Thread-29] INFO  DomXssScanRule - Reaper thread starting
+2026-11-09 13:19:54,740 [ZAP-Scanner-0] INFO  HostProcess - completed host/plugin http://127.0.0.1:58584 | DomXssScanRule in 6.739s with 12 message(s) sent and 0 alert(s) raised.
+2026-11-09 13:19:55,211 [ZAP-Scanner-0] INFO  HostProcess - skipped plugin [no Active Scan OAST service is selected] http://127.0.0.1:58584 | Log4ShellScanRule in 0.002s with 0 message(s) sent and 0 alert(s) raised.
+2026-11-09 13:19:55,642 [ZAP-Scanner-0] INFO  HostProcess - skipped plugin [no scripts enabled] http://127.0.0.1:58584 | ScriptsActiveScanner in 0.001s with 0 message(s) sent and 0 alert(s) raised.
+2026-11-09 13:19:56,037 [ZAP-DomXssReaper] INFO  DomXssScanRule - Reaper thread exiting 0
