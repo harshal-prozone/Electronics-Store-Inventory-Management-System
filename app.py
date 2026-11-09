@@ -22,7 +22,7 @@ from typing import Any
 import click
 from flask import (
     Flask, abort, flash, g, jsonify, make_response, redirect, render_template,
-    request, session, url_for,
+    request, session, url_for, has_request_context,
 )
 from flask_wtf.csrf import CSRFProtect
 from flask_wtf.csrf import CSRFError
@@ -34,6 +34,7 @@ from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, Tabl
 from xml.sax.saxutils import escape
 from werkzeug.security import check_password_hash, generate_password_hash
 
+from audit_address import normalize_audit_ip
 from inventory_service import adjust_stock, availability_status, validate_component_form
 from inventory_import import CSV_COLUMNS, MAX_CSV_BYTES, import_inventory_csv
 from input_validation import CONTROL_CHARACTERS, MAX_SQLITE_INTEGER, account_values, text_value, whole_number, validate_email
@@ -525,7 +526,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 try:
                     result = import_inventory_csv(
                         get_db(), user_id=g.user["id"],
-                        content=upload.stream.read(MAX_CSV_BYTES + 1),
+                        content=upload.stream.read(MAX_CSV_BYTES + 1), ip_address=request_peer_ip(),
                     )
                 except ValueError as exc:
                     error = str(exc)
@@ -704,8 +705,8 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             if previous is None:
                 abort(404)
             db.execute(
-                "INSERT INTO audit_log (user_id, event_type, details) VALUES (?, ?, ?)",
-                (g.user["id"], "threshold-updated", f"component_id={component_id}; reorder_level={threshold}"),
+                "INSERT INTO audit_log (user_id, event_type, details, ip_address) VALUES (?, ?, ?, ?)",
+                (g.user["id"], "threshold-updated", f"component_id={component_id}; reorder_level={threshold}", request_peer_ip()),
             )
         status = availability_status(previous["quantity"], threshold)
         flash(f"Minimum stock threshold updated to {threshold}. Status: {status}.", "success")
@@ -740,7 +741,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             note = text_value(request.form.get("note", ""), "Stock note", 250, multiline=True)
             _, new_quantity = adjust_stock(
                 get_db(), component_id=component_id, user_id=g.user["id"],
-                adjustment=adjustment, quantity=quantity, note=note,
+                adjustment=adjustment, quantity=quantity, note=note, ip_address=request_peer_ip(),
             )
             new_component = get_component_or_404(component_id)
             status = availability_status(new_quantity, int(new_component["reorder_level"]))
@@ -1188,6 +1189,12 @@ def init_db() -> None:
     with open(ROOT / "schema.sql", encoding="utf-8") as schema_file:
         db.executescript(schema_file.read())
 
+    # Older audit rows have no peer address; preserve them with NULL rather
+    # than fabricating an address.  The append-only triggers remain in place.
+    audit_columns = {row["name"] for row in db.execute("PRAGMA table_info(audit_log)")}
+    if "ip_address" not in audit_columns:
+        db.execute("ALTER TABLE audit_log ADD COLUMN ip_address TEXT")
+
     # Add account-control fields to pre-existing databases without replacing users.
     user_columns = {row["name"] for row in db.execute("PRAGMA table_info(users)").fetchall()}
     if "is_active" not in user_columns:
@@ -1366,6 +1373,11 @@ def availability_report_data(rows):
     ]
 
 
+def request_peer_ip() -> str | None:
+    """Return the direct WSGI peer IP, never an untrusted forwarded header."""
+    return normalize_audit_ip(request.remote_addr) if has_request_context() else None
+
+
 def write_audit(user_id: int | None, event_type: str, details: str, *, commit: bool = True) -> None:
     """Append an event; mutations can share its transaction with commit=False.
 
@@ -1375,8 +1387,8 @@ def write_audit(user_id: int | None, event_type: str, details: str, *, commit: b
     details = re.sub(r"[\x00-\x1f\x7f-\x9f]", " ", details)[:500]
     try:
         db.execute(
-            "INSERT INTO audit_log (user_id, event_type, details) VALUES (?, ?, ?)",
-            (user_id, event_type, details),
+            "INSERT INTO audit_log (user_id, event_type, details, ip_address) VALUES (?, ?, ?, ?)",
+            (user_id, event_type, details, request_peer_ip()),
         )
         if commit:
             db.commit()

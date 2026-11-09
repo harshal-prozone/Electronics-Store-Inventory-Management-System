@@ -19,9 +19,11 @@ Admin-only, read-only review page at `/admin/audit-log` (Audit log in navigation
 | Other inventory/catalogue events | Existing creation, editing, catalogue deletion, threshold, stock and CSV import records are retained |
 
 Every record has an increasing ID, event type, details, optional account foreign key,
-and SQLite `CURRENT_TIMESTAMP` in UTC. Anonymous/system actions are labelled on the
+a nullable direct network peer IP, and SQLite `CURRENT_TIMESTAMP` in UTC. Anonymous/system actions are labelled on the
 review page. The page shows newest records first with ID as a deterministic tie
 breaker, 25 records per page, event and account filters, and validated pagination.
+
+The peer IP is the validated, canonical `request.remote_addr` supplied by the WSGI server, not an untrusted `X-Forwarded-For` header. Behind a reverse proxy it may identify the proxy rather than the originating client; configure trusted proxy handling separately and only for the known deployment topology. CLI/system events and invalid or unavailable peers are recorded as NULL. Existing rows remain NULL after the idempotent migration; no address is invented. IP addresses can be personal data: restrict access and establish a retention policy before deployment. No automatic purge is implemented.
 
 ## Integrity and access
 
@@ -56,7 +58,7 @@ breaker, 25 records per page, event and account filters, and validated paginatio
 responsible users, anonymous/system display, CSRF before user loading, stale
 sessions, access denials, oversized requests, safe details, atomic rollback,
 append-only triggers, rejected web mutations, filters/pagination, XSS-safe rendering,
-CLI account creation and upgrades preserving existing history.
+CLI account creation, direct peer attribution including stock/threshold/CSV events, spoofed forwarded-header rejection, IPv4/IPv6 validation, and upgrades preserving existing history and append-only triggers.
 
 Run the backend suite in the project virtual environment:
 

@@ -23,7 +23,7 @@
 | 1:05–1:30 | Open CSV import; show template and import a small valid file; show result counts | “Admins can bulk import records. The importer validates the file, reports rejected rows and records quantity changes as adjustments.” |
 | 1:30–1:50 | Show availability report and CSV/PDF export, or dashboard KPIs if that is the focus of the rubric | “The reporting views summarize inventory status and support export for operational review.” |
 | 1:50–2:10 | Show audit log and `/health` endpoint | “Sensitive inventory actions are auditable, and the health endpoint reports application/database health. This endpoint is a diagnostic check; it is not itself proof of 99% operational uptime.” |
-| 2:10–2:25 | Briefly show automated test result and setup guide | “The owner-run fresh-clone verification completed with 271 passing tests. Setup and test instructions are documented for independent teammate verification.” |
+| 2:10–2:25 | Briefly show automated test result and setup guide | “This is the latest available automated test result for the revision shown. Setup and test instructions are documented for independent teammate verification.” |
 
 ## After recording
 

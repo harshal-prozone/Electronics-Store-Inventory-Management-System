@@ -278,3 +278,67 @@ def test_unknown_login_is_shown_as_anonymous(app, client):
     response = client.get("/admin/audit-log?event_type=login-failed")
     assert b"Anonymous / system" in response.data
     assert b"identity=unregistered" in response.data
+
+@pytest.mark.parametrize(("value", "expected"), [
+    (None, None), (42, None), ("", None), ("not-an-ip", None),
+    ("1.2.3.4\n", None), ("x" * 46, None), ("fe80::1%eth0", None),
+    ("198.51.100.4", "198.51.100.4"), ("2001:0db8::1", "2001:db8::1"),
+])
+def test_audit_peer_normalization(value, expected):
+    from audit_address import normalize_audit_ip
+    assert normalize_audit_ip(value) == expected
+
+
+def test_http_audit_uses_direct_peer_not_forwarded_header(app, client):
+    response = client.post(
+        "/login", data={"identity": "admin", "password": "ChangeMe123!"},
+        environ_overrides={"REMOTE_ADDR": "198.51.100.4"},
+        headers={"X-Forwarded-For": "203.0.113.9"},
+    )
+    assert response.status_code == 302
+    event = records(app, "login-success")[0]
+    assert event["ip_address"] == "198.51.100.4"
+    page = client.get("/admin/audit-log").get_data(as_text=True)
+    assert "Peer IP" in page and "198.51.100.4" in page
+    assert "203.0.113.9" not in page
+    with app.app_context():
+        write_audit(None, "offline-event", "no HTTP peer")
+    assert records(app, "offline-event")[0]["ip_address"] is None
+
+
+def test_stock_threshold_and_import_include_peer_address(app, client):
+    import io
+    authenticate(client)
+    peer = {"REMOTE_ADDR": "2001:0db8::1"}
+    assert client.post("/components/1/stock", data={"adjustment": "stock-in", "quantity": "1", "note": "test"}, environ_overrides=peer).status_code == 302
+    assert client.post("/components/1/threshold", data={"reorder_level": "5"}, environ_overrides=peer).status_code == 302
+    data = b"sku,name,description,category,supplier,quantity,reorder_level,unit_price\nIMPORT-IP,Test,Test,Microcontrollers,Maker Supplies,7,5,12.50\n"
+    assert client.post("/components/import", data={"file": (io.BytesIO(data), "test.csv")}, environ_overrides=peer).status_code == 200
+    for event in ("stock-adjustment", "threshold-updated", "component-imported", "inventory-imported"):
+        assert records(app, event)[0]["ip_address"] == "2001:db8::1"
+        assert records(app, event)[0]["user_id"] == 1
+
+
+def test_legacy_audit_migration_preserves_events_and_triggers(tmp_path):
+    from contextlib import closing
+    from app import ROOT, init_db
+    path = tmp_path / "legacy.sqlite"
+    schema = (ROOT / "schema.sql").read_text(encoding="utf-8")
+    assert "    ip_address TEXT,\n" in schema
+    with closing(sqlite3.connect(path)) as db, db:
+        db.executescript(schema.replace("    ip_address TEXT,\n", ""))
+        db.execute("INSERT INTO audit_log (event_type, details) VALUES ('legacy', 'original')")
+    application = create_app({"TESTING": True, "WTF_CSRF_ENABLED": False, "SECRET_KEY": "test-migration", "DATABASE": str(path)})
+    with application.app_context():
+        init_db()
+        db = get_db()
+        row = db.execute("SELECT * FROM audit_log WHERE event_type='legacy'").fetchone()
+        assert row["details"] == "original" and row["ip_address"] is None
+        assert db.execute("PRAGMA integrity_check").fetchone()[0] == "ok"
+        assert db.execute("PRAGMA foreign_key_check").fetchall() == []
+        with pytest.raises(sqlite3.IntegrityError, match="Audit records cannot"):
+            db.execute("UPDATE audit_log SET details='forged' WHERE event_type='legacy'")
+        db.rollback()
+    client = application.test_client()
+    client.post("/login", data={"identity": "unknown", "password": "invalid"}, environ_overrides={"REMOTE_ADDR": "192.0.2.5"})
+    assert records(application, "login-failed")[0]["ip_address"] == "192.0.2.5"

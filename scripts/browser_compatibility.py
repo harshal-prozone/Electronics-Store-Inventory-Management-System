@@ -436,6 +436,8 @@ def run():
         click("Apply")
         assert "1 record" in visible("main").text
         assert "admin (#1)" in visible("tbody").text
+        assert "Peer IP" in visible("thead").text
+        assert "127.0.0.1" in visible("tbody").text
         assert "stock-adjustment" not in visible("tbody").text
         driver.set_window_size(1365, 1000)
         layout("08-audit-log-desktop")

@@ -7,6 +7,7 @@ import re
 import sqlite3
 from typing import Any, Literal
 
+from audit_address import normalize_audit_ip
 from input_validation import CONTROL_CHARACTERS, MAX_SQLITE_INTEGER, text_value
 
 Availability = Literal["Out of Stock", "Low Stock", "In Stock"]
@@ -93,6 +94,7 @@ def adjust_stock(
     adjustment: Literal["stock-in", "stock-out"],
     quantity: int,
     note: str = "",
+    ip_address: str | None = None,
 ) -> tuple[int, int]:
     """Atomically change stock and record a matching transaction.
 
@@ -137,8 +139,8 @@ def adjust_stock(
             (component_id, user_id, adjustment, quantity, previous, new_quantity, note.strip()),
         )
         db.execute(
-            "INSERT INTO audit_log (user_id, event_type, details) VALUES (?, ?, ?)",
-            (user_id, "stock-adjustment", f"{adjustment} component_id={component_id} quantity={quantity}; {previous}->{new_quantity}"),
+            "INSERT INTO audit_log (user_id, event_type, details, ip_address) VALUES (?, ?, ?, ?)",
+            (user_id, "stock-adjustment", f"{adjustment} component_id={component_id} quantity={quantity}; {previous}->{new_quantity}", normalize_audit_ip(ip_address)),
         )
         db.commit()
         return previous, new_quantity

@@ -25,16 +25,17 @@
   <p class="audit-count">{{ total }} record{{ '' if total == 1 else 's' }}</p>
   <div class="table-wrap">
     <table class="inventory-table">
-      <thead><tr><th>ID</th><th>Timestamp (UTC)</th><th>Event</th><th>Responsible user</th><th>Details</th></tr></thead>
+      <thead><tr><th>ID</th><th>Timestamp (UTC)</th><th>Event</th><th>Responsible user</th><th>Peer IP</th><th>Details</th></tr></thead>
       <tbody>
         {% for record in records %}
         <tr>
           <td>{{ record['id'] }}</td><td>{{ record['created_at'] }}</td>
           <td>{{ record['event_type'] }}</td>
           <td>{{ record['username'] or 'Anonymous / system' }}{% if record['user_id'] %} (#{{ record['user_id'] }}){% endif %}</td>
+          <td>{{ record['ip_address'] or 'Unavailable' }}</td>
           <td class="audit-details">{{ record['details'] }}</td>
         </tr>
-        {% else %}<tr><td colspan="5">No audit records match these filters.</td></tr>{% endfor %}
+        {% else %}<tr><td colspan="6">No audit records match these filters.</td></tr>{% endfor %}
       </tbody>
     </table>
   </div>
