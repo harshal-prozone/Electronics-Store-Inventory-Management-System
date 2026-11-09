@@ -35,7 +35,7 @@
 ## Defects and known limitations
 
 - No open application defect is asserted here without a linked reproduction record.
-- **Availability evidence gap:** `/health` is a health-check endpoint, not proof of 99% uptime. See [Issue #17](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/17).
+- **Availability evidence gap:** `/health` is a health-check endpoint, not proof of 99% uptime. A local diagnostic sampled 6 successful probes out of 6 over 30 seconds (100% sampled availability); this does not establish the required operating-period target. See [Issue #17](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/17).
 - **Usability evidence gap:** Issue #13's participant report lacks a supplied participant name, exact session time/environment and screenshots. See `docs/Issue-13-usability-compatibility.md`.
 - **Setup acceptance gap:** Issue #24 remains open pending an independent teammate fresh-clone verification.
 - The formal SRS/SAD/Test Plan PDFs were not available in the repository audit for signed-off line-by-line traceability; `docs/Sprint-1-requirement-traceability.md` is issue-based and explicitly not a formal PDF sign-off.
@@ -43,9 +43,9 @@
 ## Development freeze
 
 - Freeze date/time and timezone: **No explicit development-freeze decision or timestamp was found. Do not infer one from the commit date.**
-- Latest documented branch/commit: `main` at [`7efc5fc`](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/commit/7efc5fc), a documentation closeout commit pushed on 8 November 2026. This is a repository state reference, **not evidence that the team formally declared a freeze**.
-- Owner-run automated verification: on the fresh-clone checkout based on commit `38eec1d`, Python 3.12.16 and `Flask-WTF 1.3.0`, **271 tests passed in 32.43 seconds** on 8 November 2026. This local test was run before the documentation-only commit above; it is not a GitHub Actions result.
-- Previously audited CI evidence: workflow run #75 was recorded as passing backend, clean-setup smoke, Chrome, Edge and Firefox jobs in the 8 November validation audit. The exact run URL/ID was not available in the material reviewed for this record; add the direct run link before submission.
+- Latest documented branch/commit: `main` at [`0968b16`](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/commit/0968b16), a documentation closeout commit pushed on 8 November 2026. This is a repository state reference, **not evidence that the team formally declared a freeze**.
+- Owner-run automated verification: on the fresh-clone checkout based on commit `38eec1d`, Python 3.12.16 and `Flask-WTF 1.3.0`, **271 tests passed in 32.43 seconds** on 8 November 2026. A subsequent local verification after the evidence-pack changes passed **271 tests in 44.28 seconds**. These are local test results, not a GitHub Actions result.
+- Previously audited CI evidence: workflow run #75 was recorded as passing backend, clean-setup smoke, Chrome, Edge and Firefox jobs in the 8 November validation audit. The CI status for commit `0968b16` has not been independently confirmed. The exact run URL/ID for run #75 was not available in the material reviewed for this record.
 - Manual validation completed: Issue #13 participant-reported three-screen task; local vendor-stable browser execution records in `docs/Issue-13-usability-compatibility.md`; issue-specific manual evidence linked from Issues #10–#12. These are not a substitute for the outstanding independent teammate verification.
 - Outstanding work: independent teammate setup verification for Issue #24; complete auditable representative-user evidence for Issue #13 if required by the rubric; measure the 99% availability NFR if it remains an acceptance requirement; formal SRS/SAD/Test Plan traceability; actual demo recording; peer review/sign-off. No approved deferment rationale was found for these items.
 

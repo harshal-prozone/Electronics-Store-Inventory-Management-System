@@ -1,7 +1,7 @@
 # Sprint 2 final closeout — consolidated action register
 
-**Repository:** `harshal-prozone/Electronics-Store-Inventory-Management-System`  
-**Latest audited commit:** `0968b16` (`docs: finalize Sprint 2 evidence and closeout package`)  
+**Repository:** `harshal-prozone/Electronics-Store-Inventory-Management-System`
+**Latest audited commit:** `0968b16` (`docs: finalize Sprint 2 evidence and closeout package`)
 **Audit date:** 8 November 2026
 
 ## Executive status
