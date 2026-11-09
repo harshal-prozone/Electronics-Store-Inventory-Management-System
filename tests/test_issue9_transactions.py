@@ -19,6 +19,7 @@ def make_db(path, initial_quantity=5):
         CREATE TABLE components (
             id INTEGER PRIMARY KEY,
             quantity INTEGER NOT NULL CHECK (quantity >= 0),
+            deleted_at TEXT,
             updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
         );
 
@@ -183,5 +184,21 @@ def test_concurrent_stock_out_cannot_overspend(tmp_path):
         assert db.execute(
             "SELECT COUNT(*) FROM audit_log"
         ).fetchone()[0] == 1
+    finally:
+        db.close()
+
+
+def test_deleted_component_cannot_receive_stock(tmp_path):
+    path = tmp_path / 'deleted.db'
+    make_db(path)
+    db = connect_db(path)
+    try:
+        db.execute("UPDATE components SET deleted_at=CURRENT_TIMESTAMP WHERE id=1")
+        db.commit()
+        with pytest.raises(LookupError, match='component not found'):
+            adjust_stock(db, component_id=1, user_id=1, adjustment='stock-in', quantity=1)
+        assert db.execute('SELECT quantity FROM components WHERE id=1').fetchone()[0] == 5
+        assert db.execute('SELECT COUNT(*) FROM inventory_transactions').fetchone()[0] == 0
+        assert db.execute('SELECT COUNT(*) FROM audit_log').fetchone()[0] == 0
     finally:
         db.close()

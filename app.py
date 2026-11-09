@@ -513,11 +513,15 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 status = 400
             else:
                 try:
-                    get_db().execute(
+                    cursor = get_db().execute(
                         """UPDATE components SET sku=?, name=?, description=?, category=?, supplier=?,
-                           quantity=?, reorder_level=?, unit_price=?, updated_at=CURRENT_TIMESTAMP WHERE id=?""",
-                        (*values, component_id),
+                           reorder_level=?, unit_price=?, updated_at=CURRENT_TIMESTAMP
+                           WHERE id=? AND deleted_at IS NULL""",
+                        (*values[:5], *values[6:], component_id),
                     )
+                    if cursor.rowcount == 0:
+                        get_db().rollback()
+                        abort(404)
                     write_audit(g.user["id"], "component-updated", f"component_id={component_id}; sku={values[0]}")
                     flash("Component updated. Its availability label reflects the saved quantity and threshold.", "success")
                     return redirect(url_for("component_detail", component_id=component_id))

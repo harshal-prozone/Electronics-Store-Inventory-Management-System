@@ -45,6 +45,7 @@ def _transaction_test_db():
         CREATE TABLE users (id INTEGER PRIMARY KEY, username TEXT NOT NULL);
         CREATE TABLE components (
             id INTEGER PRIMARY KEY, quantity INTEGER NOT NULL CHECK (quantity >= 0),
+            deleted_at TEXT,
             updated_at TEXT DEFAULT CURRENT_TIMESTAMP
         );
         CREATE TABLE inventory_transactions (

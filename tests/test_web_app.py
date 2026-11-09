@@ -1460,3 +1460,60 @@ def test_threshold_requires_csrf(client, app, threshold_component):
     sign_in(client)
     app.config['WTF_CSRF_ENABLED'] = True
     assert client.post(f'/components/{threshold_component}/threshold', data={'reorder_level': '10'}).status_code == 400
+
+
+def test_edit_does_not_overwrite_concurrent_stock_movement(client, app, monkeypatch):
+    """An edit validated from an older snapshot must not undo a stock movement."""
+    import app as app_module
+    from inventory_service import adjust_stock
+
+    sign_in(client)
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        component = db.execute('SELECT id, sku, name, description, category, supplier, quantity, reorder_level, unit_price FROM components ORDER BY id').fetchone()
+        user_id = db.execute('SELECT id FROM users WHERE username = ?', ('admin',)).fetchone()[0]
+    cid, sku, name, description, category, supplier, quantity, reorder, price = component
+    original = app_module.validate_component_form
+
+    def validate_after_stock_change(form):
+        result = original(form)
+        with sqlite3.connect(app.config['DATABASE']) as db:
+            db.row_factory = sqlite3.Row
+            db.execute('PRAGMA foreign_keys = ON')
+            adjust_stock(db, component_id=cid, user_id=user_id, adjustment='stock-in', quantity=3)
+        return result
+
+    monkeypatch.setattr(app_module, 'validate_component_form', validate_after_stock_change)
+    response = client.post(f'/components/{cid}/edit', data={
+        'sku': sku, 'name': name, 'description': description, 'category': category,
+        'supplier': supplier, 'reorder_level': str(reorder), 'unit_price': str(price),
+    })
+    assert response.status_code == 302
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        assert db.execute('SELECT quantity FROM components WHERE id=?', (cid,)).fetchone()[0] == quantity + 3
+        assert db.execute('SELECT previous_quantity, new_quantity FROM inventory_transactions WHERE component_id=? ORDER BY id DESC', (cid,)).fetchone() == (quantity, quantity + 3)
+
+
+def test_edit_does_not_update_component_deleted_during_validation(client, app, monkeypatch):
+    import app as app_module
+
+    sign_in(client)
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        cid, sku, name, description, category, supplier, quantity, reorder, price = db.execute(
+            'SELECT id, sku, name, description, category, supplier, quantity, reorder_level, unit_price FROM components ORDER BY id').fetchone()
+    original = app_module.validate_component_form
+
+    def validate_after_delete(form):
+        result = original(form)
+        with sqlite3.connect(app.config['DATABASE']) as db:
+            db.execute('UPDATE components SET deleted_at=CURRENT_TIMESTAMP WHERE id=?', (cid,))
+        return result
+
+    monkeypatch.setattr(app_module, 'validate_component_form', validate_after_delete)
+    response = client.post(f'/components/{cid}/edit', data={
+        'sku': sku, 'name': 'must not be saved', 'description': description, 'category': category,
+        'supplier': supplier, 'reorder_level': str(reorder), 'unit_price': str(price),
+    })
+    assert response.status_code == 404
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        assert db.execute('SELECT name FROM components WHERE id=?', (cid,)).fetchone()[0] == name
+        assert db.execute("SELECT COUNT(*) FROM audit_log WHERE event_type='component-updated' AND details LIKE ?", (f'component_id={cid};%',)).fetchone()[0] == 0
