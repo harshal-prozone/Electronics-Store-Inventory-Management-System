@@ -29,8 +29,8 @@ The Sprint 2 implementation baseline and remaining-evidence pack are committed. 
 
 ## Important qualifications
 
-1. **Issue #24 is closed in GitHub as of 9 November 2026, but is not fully accepted.** Its explicit independent teammate criterion is not met by the owner's own clean-clone run or by CI automation.
-2. **Issue #17 is closed in GitHub but its >=99% defined-period availability criterion is not demonstrated.** A health endpoint response is not uptime evidence. Correct the tracker status if required by the team's process.
+1. **Issue #24 was reopened on 9 November 2026 and is not fully accepted.** Its explicit independent teammate criterion is not met by the owner's own clean-clone run or by CI automation.
+2. **Issue #17 was reopened on 9 November 2026; its >=99% defined-period availability criterion is not demonstrated.** A health endpoint response is not uptime evidence.
 3. **Issue #13's existing participant result is self-reported and incomplete in metadata.** Do not invent the participant's identity, timestamp, environment, or screenshots.
 4. **A demo run sheet is not a demo recording.**
 5. **A sign-off template is not approval.**
