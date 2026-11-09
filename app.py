@@ -399,22 +399,22 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         return categories, suppliers
     
     def validate_catalog_selection(values):
-        """Ensure component category and supplier exist in the catalogues."""
+        """Resolve catalogue names while the caller holds the SQLite write lock."""
         db = get_db()
         category = db.execute(
-            "SELECT 1 FROM categories WHERE name = ? COLLATE NOCASE",
+            "SELECT name FROM categories WHERE name = ? COLLATE NOCASE",
             (values[3],),
         ).fetchone()
         supplier = db.execute(
-            "SELECT 1 FROM suppliers WHERE name = ? COLLATE NOCASE",
+            "SELECT name FROM suppliers WHERE name = ? COLLATE NOCASE",
             (values[4],),
         ).fetchone()
 
         if not category:
-            return "Select a valid category from the catalogue."
+            return None, "Select a valid category from the catalogue."
         if not supplier:
-            return "Select a valid supplier from the catalogue."
-        return None
+            return None, "Select a valid supplier from the catalogue."
+        return (*values[:3], category["name"], supplier["name"], *values[5:]), None
 
     @app.errorhandler(413)
     def upload_too_large(error):
@@ -473,8 +473,10 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         if request.method == "POST":
             values, error = validate_component_form(request.form)
             if not error:
-                error = validate_catalog_selection(values)
+                get_db().execute("BEGIN IMMEDIATE")
+                values, error = validate_catalog_selection(values)
             if error:
+                get_db().rollback()
                 flash(error, "error")
                 status = 400
             else:
@@ -507,8 +509,10 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             form_data["quantity"] = str(component["quantity"])
             values, error = validate_component_form(form_data)
             if not error:
-                error = validate_catalog_selection(values)
+                get_db().execute("BEGIN IMMEDIATE")
+                values, error = validate_catalog_selection(values)
             if error:
+                get_db().rollback()
                 flash(error, "error")
                 status = 400
             else:
@@ -718,15 +722,19 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 flash(str(exc), "error")
                 status = 400
             else:
-                old_name = category["name"]
                 try:
                     db.execute("BEGIN IMMEDIATE")
+                    current = db.execute("SELECT name FROM categories WHERE id = ?", (category_id,)).fetchone()
+                    if current is None:
+                        db.rollback()
+                        abort(404)
+                    old_name = current["name"]
                     db.execute(
                         "UPDATE categories SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
                         (name, category_id),
                     )
                     db.execute(
-                        "UPDATE components SET category = ? WHERE category = ?",
+                        "UPDATE components SET category = ? WHERE category = ? COLLATE NOCASE",
                         (name, old_name),
                     )
                     write_audit(g.user["id"], "category-updated", f"category_id={category_id}; name={name}")
@@ -743,6 +751,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     @admin_required
     def category_delete(category_id: int):
         db = get_db()
+        db.execute("BEGIN IMMEDIATE")
         category = db.execute(
             "SELECT * FROM categories WHERE id = ?", (category_id,)
         ).fetchone()
@@ -750,10 +759,11 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             abort(404)
 
         used = db.execute(
-            "SELECT 1 FROM components WHERE category = ? AND deleted_at IS NULL LIMIT 1",
+            "SELECT 1 FROM components WHERE category = ? COLLATE NOCASE AND deleted_at IS NULL LIMIT 1",
             (category["name"],),
         ).fetchone()
         if used:
+            db.rollback()
             flash("Cannot delete a category assigned to an active component.", "error")
         else:
             db.execute("DELETE FROM categories WHERE id = ?", (category_id,))
@@ -815,15 +825,19 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 flash(str(exc), "error")
                 status = 400
             else:
-                old_name = supplier["name"]
                 try:
                     db.execute("BEGIN IMMEDIATE")
+                    current = db.execute("SELECT name FROM suppliers WHERE id = ?", (supplier_id,)).fetchone()
+                    if current is None:
+                        db.rollback()
+                        abort(404)
+                    old_name = current["name"]
                     db.execute(
                         "UPDATE suppliers SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
                         (name, supplier_id),
                     )
                     db.execute(
-                        "UPDATE components SET supplier = ? WHERE supplier = ?",
+                        "UPDATE components SET supplier = ? WHERE supplier = ? COLLATE NOCASE",
                         (name, old_name),
                     )
                     write_audit(g.user["id"], "supplier-updated", f"supplier_id={supplier_id}; name={name}")
@@ -840,6 +854,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
     @admin_required
     def supplier_delete(supplier_id: int):
         db = get_db()
+        db.execute("BEGIN IMMEDIATE")
         supplier = db.execute(
             "SELECT * FROM suppliers WHERE id = ?", (supplier_id,)
         ).fetchone()
@@ -847,10 +862,11 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             abort(404)
 
         used = db.execute(
-            "SELECT 1 FROM components WHERE supplier = ? AND deleted_at IS NULL LIMIT 1",
+            "SELECT 1 FROM components WHERE supplier = ? COLLATE NOCASE AND deleted_at IS NULL LIMIT 1",
             (supplier["name"],),
         ).fetchone()
         if used:
+            db.rollback()
             flash("Cannot delete a supplier assigned to an active component.", "error")
         else:
             db.execute("DELETE FROM suppliers WHERE id = ?", (supplier_id,))

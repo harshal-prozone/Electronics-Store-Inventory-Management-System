@@ -1517,3 +1517,97 @@ def test_edit_does_not_update_component_deleted_during_validation(client, app, m
     with sqlite3.connect(app.config['DATABASE']) as db:
         assert db.execute('SELECT name FROM components WHERE id=?', (cid,)).fetchone()[0] == name
         assert db.execute("SELECT COUNT(*) FROM audit_log WHERE event_type='component-updated' AND details LIKE ?", (f'component_id={cid};%',)).fetchone()[0] == 0
+
+
+@pytest.mark.parametrize('kind', ['category', 'supplier'])
+def test_component_catalogue_names_are_canonical_and_protect_deletion(client, app, kind):
+    sign_in(client)
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        category = db.execute('SELECT name FROM categories ORDER BY id').fetchone()[0]
+        supplier = db.execute('SELECT name FROM suppliers ORDER BY id').fetchone()[0]
+        table = 'categories' if kind == 'category' else 'suppliers'
+        name = category if kind == 'category' else supplier
+        catalogue_id = db.execute(f'SELECT id FROM {table} WHERE name=?', (name,)).fetchone()[0]
+    response = client.post('/components/new', data={
+        'sku': 'CANON-TEST', 'name': 'Canonical entry', 'description': '',
+        'category': category.swapcase(), 'supplier': supplier.swapcase(),
+        'quantity': '1', 'reorder_level': '0', 'unit_price': '1',
+    })
+    assert response.status_code == 302
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        assert db.execute("SELECT category, supplier FROM components WHERE sku='CANON-TEST'").fetchone() == (category, supplier)
+    assert client.post(f'/{table}/{catalogue_id}/delete').status_code == 302
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        assert db.execute(f'SELECT name FROM {table} WHERE id=?', (catalogue_id,)).fetchone() == (name,)
+
+
+@pytest.mark.parametrize('kind', ['category', 'supplier'])
+def test_component_create_rejects_catalogue_deleted_during_validation(client, app, monkeypatch, kind):
+    import app as app_module
+    sign_in(client)
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        category = db.execute('SELECT name FROM categories ORDER BY id').fetchone()[0]
+        supplier = db.execute('SELECT name FROM suppliers ORDER BY id').fetchone()[0]
+    original = app_module.validate_component_form
+    def validate_after_deletion(form):
+        result = original(form)
+        with sqlite3.connect(app.config['DATABASE']) as db:
+            table, name = ('categories', category) if kind == 'category' else ('suppliers', supplier)
+            db.execute(f'DELETE FROM {table} WHERE name=?', (name,))
+        return result
+    monkeypatch.setattr(app_module, 'validate_component_form', validate_after_deletion)
+    response = client.post('/components/new', data={
+        'sku': 'RACE-CATALOG', 'name': 'Race entry', 'description': '',
+        'category': category, 'supplier': supplier, 'quantity': '1',
+        'reorder_level': '0', 'unit_price': '1',
+    })
+    assert response.status_code == 400
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        assert db.execute("SELECT COUNT(*) FROM components WHERE sku='RACE-CATALOG'").fetchone()[0] == 0
+
+
+@pytest.mark.parametrize('kind', ['category', 'supplier'])
+@pytest.mark.parametrize('operation', ['delete', 'rename'])
+def test_concurrent_catalogue_change_and_component_create_remain_consistent(app, kind, operation):
+    """Competing writers cannot leave an active component with a dangling name."""
+    from concurrent.futures import ThreadPoolExecutor
+    from threading import Barrier
+
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        uid = db.execute("SELECT id FROM users WHERE username='admin'").fetchone()[0]
+        db.execute("INSERT INTO categories(name) VALUES ('Race Category')")
+        db.execute("INSERT INTO suppliers(name) VALUES ('Race Supplier')")
+        table, name = ('categories', 'Race Category') if kind == 'category' else ('suppliers', 'Race Supplier')
+        catalogue_id = db.execute(f'SELECT id FROM {table} WHERE name=?', (name,)).fetchone()[0]
+    barrier = Barrier(2)
+
+    def client_for_admin():
+        client = app.test_client()
+        with client.session_transaction() as session:
+            session['user_id'] = uid
+        return client
+
+    def create():
+        client = client_for_admin()
+        barrier.wait(timeout=10)
+        return client.post('/components/new', data={
+            'sku': 'RACE-THREAD', 'name': 'Threaded component', 'description': '',
+            'category': 'Race Category', 'supplier': 'Race Supplier', 'quantity': '1',
+            'reorder_level': '0', 'unit_price': '1',
+        }).status_code
+
+    def change():
+        client = client_for_admin()
+        barrier.wait(timeout=10)
+        if operation == 'delete':
+            return client.post(f'/{table}/{catalogue_id}/delete').status_code
+        return client.post(f'/{table}/{catalogue_id}/edit', data={'name': 'Renamed ' + name}).status_code
+
+    with ThreadPoolExecutor(max_workers=2) as pool:
+        a, b = pool.submit(create), pool.submit(change)
+        assert a.result() in (302, 400)
+        assert b.result() == 302
+    with sqlite3.connect(app.config['DATABASE']) as db:
+        record = db.execute(f"SELECT {kind} FROM components WHERE sku='RACE-THREAD'").fetchone()
+        if record:
+            assert db.execute(f'SELECT 1 FROM {table} WHERE name=? COLLATE NOCASE', (record[0],)).fetchone()
