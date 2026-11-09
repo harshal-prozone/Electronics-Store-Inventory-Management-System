@@ -1,5 +1,6 @@
 import csv
 import io
+from contextlib import closing
 import sqlite3
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -47,7 +48,7 @@ def test_supplier_contact_create_edit_validation_and_escaping(app, client):
 def test_legacy_supplier_migration_and_repeat_init(tmp_path):
     path = tmp_path / 'legacy.sqlite'
     schema = Path('schema.sql').read_text().replace("    contact_email TEXT NOT NULL DEFAULT '',\n    phone TEXT NOT NULL DEFAULT '',\n", '')
-    with sqlite3.connect(path) as db:
+    with closing(sqlite3.connect(path)) as db, db:
         db.executescript(schema)
         db.execute("INSERT INTO suppliers(name) VALUES ('Legacy')")
     app = create_app({'TESTING': True, 'SECRET_KEY': 'test', 'DATABASE': str(path)})
