@@ -22,4 +22,4 @@ Code and test revision: `e654c40` (9 November 2026). These are local engineering
 
 ## Outstanding
 
-No PR CI run has yet tested these changes. The original Django/DRF/PostgreSQL architecture, supplier email, low-stock notifier, and other original-case execution/approval remain unresolved. The browser-based original acceptance and operational availability records still require real participants and a live environment. See `Architecture-and-baseline-reconciliation.md` and `Original-STP-reconciliation.md`.
+PR CI run #85 passed all five jobs on commit `6e545ae`; the actual test count was not independently obtained from that run’s logs. Supplier contacts and in-app transition alerts were subsequently added on `a6808a3`; see the newer delivery validation record. The original Django/DRF/PostgreSQL architecture and original-case execution/approval remain unresolved. The browser-based original acceptance and operational availability records still require real participants and a live environment. See `Architecture-and-baseline-reconciliation.md` and `Original-STP-reconciliation.md`.

@@ -17,7 +17,7 @@
 
 - Local Bandit 1.9.4 on `app.py`, `input_validation.py`, `inventory_service.py`, `inventory_import.py` exited 1 with eight medium B608 (possible SQL construction) and two low findings (B406 import of `xml.sax.saxutils.escape`; B105 test-only seeded password). Raw findings are retained in `evidence/engineering-2026-11-09/bandit.json`. These are scanner findings, not automatically confirmed exploitable vulnerabilities or closed findings; the SQL paths and user-controlled values require independent security review.
 - `pip-audit -r requirements.txt` using pip-audit 2.10.1 reported **no known vulnerabilities** in the resolved dependencies at execution time; raw output is retained. The requirements use ranges, so this does not guarantee future resolutions or deployed environments. No ZAP, SonarQube, or authorized manual penetration-test report was established. No high-severity scanner results cannot be asserted across unrun scanners.
-- Important baseline gaps include account lockout, account disabling/session revocation, supplier email and the low-stock notifier. TLS/HSTS and deployment security were not demonstrated. See `Architecture-and-baseline-reconciliation.md` and `Original-STP-reconciliation.md`.
+- At this historical revision, baseline gaps included account lockout, account disabling/session revocation, supplier email and the low-stock notifier; later remediation is recorded separately. TLS/HSTS and deployment security were not demonstrated. See `Architecture-and-baseline-reconciliation.md` and `Original-STP-reconciliation.md`.
 
 ## CI and acceptance
 

@@ -1,0 +1,5 @@
+2026-11-09 12:19:36,244 [main ] ERROR CommandLine - No check for updates for over 3 month - add-ons may well be out of date
+2026-11-09 12:19:36,370 [main ] WARN  SeleniumManager - Unable to discover proper geckodriver version in offline mode
+2026-11-09 12:19:36,372 [main ] WARN  FirefoxProfileManager - Unable to find Firefox binary through SeleniumManager.
+2026-11-09 12:19:36,372 [main ] ERROR ExtensionClientIntegration - Failed to get or create Firefox profile zap-client-profile
+2026-11-09 12:19:42,905 [ZAP-ActiveScanner-0] WARN  DomXssScanRule - Skipping scanner, failed to start browser: Could not start a new session. Response code 500. Message: Expected browser binary location, but unable to find binary in default location, no 'moz:firefoxOptions.binary' capability provided, and no binary flag set on the command line 

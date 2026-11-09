@@ -14,10 +14,10 @@ Browser → Flask/Jinja routes in `app.py` → `inventory_service.py`, `inventor
 | PostgreSQL 14 and row locking | SQLite single-file database with write-lock serialization | Current concurrency tests support SQLite only; no PostgreSQL locking/deployment proof. |
 | Bootstrap 5, Chart.js; category chart | Custom CSS and server-rendered availability chart | Not the specified framework/chart; assess design and original dashboard case. |
 | Docker Compose, nginx, HTTPS, restart policies | No delivered Compose/nginx production deployment | TLS, redirect/HSTS, isolation, deployment monitoring and availability require an actual deployment. |
-| Jenkins, Postman, Locust, SonarQube, Bandit, pip-audit, ZAP | GitHub Actions, pytest and Selenium; local scanner results in `Final-Engineering-Validation.md` | GitHub Actions is not Jenkins, Flask tests are not Postman, short loopback benchmark is not five-minute Locust; local scans are not configured per-build or an OWASP ZAP assessment. |
+| Jenkins, Postman, Locust, SonarQube, Bandit, pip-audit, ZAP | GitHub Actions, pytest, Selenium and a local Locust runner; see `Security-Scanner-Review.md` | GitHub Actions is not Jenkins; Flask tests are not Postman; local loopback load is not the original deployed stack; an unauthenticated local ZAP quick scan is not a full deployment or authenticated security assessment. |
 | Staff may create/edit components and generate reports (UC-02/03/08) | Current application restricts these actions to Admin | Material authorization difference, not an equivalent security implementation; obtain owner/course decision before changing access policy. |
 | Account disable and five-failure lockout | Flask account status, session revocation and lockout are implemented; see `tests/test_account_controls.py` | Original DRF API/423 responses differ; formal case execution and approval remain. |
-| Supplier email and notifier | No corresponding mechanisms | Original cases cannot pass as specified; implementation or explicit waiver required. |
+| Supplier email and notifier | Optional validated email and phone; durable in-app SQLite-triggered transition alerts | Related Flask/SQLite tests exist. There is no Django notifier or real email delivery; original cases and approach remain to be reviewed. |
 | Django PBKDF2 hash format, idle timeout | Werkzeug default salted hashing, Flask permanent signed sessions with a simulated 30-minute idle-expiry test | Hash format differs; deployed HTTPS session behavior remains unverified. |
 | One category/supplier references and in-use deletion rules | Stored text, application-level checks; no database foreign keys from components to catalogues | Application writes now use a serialized check/write sequence, but external writers bypass these checks; deleted-component reference semantics differ from baseline. |
 
@@ -40,20 +40,20 @@ Labels below are summaries only; the PDF remains authoritative for exact text. �
 | FR-009 | list filters and tests | DRF filter tests not executed. |
 | FR-010 | `adjust_stock`; transaction tests | SQLite/form interface, not DRF. |
 | FR-011 | `adjust_stock`; rollback/concurrency tests | SQLite only; no PostgreSQL evidence. |
-| FR-012 | `availability_status`; service tests | Original notifier case not implemented. |
+| FR-012 | `availability_status`; durable in-app transition alerts; `tests/test_supplier_alerts.py` | Not the original Django notifier; original integration case not independently executed. |
 | FR-013 | category CRUD and tests | Catalogue references are text, not foreign keys. |
-| FR-014 | supplier CRUD and tests | Supplier contact/email baseline missing. |
+| FR-014 | supplier CRUD, optional contact fields, validation and tests | Not the original Django/DRF form or endpoint. |
 | FR-015 | report route and tests | Report restricted to Admin, contrary to UC-08 Staff. |
 | FR-016 | CSV/PDF routes and tests | API/status expectations differ. |
 | FR-017 | dashboard query and tests | Chart is availability rather than category. |
 | FR-018 | `inventory_transactions`, service tests | Legacy and concurrent behavior need ongoing verification. |
 | FR-019 | audit log and audit tests | Exact source fields/conditions, including IP, require case-level verification. |
-| NFR-001 | `scripts/performance_test.py` | Local 100 requests only; original five-minute Locust case not run. |
+| NFR-001 | `scripts/performance_test.py` and `scripts/run_locust_benchmark.py` | See delivery validation for local execution; Flask/SQLite loopback is not the original deployed stack. |
 | NFR-002 | readiness endpoints and sampler | One-week operational measurement outstanding. |
 | NFR-003 | browser workflow and UAT record template | Independent representative user not established. |
 | NFR-004 | SQLite transaction concurrency tests | PostgreSQL baseline not executed. |
 | NFR-005 | service modules and tests | Business logic still exists in routes. |
-| NFR-006 | local 5,000-item benchmark | Short loopback check, not original five-minute load. |
+| NFR-006 | local 5,000-item benchmark and Locust runner | Local synthetic workload only; see delivery validation. |
 | NFR-007 | Selenium browser workflow | #83 passed; rerun required on changed revision. |
 | NFR-008 | service functions tested independently | Not all business logic is in services. |
 | SEC-001 | Werkzeug salted hashes and tests | Not original exact Django hash format. |

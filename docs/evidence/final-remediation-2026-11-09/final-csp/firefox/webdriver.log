@@ -1,0 +1,39 @@
+1794226802761	geckodriver	INFO	Listening on 127.0.0.1:57449
+1794226802764	mozrunner::runner	INFO	Running command: MOZ_CRASHREPORTER="1" MOZ_CRASHREPORTER_NO_REPORT="1" MOZ_CRASHREPORTER_SHUTDOWN="1" "/vercel/sandbox/data/e ... ss" "--remote-debugging-port" "33129" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "/tmp/rust_mozprofileZ7yadU"
+*** You are running in headless mode.
+1794226802991	Marionette	INFO	Marionette enabled
+1794226803074	Marionette	INFO	Listening on port 41421
+WebDriver BiDi listening on ws://127.0.0.1:33129
+Read port: 41421
+1794226803211	RemoteAgent	WARN	TLS certificate errors will be ignored for this session
+[GFX1-]: RenderCompositorSWGL failed mapping default framebuffer, no dt
+console.error: "Experiment desktop-release-rollout-show-relay-to-all-browsers-next-sign-up-modal-cta has unknown featureId: email-autocomplete-relay"
+console.error: "Experiment visual-card-updates has unknown featureId: newtabRefinedCardsLayout"
+console.error: "Experiment enable-nimbus-unenrollment-synchronization has unknown featureId: nimbusStore"
+console.error: "Experiment private-window-visual-refresh-design-change-only has unknown featureId: feltPrivacy"
+console.warn: LoginRecipes: "Falling back to a synchronous message for: http://127.0.0.1:46813."
+console.warn: LoginRecipes: "Falling back to a synchronous message for: http://127.0.0.1:46813."
+1794226808861	RemoteAgent	WARN	PollPromise timed out after 0 ms
+[Parent 16308, Main Thread] WARNING: g_object_get: assertion 'G_IS_OBJECT (object)' failed: 'glib warning', file checkouts/gecko/toolkit/xre/nsSigHandlers.cpp:237
+
+(firefox:16308): GLib-GObject-CRITICAL **: 12:20:10.352: g_object_get: assertion 'G_IS_OBJECT (object)' failed
+1794226815800	RemoteAgent	WARN	PollPromise timed out after 0 ms
+[Parent 16308, Main Thread] WARNING: g_object_get: assertion 'G_IS_OBJECT (object)' failed: 'glib warning', file checkouts/gecko/toolkit/xre/nsSigHandlers.cpp:237
+
+(firefox:16308): GLib-GObject-CRITICAL **: 12:20:16.895: g_object_get: assertion 'G_IS_OBJECT (object)' failed
+console.warn: BackupService: "There was an error while trying to get the Document's directory" [Exception... "Component returned failure code: 0x80004005 (NS_ERROR_FAILURE) [nsIProperties.get]"  nsresult: "0x80004005 (NS_ERROR_FAILURE)"  location: "JS frame :: moz-src:///browser/components/backup/BackupService.sys.mjs :: get docsDirFolderPath :: line 1304"  data: no]
+[Parent 16308, Main Thread] WARNING: g_object_get: assertion 'G_IS_OBJECT (object)' failed: 'glib warning', file checkouts/gecko/toolkit/xre/nsSigHandlers.cpp:237
+
+(firefox:16308): GLib-GObject-CRITICAL **: 12:20:22.022: g_object_get: assertion 'G_IS_OBJECT (object)' failed
+console.warn: LoginRecipes: "Falling back to a synchronous message for: http://127.0.0.1:46813."
+1794226828081	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794226828082	RemoteAgent	WARN	PollPromise timed out after 0 ms
+1794226828456	RemoteAgent	WARN	PollPromise timed out after 0 ms
+JavaScript error: resource://gre/modules/LoginManagerChild.sys.mjs, line 1715: TypeError: can't access dead object
+console.warn: LoginRecipes: "Falling back to a synchronous message for: http://127.0.0.1:46813."
+1794226829393	RemoteAgent	WARN	PollPromise timed out after 0 ms
+console.error: [Exception... "ServiceManager::GetService returned failure code:"  nsresult: "0x80570016 (NS_ERROR_XPC_GS_RETURNED_FAILURE)"  location: "JS frame :: resource://gre/modules/XPCOMUtils.sys.mjs :: defineLazyServiceGetter/< :: line 125"  data: no]
+console.error: (new TypeError("can't access property \"getCurrentSession\", lazy.dragService is undefined", "resource://gre/modules/SubDialog.sys.mjs", 189))
+JavaScript error: chrome://remote/content/marionette/actors/MarionetteCommandsChild.sys.mjs, line 170: InactiveActor: Actor is no longer active
+1794226830993	Marionette	INFO	Stopped listening on port 41421
+1794226831463	webdriver::server	INFO	Shutting down

@@ -1,0 +1,9 @@
+[2026-11-09 12:20:39,049] WARNING in app: No administrator was seeded. Run 'flask --app app create-admin' to create one.
+[2026-11-09 12:20:39,063] WARNING in app: No administrator was seeded. Run 'flask --app app create-admin' to create one.
+Database initialized. If no administrator exists, run: flask --app app create-admin
+[2026-11-09 12:20:39,307] WARNING in app: No administrator was seeded. Run 'flask --app app create-admin' to create one.
+Administrator 'clean-test' created.
+Database initialized. If no administrator exists, run: flask --app app create-admin
+health ready 200 {'database': 'ok', 'status': 'ok'}
+integrity ok
+foreign keys []

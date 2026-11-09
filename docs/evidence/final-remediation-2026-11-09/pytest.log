@@ -1,0 +1,1433 @@
+........................................................................ [ 24%]
+........................................................................ [ 48%]
+........................................................................ [ 72%]
+........................................................................ [ 96%]
+............/data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/coverage/sqldata.py:631: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23fa60>
+  data = [(file_id, self._current_context_id, fromno, tono) for fromno, tono in arcs]
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+/usr/lib64/python3.13/collections/__init__.py:450: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23fb50>
+  @classmethod
+ResourceWarning: Enable tracemalloc to get the object allocation traceback
+                                                             [100%]
+=============================== warnings summary ===============================
+tests/test_account_controls.py::test_disable_rejects_login_revokes_sessions_and_prevents_replay_after_enable
+  /usr/lib64/python3.13/collections/__init__.py:1006: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db64c400>
+    def __init__(self, *maps):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_disable_rejects_login_revokes_sessions_and_prevents_replay_after_enable
+  /usr/lib64/python3.13/collections/__init__.py:1006: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db64e7a0>
+    def __init__(self, *maps):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_self_disable_invalid_action_and_unknown_user_are_rejected
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/flask/json/tag.py:103: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db64ff10>
+    def check(self, value: t.Any) -> bool:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_self_disable_invalid_action_and_unknown_user_are_rejected
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/flask/json/tag.py:103: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac44220>
+    def check(self, value: t.Any) -> bool:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_staff_and_anonymous_cannot_change_user_status
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/flask/app.py:779: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db64fd30>
+    def handle_user_exception(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_staff_and_anonymous_cannot_change_user_status
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/flask/app.py:779: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac44a90>
+    def handle_user_exception(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_staff_and_anonymous_cannot_change_user_status
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/flask/app.py:779: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac45a80>
+    def handle_user_exception(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_staff_and_anonymous_cannot_change_user_status
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/flask/app.py:779: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac458a0>
+    def handle_user_exception(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_status_change_requires_csrf
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac45f30>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_status_change_requires_csrf
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac449a0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_status_change_requires_csrf
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac457b0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_existing_user_database_migrates_without_resetting_accounts
+  /usr/lib64/python3.13/ast.py:279: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac463e0>
+    yield field, getattr(node, field)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_five_failures_lock_account_then_expire_and_success_resets
+  /usr/lib64/python3.13/ast.py:279: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac465c0>
+    yield field, getattr(node, field)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_old_failures_do_not_accumulate_outside_window
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:770: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac46f20>
+    _convert(elem) if is_dynamic else ast.Constant(elem)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_old_failures_do_not_accumulate_outside_window
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:770: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac46890>
+    _convert(elem) if is_dynamic else ast.Constant(elem)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_old_failures_do_not_accumulate_outside_window
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:770: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac472e0>
+    _convert(elem) if is_dynamic else ast.Constant(elem)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_concurrent_failures_do_not_lose_lockout_updates
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac448b0>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_concurrent_failures_do_not_lose_lockout_updates
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac471f0>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_concurrent_failures_do_not_lose_lockout_updates
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac464d0>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_logout_revokes_replayed_cookie_and_other_sessions
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dcde7970>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_logout_revokes_replayed_cookie_and_other_sessions
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac45d50>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_default_permanent_session_timeout_is_thirty_minutes
+  /usr/lib64/python3.13/ast.py:50: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac45210>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_disable_rolls_back_when_audit_insert_fails
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:778: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac44c70>
+    ret[-1] = ast.Constant(ret[-1].value + p.value)  # type: ignore[operator]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_disable_rolls_back_when_audit_insert_fails
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:778: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac47e20>
+    ret[-1] = ast.Constant(ret[-1].value + p.value)  # type: ignore[operator]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_disable_rolls_back_when_audit_insert_fails
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:778: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac475b0>
+    ret[-1] = ast.Constant(ret[-1].value + p.value)  # type: ignore[operator]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_disable_rolls_back_when_audit_insert_fails
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:778: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac466b0>
+    ret[-1] = ast.Constant(ret[-1].value + p.value)  # type: ignore[operator]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_idle_session_refreshes_then_expires_after_thirty_minutes
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db435f30>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_idle_session_refreshes_then_expires_after_thirty_minutes
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac46e30>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_idle_session_refreshes_then_expires_after_thirty_minutes
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac445e0>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_account_controls.py::test_idle_session_refreshes_then_expires_after_thirty_minutes
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac455d0>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_audit_logging.py::test_authentication_events_timestamp_and_no_secrets
+  <frozen importlib._bootstrap>:1420: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db64c6d0>
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_import_repeat_does_not_duplicate_components_or_stock_history
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac46020>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_mixed_rows_report_lines_and_leave_rejected_inventory_unchanged
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:277: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac47010>
+    def test(self, expr: str) -> bool:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides0-SKU is required]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac44400>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides0-SKU is required]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac462f0>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides1-SKU is required]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac47970>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides1-SKU is required]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac46b60>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides2-SKU is required]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac45030>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides2-SKU is required]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db534e50>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides3-Component name is required]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db535a80>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides3-Component name is required]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db534c70>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides4-Component name is required]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db534d60>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides4-Component name is required]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db535300>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides5-exceeds the allowed length]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/compiler.py:287: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5345e0>
+    self.names.discard(node.name)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides5-exceeds the allowed length]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/compiler.py:287: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db535f30>
+    self.names.discard(node.name)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides6-whole numbers]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:147: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db535c60>
+    def iter_fields(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides6-whole numbers]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:147: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5363e0>
+    def iter_fields(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides7-whole numbers]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db534040>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides7-whole numbers]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db534310>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides8-non-negative finite]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac473d0>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides8-non-negative finite]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac45b70>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides9-at most 9223372036854775807]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac44f40>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides9-at most 9223372036854775807]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac454e0>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides10-whole numbers]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac47100>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides10-whole numbers]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac44e50>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides11-non-negative finite]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db536b60>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides11-non-negative finite]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db537b50>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides12-at most 9223372036854775807]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5374c0>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides12-at most 9223372036854775807]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5375b0>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides13-price must be numeric]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5362f0>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides13-price must be numeric]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db536e30>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides14-price must be numeric]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db536200>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides14-price must be numeric]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db536890>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides15-non-negative finite]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5364d0>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides15-non-negative finite]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5353f0>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides16-non-negative finite]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db535e40>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides16-non-negative finite]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db534b80>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides17-non-negative finite]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/visitor.py:35: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5358a0>
+    def visit(self, node: Node, *args: t.Any, **kwargs: t.Any) -> t.Any:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides17-non-negative finite]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/visitor.py:35: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db535210>
+    def visit(self, node: Node, *args: t.Any, **kwargs: t.Any) -> t.Any:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides18-non-negative finite]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:169: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db534130>
+    def iter_child_nodes(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides18-non-negative finite]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:169: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5357b0>
+    def iter_child_nodes(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides19-valid category]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db537e20>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_invalid_values_are_rejected_without_writing_components[overrides19-valid category]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5346d0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_deleted_skus_stay_reserved_and_invalid_first_duplicates_are_rejected
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:583: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db536980>
+    def parse_math1(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_short_and_extra_rows_are_rejected_and_later_valid_rows_import
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:594: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db537c40>
+    def parse_concat(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_bad_files_reject_everything_before_writes[unclosed-quote]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:667: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db537f10>
+    yield Token(lineno, token, value)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_bad_files_reject_everything_before_writes[unclosed-quote]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:667: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db536a70>
+    yield Token(lineno, token, value)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_bad_files_reject_everything_before_writes[bad-quote]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/visitor.py:28: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db536f20>
+    def get_visitor(self, node: Node) -> "t.Optional[VisitCallable]":
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_bad_files_reject_everything_before_writes[bad-quote]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/visitor.py:28: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5372e0>
+    def get_visitor(self, node: Node) -> "t.Optional[VisitCallable]":
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_bad_files_reject_everything_before_writes[invalid-encoding]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db534220>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_bad_files_reject_everything_before_writes[invalid-encoding]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5356c0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_bad_files_reject_everything_before_writes[invalid-encoding]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec4e50>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_bad_files_reject_everything_before_writes[oversized-file]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db536020>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_bad_files_reject_everything_before_writes[oversized-file]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db535b70>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_record_and_request_limits_reject_without_writes
+  /vercel/sandbox/data/esims-audit/clean-final2/tests/test_csv_import.py:217: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5355d0>
+    response = upload(client, csv_bytes(*(record(sku=f"BULK-{i}") for i in range(5001))))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_record_and_request_limits_reject_without_writes
+  /vercel/sandbox/data/esims-audit/clean-final2/tests/test_csv_import.py:217: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5373d0>
+    response = upload(client, csv_bytes(*(record(sku=f"BULK-{i}") for i in range(5001))))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_missing_file_wrong_extension_and_template
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:292: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5349a0>
+    def test_any(self, *iterable: str) -> bool:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_missing_file_wrong_extension_and_template
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:292: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db537a60>
+    def test_any(self, *iterable: str) -> bool:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_missing_file_wrong_extension_and_template
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:292: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5366b0>
+    def test_any(self, *iterable: str) -> bool:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_admin_only_pages_upload_and_template
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:615: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db535d50>
+    def parse_pow(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_upload_requires_valid_csrf_token
+  /usr/lib64/python3.13/re/_parser.py:112: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db537970>
+    def __init__(self, state, data=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_upload_requires_valid_csrf_token
+  /usr/lib64/python3.13/re/_parser.py:112: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db534f40>
+    def __init__(self, state, data=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_upload_requires_valid_csrf_token
+  /usr/lib64/python3.13/re/_parser.py:112: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec5d50>
+    def __init__(self, state, data=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_upload_requires_valid_csrf_token
+  /usr/lib64/python3.13/re/_parser.py:112: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec5c60>
+    def __init__(self, state, data=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_upload_requires_valid_csrf_token
+  /usr/lib64/python3.13/re/_parser.py:112: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec4220>
+    def __init__(self, state, data=None):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_report_escapes_untrusted_sku_and_header
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:292: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db64fb50>
+    def test_any(self, *iterable: str) -> bool:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_report_escapes_untrusted_sku_and_header
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:292: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db64ef20>
+    def test_any(self, *iterable: str) -> bool:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_database_failure_rolls_back_components_history_and_audit[inventory_transactions-NEW.new_quantity = 9]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db534400>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_database_failure_rolls_back_components_history_and_audit[audit_log-NEW.details LIKE '%IMPORT-FAIL%']
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:643: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec4040>
+    def parse_primary(self, with_namespace: bool = False) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_database_failure_rolls_back_components_history_and_audit[audit_log-NEW.details LIKE '%IMPORT-FAIL%']
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:643: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db537880>
+    def parse_primary(self, with_namespace: bool = False) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_csv_import.py::test_import_inventory_csv_rolls_back_on_database_failure
+  /usr/lib64/python3.13/ast.py:50: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db535990>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_cannot_authenticate_or_change_data[' OR 1=1 --]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:150: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db537010>
+    def is_tuple_end(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_cannot_authenticate_or_change_data[' OR 1=1 --]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:150: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5365c0>
+    def is_tuple_end(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_cannot_authenticate_or_change_data[' OR 1=1 --]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:150: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec57b0>
+    def is_tuple_end(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_cannot_authenticate_or_change_data[x'); DROP TABLE components; --]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:294: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec4b80>
+    return any(self.test(expr) for expr in iterable)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_cannot_authenticate_or_change_data[x'); DROP TABLE components; --]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:294: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec58a0>
+    return any(self.test(expr) for expr in iterable)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_cannot_authenticate_or_change_data[' UNION SELECT 1,2,3 --]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/visitor.py:44: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec45e0>
+    def generic_visit(self, node: Node, *args: t.Any, **kwargs: t.Any) -> t.Any:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_cannot_authenticate_or_change_data[' UNION SELECT 1,2,3 --]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/visitor.py:44: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec4f40>
+    def generic_visit(self, node: Node, *args: t.Any, **kwargs: t.Any) -> t.Any:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_is_bound_in_search_filters_and_writes[' OR 1=1 --]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:583: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec5b70>
+    def parse_math1(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_is_bound_in_search_filters_and_writes[' OR 1=1 --]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:583: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec6980>
+    def parse_math1(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_is_bound_in_search_filters_and_writes[x'); DROP TABLE components; --]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/local.py:296: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec73d0>
+    return partial(f, obj)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_is_bound_in_search_filters_and_writes[x'); DROP TABLE components; --]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/local.py:296: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec72e0>
+    return partial(f, obj)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_is_bound_in_search_filters_and_writes[x'); DROP TABLE components; --]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/local.py:296: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db101120>
+    return partial(f, obj)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_is_bound_in_search_filters_and_writes[x'); DROP TABLE components; --]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/local.py:296: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db537d30>
+    return partial(f, obj)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_is_bound_in_search_filters_and_writes[' UNION SELECT 1,2,3 --]
+  /usr/lib64/python3.13/ast.py:272: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db537790>
+    def iter_fields(node):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_is_bound_in_search_filters_and_writes[' UNION SELECT 1,2,3 --]
+  /usr/lib64/python3.13/ast.py:272: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec7e20>
+    def iter_fields(node):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_sql_payload_is_bound_in_search_filters_and_writes[' UNION SELECT 1,2,3 --]
+  /usr/lib64/python3.13/ast.py:272: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1009a0>
+    def iter_fields(node):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_stored_component_and_stock_note_are_escaped[<script>window.__securityExecuted=1</script>]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:770: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5376a0>
+    _convert(elem) if is_dynamic else ast.Constant(elem)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_stored_component_and_stock_note_are_escaped[<script>window.__securityExecuted=1</script>]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:770: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5367a0>
+    _convert(elem) if is_dynamic else ast.Constant(elem)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_stored_component_and_stock_note_are_escaped[<script>window.__securityExecuted=1</script>]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:770: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1005e0>
+    _convert(elem) if is_dynamic else ast.Constant(elem)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_stored_component_and_stock_note_are_escaped[<script>window.__securityExecuted=1</script>]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:770: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db100a90>
+    _convert(elem) if is_dynamic else ast.Constant(elem)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_stored_component_and_stock_note_are_escaped[<script>window.__securityExecuted=1</script>]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:770: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db100220>
+    _convert(elem) if is_dynamic else ast.Constant(elem)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_stored_component_and_stock_note_are_escaped[<script>window.__securityExecuted=1</script>]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:770: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db100f40>
+    _convert(elem) if is_dynamic else ast.Constant(elem)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_stored_component_and_stock_note_are_escaped[<img src=x onerror="window.__securityExecuted=1">]
+  /usr/lib64/python3.13/ast.py:272: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec7f10>
+    def iter_fields(node):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_stored_component_and_stock_note_are_escaped[</textarea><svg onload="window.__securityExecuted=1">]
+  /vercel/sandbox/data/esims-audit/clean-final2/app.py:470: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec6d40>
+    supplier = db.execute(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_stored_catalogue_and_option_attributes_are_escaped[/categories/new]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:602: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec65c0>
+    return newline_re.sub(self.newline_sequence, value)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[superscript]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dcde7790>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[superscript]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dcde74c0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[arabic-digit]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1014e0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[arabic-digit]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1025c0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[underscore]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:615: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db101210>
+    def parse_pow(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[underscore]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:615: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db102a70>
+    def parse_pow(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[plus]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac47a60>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[plus]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1024d0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[exponent]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db102c50>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[exponent]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db103100>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[nan]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db101a80>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[nan]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1034c0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[negative]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db102980>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[negative]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db103a60>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[zero]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db102e30>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[zero]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db103790>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[overflow]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db103c40>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[overflow]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1022f0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[huge]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db102020>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_malformed_stock_quantity_returns_400_without_writes[huge]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1004f0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_inventory_filters_are_rejected[overflow-page]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:147: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec6890>
+    def iter_fields(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_inventory_filters_are_rejected[overflow-page]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:147: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec6a70>
+    def iter_fields(
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_account_fields_cannot_create_users[email-bad@@example.test]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:770: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec67a0>
+    _convert(elem) if is_dynamic else ast.Constant(elem)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_account_fields_cannot_create_users[email-bad@@example.test]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:770: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec4c70>
+    _convert(elem) if is_dynamic else ast.Constant(elem)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_account_fields_cannot_create_users[email-a@-host.test]
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec6c50>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_account_fields_cannot_create_users[email-a@-host.test]
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec7010>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_account_fields_cannot_create_users[email-a@host..test]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec5030>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_account_fields_cannot_create_users[email-a@host..test]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec6f20>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_account_fields_cannot_create_users[email-a@host..test]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec46d0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_account_fields_cannot_create_users[email-a b@example.test]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1008b0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_account_fields_cannot_create_users[email-a b@example.test]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db100400>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_text_is_rejected_without_silent_truncation[/components/new-data0]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:770: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db102890>
+    _convert(elem) if is_dynamic else ast.Constant(elem)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_text_is_rejected_without_silent_truncation[/components/new-data0]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:770: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db103d30>
+    _convert(elem) if is_dynamic else ast.Constant(elem)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_text_is_rejected_without_silent_truncation[/categories/new-data1]
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db101300>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_text_is_rejected_without_silent_truncation[/categories/new-data1]
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1017b0>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_text_is_rejected_without_silent_truncation[/suppliers/new-data2]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db100d60>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_text_is_rejected_without_silent_truncation[/suppliers/new-data2]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db101030>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_invalid_text_is_rejected_without_silent_truncation[/suppliers/new-data2]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db101e40>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_duplicate_parameters_json_and_huge_ids_are_rejected
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:165: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec47c0>
+    yield name, getattr(self, name)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_duplicate_parameters_json_and_huge_ids_are_rejected
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:165: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec5210>
+    yield name, getattr(self, name)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_oversized_request_is_413_and_csrf_still_protects_mutations
+  /usr/lib64/python3.13/hmac.py:38: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23c040>
+    def __init__(self, key, msg=None, digestmod=''):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_oversized_request_is_413_and_csrf_still_protects_mutations
+  /usr/lib64/python3.13/hmac.py:38: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23c7c0>
+    def __init__(self, key, msg=None, digestmod=''):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_multipart_limits_are_enforced_before_writes[multipart-part-limit]
+  /usr/lib64/python3.13/ast.py:50: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db536d40>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_multipart_limits_are_enforced_before_writes[multipart-part-limit]
+  /usr/lib64/python3.13/ast.py:50: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db101d50>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_multipart_limits_are_enforced_before_writes[multipart-part-limit]
+  /usr/lib64/python3.13/ast.py:50: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db101f30>
+    return compile(source, filename, mode, flags,
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_headers_and_external_delete_confirmation_preserve_safe_rendering
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:778: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1033d0>
+    ret[-1] = ast.Constant(ret[-1].value + p.value)  # type: ignore[operator]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_input_security.py::test_headers_and_external_delete_confirmation_preserve_safe_rendering
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/werkzeug/routing/rules.py:778: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec4d60>
+    ret[-1] = ast.Constant(ret[-1].value + p.value)  # type: ignore[operator]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_inventory_workflow_integration.py::test_component_creation_and_retrieval
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec4400>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_inventory_workflow_integration.py::test_component_creation_and_retrieval
+  /usr/lib64/python3.13/ast.py:295: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec5a80>
+    yield item
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_supplier_alerts.py::test_stock_alert_transitions_and_transaction_rollback
+  <werkzeug routing>:0: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec55d0>
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_history_combined_filters_keep_saved_balance
+  /usr/lib64/python3.13/ast.py:272: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac44b80>
+    def iter_fields(node):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_history_combined_filters_keep_saved_balance
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/visitor.py:33: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db102200>
+    return getattr(self, f"visit_{type(node).__name__}", None)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_history_rejects_invalid_filters[start_date=invalid]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1016c0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_history_rejects_invalid_filters[end_date=2026-02-30]
+  /vercel/sandbox/data/esims-audit/clean-final2/app.py:249: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db103f10>
+    user = db.execute("SELECT * FROM users WHERE id = ?", (candidate["id"],)).fetchone() if candidate else None
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_history_rejects_invalid_filters[start_date=2026-02-01&end_date=2026-01-01]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec5e40>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_history_rejects_invalid_filters[transaction_type=invalid]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:643: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec48b0>
+    def parse_primary(self, with_namespace: bool = False) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_history_pagination_and_empty_results
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec71f0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_admin_dashboard_metrics_match_active_inventory_and_chart
+  /usr/lib64/python3.13/random.py:906: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac47880>
+    x = int.from_bytes(_urandom(numbytes))
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_dashboard_metrics_refresh_after_stock_quantity_changes
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:667: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5347c0>
+    yield Token(lineno, token, value)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_staff_cannot_view_admin_dashboard
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5371f0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_staff_cannot_view_admin_dashboard
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db536c50>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_stock_out_updates_quantity_and_availability
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db5348b0>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_stock_out_updates_quantity_and_availability
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db103010>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_stock_out_updates_quantity_and_availability
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:380: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db534a90>
+    def __next__(self) -> Token:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db100b80>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23f2e0>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[-1]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:594: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec5990>
+    def parse_concat(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[-1]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:594: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23cc70>
+    def parse_concat(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[1.5]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:594: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec6020>
+    def parse_concat(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[1.5]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:594: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23d990>
+    def parse_concat(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[abc]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:288: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec4310>
+    return expr.split(":", 1) == [self.type, self.value]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[abc]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:288: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23d210>
+    return expr.split(":", 1) == [self.type, self.value]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[NaN]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:288: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec54e0>
+    return expr.split(":", 1) == [self.type, self.value]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[NaN]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:288: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23dd50>
+    return expr.split(":", 1) == [self.type, self.value]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[Infinity]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:594: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23f5b0>
+    def parse_concat(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[Infinity]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:594: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23df30>
+    def parse_concat(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[9223372036854775808]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:594: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23f1f0>
+    def parse_concat(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[9223372036854775808]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:594: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23ce50>
+    def parse_concat(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:594: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23d8a0>
+    def parse_concat(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_invalid_threshold_leaves_inventory_unchanged[9999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:594: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23c8b0>
+    def parse_concat(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_threshold_status_boundaries[12-12-Low Stock]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:643: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23eb60>
+    def parse_primary(self, with_namespace: bool = False) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_threshold_status_boundaries[12-12-Low Stock]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:643: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23f3d0>
+    def parse_primary(self, with_namespace: bool = False) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_threshold_status_boundaries[0-0-Out of Stock]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:643: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23ff10>
+    def parse_primary(self, with_namespace: bool = False) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_threshold_status_boundaries[0-10-Out of Stock]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:643: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23d3f0>
+    def parse_primary(self, with_namespace: bool = False) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_threshold_requires_admin
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23fe20>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_threshold_requires_csrf
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/parser.py:615: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db194310>
+    def parse_pow(self) -> nodes.Expr:
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_edit_does_not_update_component_deleted_during_validation
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dcde7b50>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_edit_does_not_update_component_deleted_during_validation
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac47790>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_edit_does_not_update_component_deleted_during_validation
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/nodes.py:140: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac47b50>
+    for name, arg in zip(self.fields, fields):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_catalogue_names_are_canonical_and_protect_deletion[category]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:294: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23c4f0>
+    return any(self.test(expr) for expr in iterable)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_catalogue_names_are_canonical_and_protect_deletion[category]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:294: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23f970>
+    return any(self.test(expr) for expr in iterable)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_catalogue_names_are_canonical_and_protect_deletion[category]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:294: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23e2f0>
+    return any(self.test(expr) for expr in iterable)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_catalogue_names_are_canonical_and_protect_deletion[category]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:294: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75daec7790>
+    return any(self.test(expr) for expr in iterable)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_catalogue_names_are_canonical_and_protect_deletion[category]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:294: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dcde76a0>
+    return any(self.test(expr) for expr in iterable)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_catalogue_names_are_canonical_and_protect_deletion[category]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:294: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db102b60>
+    return any(self.test(expr) for expr in iterable)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_catalogue_names_are_canonical_and_protect_deletion[category]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:294: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1027a0>
+    return any(self.test(expr) for expr in iterable)
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_catalogue_names_are_canonical_and_protect_deletion[supplier]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:288: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dcde7880>
+    return expr.split(":", 1) == [self.type, self.value]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_catalogue_names_are_canonical_and_protect_deletion[supplier]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:288: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db64c4f0>
+    return expr.split(":", 1) == [self.type, self.value]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_catalogue_names_are_canonical_and_protect_deletion[supplier]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:288: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75dac476a0>
+    return expr.split(":", 1) == [self.type, self.value]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_create_rejects_catalogue_deleted_during_validation[category]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:288: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db102110>
+    return expr.split(":", 1) == [self.type, self.value]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_create_rejects_catalogue_deleted_during_validation[category]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:288: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1031f0>
+    return expr.split(":", 1) == [self.type, self.value]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_create_rejects_catalogue_deleted_during_validation[category]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:288: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1032e0>
+    return expr.split(":", 1) == [self.type, self.value]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_create_rejects_catalogue_deleted_during_validation[supplier]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:288: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db101c60>
+    return expr.split(":", 1) == [self.type, self.value]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_create_rejects_catalogue_deleted_during_validation[supplier]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:288: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db102d40>
+    return expr.split(":", 1) == [self.type, self.value]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_component_create_rejects_catalogue_deleted_during_validation[supplier]
+  /data/esims-audit/clean-final-venv/lib64/python3.13/site-packages/jinja2/lexer.py:288: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1026b0>
+    return expr.split(":", 1) == [self.type, self.value]
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_concurrent_catalogue_change_and_component_create_remain_consistent[rename-category]
+  /usr/lib64/python3.13/ast.py:272: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75db1006d0>
+    def iter_fields(node):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_concurrent_catalogue_change_and_component_create_remain_consistent[rename-category]
+  /usr/lib64/python3.13/ast.py:272: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23e020>
+    def iter_fields(node):
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_concurrent_catalogue_change_and_component_create_remain_consistent[rename-supplier]
+  /usr/lib64/python3.13/concurrent/futures/thread.py:127: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23e4d0>
+    def __init__(self, max_workers=None, thread_name_prefix='',
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+tests/test_web_app.py::test_concurrent_catalogue_change_and_component_create_remain_consistent[rename-supplier]
+  /usr/lib64/python3.13/concurrent/futures/thread.py:127: ResourceWarning: unclosed database in <sqlite3.Connection object at 0x7f75da23db70>
+    def __init__(self, max_workers=None, thread_name_prefix='',
+  Enable tracemalloc to get traceback where the object was allocated.
+  See https://docs.pytest.org/en/stable/how-to/capture-warnings.html#resource-warnings for more info.
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+================================ tests coverage ================================
+_______________ coverage: platform linux, python 3.13.15-final-0 _______________
+
+Name                   Stmts   Miss Branch BrPart  Cover
+--------------------------------------------------------
+app.py                   889     48    232     29    93%
+inventory_import.py      121      0     38      0   100%
+inventory_service.py      93      1     50      1    99%
+--------------------------------------------------------
+TOTAL                   1103     49    320     30    94%
+Coverage JSON written to file /data/esims/docs/evidence/final-remediation-2026-11-09/coverage-final.json
+300 passed, 235 warnings in 76.62s (0:01:16)

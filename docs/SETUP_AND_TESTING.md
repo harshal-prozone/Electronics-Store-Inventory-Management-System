@@ -120,7 +120,7 @@ flask --app app create-admin --username admin --email admin@example.local
 
 Alternatively, the application can seed an administrator on first initialization if `ADMIN_PASSWORD`, `ADMIN_USERNAME`, and `ADMIN_EMAIL` are set before initialization. The interactive command is preferred. Changing these variables later does not reset an existing password.
 
-Importing `app.py` creates the Flask application and initializes its configured database. The explicit `init-db` CLI command is also available. Initialization is not a command to erase user data. The supported startup migration adds account activity, session-version and failed-login lockout columns to older `users` tables without replacing accounts. Back up the SQLite file before upgrading; test the upgrade on a copy first.
+Importing `app.py` creates the Flask application and initializes its configured database. The explicit `init-db` CLI command is also available. Initialization is not a command to erase user data. The supported startup migration adds account activity, session-version and failed-login lockout columns to older `users` tables and optional contact fields to older `suppliers` tables without replacing records. It creates the stock-alert table and installs its triggers after the soft-delete migration. `stock_alert_triggers.sql` must be distributed alongside `schema.sql`. Back up the SQLite file before upgrading; test the upgrade on a copy first.
 
 ## 5. Run the application
 
@@ -177,6 +177,17 @@ python scripts/performance_test.py
 ```
 
 This script creates a temporary database with at least 5,000 components, starts a loopback threaded Flask server, and sends 100 listing/search/filter requests with 10 workers. It passes when all requests succeed and at least 95% finish within two seconds. This is a coursework acceptance check, not a production-network benchmark.
+
+### Five-minute Locust benchmark
+
+Install optional performance tooling and run against an isolated local database:
+
+```bash
+python -m pip install -r requirements-performance.txt
+python scripts/run_locust_benchmark.py --output /tmp/esims-locust/run --duration 5m
+```
+
+The runner seeds 5,000 synthetic components and starts a threaded Werkzeug server on loopback. Ten synthetic users log in and request lists and searches with a 0.2–1.0 second wait; CSV, log and summary results are written at the output prefix. The runner checks that both workloads have requests, zero failures, and Locust's reported p95 at most 2,000 ms. This evaluates the Flask/SQLite implementation locally, not the original DRF/PostgreSQL stack, a production network, or real store traffic. Review the raw results and the original case prerequisites before claiming original STP acceptance.
 
 ### Optional cross-browser acceptance test
 
