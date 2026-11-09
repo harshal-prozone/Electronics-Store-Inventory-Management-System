@@ -305,3 +305,29 @@ def test_cli_uses_account_validation_before_database_writes(app):
     result = app.test_cli_runner().invoke(args=["create-admin", "--username", "bad\nname", "--email", "bad@@mail", "--password", "ValidPassword123!"])
     assert result.exit_code != 0
     assert snapshot(app) == before
+
+@pytest.mark.parametrize("path", ["/components", "/reports/availability"])
+def test_filter_option_attributes_remain_inert_for_stored_catalogue_values(client, app, path):
+    # Exercise the option-value hotspots identified by an authenticated ZAP scan.
+    payload = '" autofocus onfocus="alert(1)'
+    with app.app_context():
+        db = get_db()
+        db.execute("INSERT INTO components (sku,name,category,supplier,quantity,reorder_level,unit_price) VALUES (?,?,?,?,?,?,?)",
+                   ("XSS-FILTER", "Filter test", payload, payload, 1, 0, 1))
+        db.commit()
+    response = client.get(path, query_string={"category": payload, "supplier": payload, "status": "In Stock"})
+    assert response.status_code == 200
+    parsed = assert_inert_html(response)
+    assert sum(1 for tag, attrs in parsed.tags if tag == "option" and attrs.get("value") == payload) == 2
+
+
+def test_audit_event_filter_option_is_escaped(client, app):
+    # Event names are application-owned, but retain safety if historical data differs.
+    from app import write_audit
+    payload = '" autofocus onfocus="alert(1)'
+    with app.app_context():
+        write_audit(1, payload, "test event")
+    response = client.get("/admin/audit-log", query_string={"event_type": payload})
+    assert response.status_code == 200
+    parsed = assert_inert_html(response)
+    assert any(tag == "option" and attrs.get("value") == payload for tag, attrs in parsed.tags)
