@@ -1,12 +1,12 @@
 # Sprint 2 final closeout — consolidated action register
 
 **Repository:** `harshal-prozone/Electronics-Store-Inventory-Management-System`  
-**Latest audited commit:** `fc77b39` (`docs: add Sprint 2 evidence and closeout tools`)  
+**Latest audited commit:** `0968b16` (`docs: finalize Sprint 2 evidence and closeout package`)  
 **Audit date:** 8 November 2026
 
 ## Executive status
 
-The Sprint 2 implementation baseline is committed. This remaining-evidence pack is currently applied locally and awaits review and commit. The remaining items are evidence and acceptance activities that require real people, a real recording, or a defined operational observation. They must not be marked complete merely because templates or scripts exist.
+The Sprint 2 implementation baseline and remaining-evidence pack are committed. The remaining items are evidence and acceptance activities that require real people, a real recording, or a defined operational observation. They must not be marked complete merely because templates or scripts exist.
 
 | Item | Current evidence | Actual remaining action | Owner |
 |---|---|---|---|
@@ -19,11 +19,11 @@ The Sprint 2 implementation baseline is committed. This remaining-evidence pack 
 
 ## Evidence already present
 
-- Latest remote closeout commit: `fc77b39`.
-- Owner-run clean-clone suite: 271 passed on Python 3.12.16 against an earlier application checkout; later closeout commits were documentation changes.
+- Latest remote closeout commit: `0968b16`.
+- Owner-run local suite after the evidence-pack changes: **271 passed in 44.28 seconds**. The latest evidence-pack commit is documentation-focused; this test result does not constitute independent teammate verification.
 - Stable-browser automation: Chrome, Edge and Firefox execution records are documented in `docs/Issue-13-usability-compatibility.md`.
 - CI workflow defines backend tests, clean-setup smoke, and stable-browser matrix jobs.
-- The demo run sheet and availability procedure are present.
+- The demo run sheet and availability procedure are present. A local availability diagnostic sampled 6 successful probes out of 6 over 30 seconds (100% sampled availability); this is not evidence of 99% availability over the SRS-defined operating period.
 
 ## Important qualifications
 

@@ -3,7 +3,7 @@
 **Purpose:** Consolidated index from the Sprint 2 GitHub issue acceptance criteria to repository evidence. This is an issue-based traceability record, not a substitute for a signed review against the submitted SRS, SAD and Test Plan PDFs.
 
 **Repository:** `harshal-prozone/Electronics-Store-Inventory-Management-System`  
-**Baseline inspected:** `main` at `7efc5fc` (8 November 2026)
+**Baseline inspected:** `main` at `0968b16` (8 November 2026)
 
 | Issue | Acceptance area | Evidence currently present in the repository | Closeout qualification |
 |---|---|---|---|
@@ -21,9 +21,9 @@
 
 ## Test evidence ledger
 
-- Owner-run fresh-clone verification: Python 3.12.16, Flask-WTF 1.3.0, **271 passed**. The recorded run was against checkout `38eec1d`; the later closeout commits were documentation changes.
+- Owner-run fresh-clone verification: Python 3.12.16, Flask-WTF 1.3.0, **271 passed**. The original recorded run was against checkout `38eec1d`. The latest local verification after the evidence-pack changes also passed: **271 passed in 44.28 seconds**.
 - The earlier audited CI run #75 was recorded as passing backend, clean-setup smoke and stable Chrome/Edge/Firefox jobs. The exact run URL was not present in the inspected closeout record; link the actual run before submission rather than guessing its URL.
-- The 5,000-component / 100-request performance result is a local loopback benchmark. It is not a production availability measurement.
+- The 5,000-component / 100-request performance result is a local loopback benchmark. It is not a production availability measurement. The later 30-second local health diagnostic recorded 6/6 successful probes; it does not establish the SRS-defined 99% availability target.
 - The test suite result does not replace the formal SRS/SAD/Test Plan review.
 
 ## Items that require real-world/team evidence

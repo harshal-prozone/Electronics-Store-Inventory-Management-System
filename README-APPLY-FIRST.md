@@ -7,7 +7,6 @@ Extract this ZIP into the repository root, allowing the `docs/` and `scripts/` f
 
 ## What this pack does
 - Adds a consolidated closeout action register that records the latest audited commit and evidence state.
-- Adds one consolidated closeout action register.
 - Adds fill-in records for independent teammate setup verification, representative-user acceptance, and peer/mentor sign-off.
 - Replaces the availability sampler with a corrected implementation that records actual start/end timestamps and evaluates a configurable sampled target.
 
