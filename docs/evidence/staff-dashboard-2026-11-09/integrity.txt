@@ -1,0 +1,4 @@
+integrity_check: ok
+foreign_key_check: []
+administrator: 1
+components: 4

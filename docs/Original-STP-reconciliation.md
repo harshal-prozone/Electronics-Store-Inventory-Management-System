@@ -93,7 +93,7 @@ Status key: **Related** = relevant implementation/tests exist but original case 
 | IT-DSH-01 | dashboard summary API and RBAC | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py |
 | IT-DSH-02 | KPI changes after stock movement | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py |
 | ST-DSH-01 | dashboard UI and category chart | Related | Flask dashboard has four KPIs and a stock-units-by-category bar chart; `tests/test_web_app.py`; original stack and case execution remain outstanding. |
-| ST-DSH-02 | dashboard load time, 5,000 items | Related | scripts/performance_test.py measures inventory list/search, not dashboard |
+| ST-DSH-02 | dashboard load time, 5,000 items | Related | `scripts/dashboard_performance.py` measures ten sequential dashboard loads with 5,000 synthetic components on loopback Flask/SQLite; original deployment and original case execution remain outstanding. |
 | UT-USR-01 | create staff account | Related | tests/test_web_app.py; tests/test_input_security.py |
 | UT-USR-02 | duplicate username/email | Related | tests/test_web_app.py; tests/test_input_security.py |
 | UT-USR-03 | weak password rejection | Related | tests/test_web_app.py; tests/test_input_security.py |

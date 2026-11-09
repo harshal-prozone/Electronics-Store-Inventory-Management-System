@@ -4,7 +4,7 @@ A Flask + SQLite inventory management application for electronics components. Th
 
 For complete developer setup, database, application, testing, and troubleshooting instructions, see **[Setup and Testing Guide](docs/SETUP_AND_TESTING.md)**.
 
-For the submitted-baseline differences and outstanding acceptance decisions, see [Architecture and baseline reconciliation](docs/Architecture-and-baseline-reconciliation.md), [Original STP reconciliation](docs/Original-STP-reconciliation.md), [Final engineering validation](docs/Final-Engineering-Validation.md), [account-security validation](docs/Account-Security-Remediation.md), and [delivery validation](docs/Delivery-Validation-2026-11-09.md).
+For the submitted-baseline differences and outstanding acceptance decisions, see [Architecture and baseline reconciliation](docs/Architecture-and-baseline-reconciliation.md), [Original STP reconciliation](docs/Original-STP-reconciliation.md), [Final engineering validation](docs/Final-Engineering-Validation.md), [account-security validation](docs/Account-Security-Remediation.md), and [delivery validation](docs/Delivery-Validation-2026-11-09.md), and [latest validation](docs/Staff-Access-Validation-2026-11-09.md).
 
 ## Implemented functionality
 

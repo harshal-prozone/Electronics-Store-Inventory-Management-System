@@ -1,0 +1,100 @@
+{
+  "browser": "firefox",
+  "started_at_utc": "2026-11-09T12:53:23.755258+00:00",
+  "platform": "Linux-7.0.0-1017-azure-x86_64-with-glibc2.39",
+  "python": "3.12.16",
+  "result": "PASS",
+  "commit": "3185117b01044af05f1f7d933aaf19fddc30298f",
+  "runner_sha256": "b200b7c5d8fcfc380f49be4ceeb1178842e5f6abe50ba977f19268e113182066",
+  "chromium_no_sandbox": false,
+  "webdriver_log": "webdriver.log",
+  "checks": [
+    "login, search, combined filters and pagination",
+    "component creation in three primary screens; keyboard focus and persisted low-stock status",
+    "editing, stock-in/out, resulting balances and oversell rejection",
+    "CSV template download, mixed create/update/rejection and adjustment history",
+    "stock alerts and inline-style-free availability and category charts render",
+    "category/supplier creation and filtered CSV/PDF downloads",
+    "required-field validation and narrow inventory/form/detail layout",
+    "staff three-screen create, edit, filtered CSV/PDF report, stock movement and admin restrictions",
+    "stored/reflected XSS remains inert; delete confirmation cancel/accept works under CSP",
+    "Admin-only audit review, event/user filters and attributed component deletion"
+  ],
+  "primary_screens": [
+    "/components",
+    "/components/new",
+    "/components/22"
+  ],
+  "screenshots": [
+    "01-inventory-desktop.png",
+    "02-component-form-desktop.png",
+    "03-component-details-desktop.png",
+    "07-csv-import-results.png",
+    "04-inventory-narrow.png",
+    "05-component-form-narrow.png",
+    "06-component-details-narrow.png",
+    "08-audit-log-desktop.png",
+    "09-audit-log-narrow.png"
+  ],
+  "layout_checks": [
+    {
+      "screen": "01-inventory-desktop",
+      "documentWidth": 1353,
+      "height": 914,
+      "width": 1365
+    },
+    {
+      "screen": "02-component-form-desktop",
+      "documentWidth": 1353,
+      "height": 914,
+      "width": 1365
+    },
+    {
+      "screen": "03-component-details-desktop",
+      "documentWidth": 1353,
+      "height": 914,
+      "width": 1365
+    },
+    {
+      "screen": "04-inventory-narrow",
+      "documentWidth": 488,
+      "height": 914,
+      "width": 500
+    },
+    {
+      "screen": "05-component-form-narrow",
+      "documentWidth": 488,
+      "height": 914,
+      "width": 500
+    },
+    {
+      "screen": "06-component-details-narrow",
+      "documentWidth": 488,
+      "height": 914,
+      "width": 500
+    },
+    {
+      "screen": "08-audit-log-desktop",
+      "documentWidth": 1365,
+      "height": 914,
+      "width": 1365
+    },
+    {
+      "screen": "09-audit-log-narrow",
+      "documentWidth": 488,
+      "height": 914,
+      "width": 500
+    }
+  ],
+  "step": "Admin audit review and recorded deletion",
+  "expected_stable_version": "159.0.1",
+  "release_source": "https://product-details.mozilla.org/1.0/firefox_versions.json",
+  "browser_version": "159.0.1",
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64; rv:159.0) Gecko/20100101 Firefox/159.0",
+  "admin_primary_screens": [
+    "/components",
+    "/components/new",
+    "/components/20"
+  ],
+  "finished_at_utc": "2026-11-09T12:54:08.518191+00:00"
+}

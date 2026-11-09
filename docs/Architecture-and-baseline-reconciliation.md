@@ -45,7 +45,7 @@ Labels below are summaries only; the PDF remains authoritative for exact text. â
 | FR-014 | supplier CRUD, optional contact fields, validation and tests | Not the original Django/DRF form or endpoint. |
 | FR-015 | report route and tests | Staff and Admin can use the Flask report; no original DRF API. |
 | FR-016 | CSV/PDF routes and tests | API/status expectations differ. |
-| FR-017 | dashboard query and tests | Category-unit bar chart and availability chart use server-rendered progress bars, not Chart.js; original case execution remains. |
+| FR-017 | dashboard query and tests | Category-unit and availability charts use server-rendered progress bars; a current low-stock list and historical alerts are distinct. Not Chart.js; original case execution remains. |
 | FR-018 | `inventory_transactions`, service tests | Legacy and concurrent behavior need ongoing verification. |
 | FR-019 | audit log and audit tests | Exact source fields/conditions, including IP, require case-level verification. |
 | NFR-001 | `scripts/performance_test.py` and `scripts/run_locust_benchmark.py` | See delivery validation for local execution; Flask/SQLite loopback is not the original deployed stack. |
