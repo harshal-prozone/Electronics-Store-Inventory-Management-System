@@ -1,5 +1,7 @@
 # Sprint 1 requirement traceability matrix
 
+> Historical record: Staff component creation/editing and availability reports were subsequently enabled to align with UC-02/03/08. For current behavior and validation, see [architecture reconciliation](Architecture-and-baseline-reconciliation.md) and [current delivery validation](Staff-Access-Validation-2026-11-09.md). Earlier test observations remain historical.
+
 **Basis:** The GitHub issue bodies and merged source/tests were inspected on 24 October 2026. This matrix maps the issue-based acceptance requirements to implementation and test evidence. The submitted SRS/SAD/Test Plan PDFs still require a formal line-by-line team sign-off; this issue-based matrix must not be described as that sign-off.
 
 | Requirement / acceptance area | Implementation evidence | Automated / manual evidence | Status |

@@ -208,6 +208,65 @@ def test_admin_dashboard_metrics_match_active_inventory_and_chart(client, app):
     assert "dashboard-bar-out-of-stock" in page
 
 
+def test_dashboard_category_stock_counts_active_units_and_updates(client, app):
+    sign_in(client)
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.executemany("INSERT INTO components (sku,name,category,supplier,quantity,reorder_level,unit_price,deleted_at) VALUES (?,?,?,?,?,?,?,?)", [
+            ("CAT-CHART-1", "Category one", "Chart test", "Maker Supplies", 9, 1, 1, None),
+            ("CAT-CHART-2", "Category two", "Chart test", "Maker Supplies", 3, 1, 1, None),
+            ("CAT-CHART-DELETED", "Deleted", "Chart test", "Maker Supplies", 100, 1, 1, "2026-01-01"),
+        ])
+        component_id = db.execute("SELECT id FROM components WHERE sku='CAT-CHART-1'").fetchone()[0]
+    def chart_count():
+        import re
+        page = client.get("/").get_data(as_text=True)
+        match = re.search(r'data-testid="category-stock-row">\s*<span class="dashboard-chart-label">Chart test</span>.*?<strong class="dashboard-chart-count">(\d+)</strong>', page, re.S)
+        assert match
+        return int(match.group(1))
+    assert chart_count() == 12
+    response = client.post(f"/components/{component_id}/stock", data={"adjustment": "stock-out", "quantity": "2", "note": "chart test"})
+    assert response.status_code == 302
+    assert chart_count() == 10
+    report = list(csv.DictReader(io.StringIO(client.get("/reports/availability.csv", query_string={"category": "Chart test"}).get_data(as_text=True))))
+    assert sum(int(row["Quantity"]) for row in report) == 10
+
+
+def test_dashboard_category_chart_handles_empty_inventory_and_large_totals(client, app):
+    sign_in(client)
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.execute("UPDATE components SET deleted_at='2026-01-01'")
+    assert "No active inventory to chart." in client.get("/").get_data(as_text=True)
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.executemany("INSERT INTO components (sku,name,category,supplier,quantity,reorder_level,unit_price) VALUES (?,?,?,?,?,?,?)", [
+            ("HUGE-1", "Huge 1", "Large", "Maker Supplies", 2**63-1, 1, 0),
+            ("HUGE-2", "Huge 2", "Large", "Maker Supplies", 2**63-1, 1, 0),
+        ])
+    page = client.get("/").get_data(as_text=True)
+    assert ">18446744073709551614</strong>" in page
+
+
+def test_dashboard_low_stock_list_shows_current_active_items(client, app):
+    sign_in(client)
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.executemany("""INSERT INTO components
+            (sku,name,category,supplier,quantity,reorder_level,unit_price,deleted_at)
+            VALUES (?,?,?,?,?,?,?,?)""", [
+            ("CURRENT-LOW", "Current low item", "Microcontrollers", "Maker Supplies", 2, 5, 1, None),
+            ("CURRENT-OUT", "Out item", "Microcontrollers", "Maker Supplies", 0, 5, 1, None),
+            ("CURRENT-OK", "Healthy item", "Microcontrollers", "Maker Supplies", 8, 5, 1, None),
+            ("CURRENT-DELETED", "Deleted low item", "Microcontrollers", "Maker Supplies", 1, 5, 1, "2026-01-01"),
+        ])
+        item_id = db.execute("SELECT id FROM components WHERE sku='CURRENT-LOW'").fetchone()[0]
+    def low_section():
+        page = client.get("/").get_data(as_text=True)
+        return page.split('<section class="panel dashboard-current-low-stock">', 1)[1].split('</section>', 1)[0]
+    section = low_section()
+    assert "Current low item" in section
+    assert "Out item" not in section and "Healthy item" not in section and "Deleted low item" not in section
+    assert client.post(f"/components/{item_id}/stock", data={"adjustment": "stock-in", "quantity": "5", "note": "resupply"}).status_code == 302
+    assert "Current low item" not in low_section()
+
+
 def test_dashboard_metrics_refresh_after_stock_quantity_changes(client, app):
     sign_in(client)
 
@@ -755,66 +814,39 @@ def test_soft_deleted_component_is_hidden_from_inventory_and_csv(client, app):
 
     assert row[0] is not None
 
-def test_staff_cannot_create_edit_or_delete_components(client, app):
-    from flask import current_app
+def test_staff_can_create_edit_but_not_delete_components(client, app):
     from werkzeug.security import generate_password_hash
 
-    with app.app_context():
-        db = sqlite3.connect(current_app.config["DATABASE"])
-        db.execute(
-            "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
-            (
-                "crudstaff",
-                "crudstaff@example.com",
-                generate_password_hash("SecureStaff123!"),
-                "Staff",
-            ),
-        )
-        component_id = db.execute(
-            "SELECT id FROM components WHERE sku = ?",
-            ("MCU-ARD-001",),
-        ).fetchone()[0]
-        db.commit()
-        db.close()
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.execute("INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
+                   ("crudstaff", "crudstaff@example.com", generate_password_hash("SecureStaff123!"), "Staff"))
+    client.post("/login", data={"identity": "crudstaff", "password": "SecureStaff123!"})
+    page = client.get("/components").get_data(as_text=True)
+    assert 'href="/components/new"' in page
+    assert 'href="/components/import"' not in page
+    assert 'href="/reports/availability"' in page
+    payload = {"sku": "STAFF-001", "name": "Staff Component", "description": "created by staff",
+               "category": "Microcontrollers", "supplier": "Maker Supplies", "quantity": "7",
+               "reorder_level": "3", "unit_price": "10"}
+    assert client.get("/components/new").status_code == 200
+    created = client.post("/components/new", data=payload)
+    assert created.status_code == 302
+    path = created.headers["Location"]
+    assert client.post("/components/new", data=payload).status_code == 409
+    detail = client.get(path).get_data(as_text=True)
+    assert 'Edit details' in detail and 'Delete component' not in detail
+    assert client.get(path + "/edit").status_code == 200
+    payload.update(name="Staff Edited", reorder_level="8", quantity="999")
+    assert client.post(path + "/edit", data=payload).status_code == 302
+    assert client.post(path + "/delete").status_code == 403
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        row = db.execute("SELECT id, name, quantity, reorder_level, deleted_at FROM components WHERE sku=?", ("STAFF-001",)).fetchone()
+        assert row[1:] == ("Staff Edited", 7, 8, None)
+        events = db.execute("SELECT event_type FROM audit_log a JOIN users u ON u.id=a.user_id WHERE u.username=? AND a.details LIKE ?", ("crudstaff", f"%component_id={row[0]};%")).fetchall()
+        assert ("component-created",) in events and ("component-updated",) in events
+    for path in ("/components/import", "/admin/users", "/admin/audit-log", "/categories/new", "/suppliers/new"):
+        assert client.get(path).status_code == 403
 
-    client.post(
-        "/login",
-        data={"identity": "crudstaff", "password": "SecureStaff123!"},
-        follow_redirects=True,
-    )
-
-    payload = {
-        "sku": "STAFF-UNAUTH-001",
-        "name": "Unauthorized Component",
-        "description": "",
-        "category": "Test",
-        "supplier": "Test Supplier",
-        "quantity": "1",
-        "reorder_level": "1",
-        "unit_price": "10",
-    }
-
-    assert client.get("/components/new").status_code == 403
-    assert client.get(f"/components/{component_id}/edit").status_code == 403
-    assert client.post("/components/new", data=payload).status_code == 403
-    assert client.post(f"/components/{component_id}/edit", data=payload).status_code == 403
-    assert client.post(f"/components/{component_id}/delete").status_code == 403
-
-    with app.app_context():
-        db = sqlite3.connect(current_app.config["DATABASE"])
-        new_count = db.execute(
-            "SELECT COUNT(*) FROM components WHERE sku = ?",
-            ("STAFF-UNAUTH-001",),
-        ).fetchone()[0]
-        original = db.execute(
-            "SELECT name, deleted_at FROM components WHERE id = ?",
-            (component_id,),
-        ).fetchone()
-        db.close()
-
-    assert new_count == 0
-    assert original[0] == "Arduino Uno R3"
-    assert original[1] is None
 
 def test_availability_report_filters_by_category_supplier_and_status(client):
     sign_in(client)
@@ -877,32 +909,49 @@ def test_availability_report_pdf_is_valid_download(client):
     assert "availability-report.pdf" in response.headers["Content-Disposition"]
 
 
-def test_staff_cannot_access_availability_reports(client, app):
+def test_staff_can_filter_and_export_availability_reports(client, app):
     from werkzeug.security import generate_password_hash
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.execute("INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
+                   ("reportstaff", "reportstaff@example.com", generate_password_hash("SecureStaff123!"), "Staff"))
+    client.post("/login", data={"identity": "reportstaff", "password": "SecureStaff123!"})
+    query = {"status": "Out of Stock"}
+    report = client.get("/reports/availability", query_string=query)
+    assert report.status_code == 200
+    assert "Raspberry Pi Pico" in report.get_data(as_text=True)
+    csv_response = client.get("/reports/availability.csv", query_string=query)
+    assert csv_response.status_code == 200 and csv_response.mimetype == "text/csv"
+    rows = list(csv.DictReader(io.StringIO(csv_response.get_data(as_text=True))))
+    assert rows and all(row["Availability"] == "Out of Stock" for row in rows)
+    pdf = client.get("/reports/availability.pdf", query_string=query)
+    assert pdf.status_code == 200 and pdf.mimetype == "application/pdf" and pdf.data.startswith(b"%PDF-")
 
-    with app.app_context():
-        from flask import current_app
-        db = sqlite3.connect(current_app.config["DATABASE"])
-        db.execute(
-            "INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
-            (
-                "reportstaff",
-                "reportstaff@example.com",
-                generate_password_hash("SecureStaff123!"),
-                "Staff",
-            ),
-        )
-        db.commit()
-        db.close()
 
-    client.post(
-        "/login",
-        data={"identity": "reportstaff", "password": "SecureStaff123!"},
-    )
+def test_staff_component_forms_enforce_csrf(client, app):
+    import re
+    from werkzeug.security import generate_password_hash
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.execute("INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
+                   ("csrfstaff", "csrfstaff@example.com", generate_password_hash("SecureStaff123!"), "Staff"))
+    client.post("/login", data={"identity": "csrfstaff", "password": "SecureStaff123!"})
+    app.config["WTF_CSRF_ENABLED"] = True
+    payload = {"sku": "CSRF-STAFF-001", "name": "CSRF Staff", "category": "Microcontrollers",
+               "supplier": "Maker Supplies", "quantity": "1", "reorder_level": "1", "unit_price": "1"}
+    assert client.post("/components/new", data=payload).status_code == 400
+    form = client.get("/components/new").get_data(as_text=True)
+    token = re.search(r'name="csrf_token"[^>]*value="([^"]+)"', form).group(1)
+    payload["csrf_token"] = token
+    created = client.post("/components/new", data=payload)
+    assert created.status_code == 302
+    path = created.headers["Location"]
+    assert client.post(path + "/edit", data={k: v for k, v in payload.items() if k != "csrf_token"}).status_code == 400
+    assert client.post(path + "/delete", data={"csrf_token": token}).status_code == 403
 
-    assert client.get("/reports/availability").status_code == 403
-    assert client.get("/reports/availability.csv").status_code == 403
-    assert client.get("/reports/availability.pdf").status_code == 403
+
+@pytest.mark.parametrize("path", ["/components/new", "/components/1/edit", "/reports/availability", "/reports/availability.csv", "/reports/availability.pdf"])
+def test_staff_enabled_routes_still_require_login(client, path):
+    response = client.get(path)
+    assert response.status_code == 302 and "/login" in response.headers["Location"]
 
 
 def test_login_accepts_email_address(client):

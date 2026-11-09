@@ -1,0 +1,20 @@
+{
+  "components": 5000,
+  "requests": 10,
+  "successful": 10,
+  "latency_ms": [
+    58.5,
+    9.03,
+    8.26,
+    7.45,
+    7.93,
+    8.25,
+    16.35,
+    16.7,
+    17.31,
+    17.87
+  ],
+  "max_ms": 58.5,
+  "all_under_2s": true,
+  "environment": "synthetic loopback threaded Flask/Werkzeug/SQLite; sequential requests; not production or original stack"
+}

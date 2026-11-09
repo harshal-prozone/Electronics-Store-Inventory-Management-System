@@ -134,3 +134,10 @@
 .audit-details { white-space: pre-wrap; overflow-wrap: anywhere; max-width: 40rem; }
 .audit-count { padding: 0 22px; }
 @media (max-width: 640px) { .topnav { flex-wrap: wrap; row-gap: 4px; } }
+
+.category-chart-panel { margin-bottom: 22px; }
+.dashboard-bar-category { color: var(--blue); }
+.category-chart-row { grid-template-columns: minmax(100px, 2fr) minmax(0, 4fr) minmax(32px, auto); }
+.category-chart-row .dashboard-chart-label { overflow-wrap: anywhere; }
+
+.dashboard-current-low-stock { margin-bottom: 22px; }

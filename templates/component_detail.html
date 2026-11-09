@@ -7,12 +7,12 @@
   <div class="detail-heading-text"><div class="eyebrow">COMPONENT / {{ component['sku'] }}</div><h1>{{ component['name'] }}</h1><p>{{ component['description'] or 'No description has been added.' }}</p></div>
 
 <div class="detail-heading-actions">
-  {% if g.user['role'] == 'Admin' %}
     <a class="button button-secondary"
        href="{{ url_for('component_edit', component_id=component['id']) }}">
       Edit details
     </a>
 
+    {% if g.user['role'] == 'Admin' %}
     <form method="post"
           action="{{ url_for('component_delete', component_id=component['id']) }}"
           data-confirm="Soft-delete this component from active inventory?">

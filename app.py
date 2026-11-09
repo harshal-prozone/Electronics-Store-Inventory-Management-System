@@ -212,13 +212,34 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 round(item["count"] * 100 / total, 1) if total else 0
             )
 
+        # Aggregate in Python so valid 64-bit quantities across many items cannot
+        # overflow SQLite's integer SUM. Soft-deleted components are excluded.
+        categories = {}
+        for row in get_db().execute(
+            "SELECT category, quantity FROM components WHERE deleted_at IS NULL"
+        ):
+            label = row["category"] or "Uncategorised"
+            categories[label] = categories.get(label, 0) + row["quantity"]
+        max_category_units = max(categories.values(), default=0)
+        category_chart = [
+            {"label": label, "quantity": quantity,
+             "percentage": round(quantity * 100 / max_category_units, 1) if max_category_units else 0}
+            for label, quantity in sorted(categories.items(), key=lambda item: item[0].casefold())
+        ]
+
+        low_stock_items = get_db().execute(
+            """SELECT id, sku, name, quantity, reorder_level FROM components
+               WHERE deleted_at IS NULL AND quantity > 0 AND quantity <= reorder_level
+               ORDER BY updated_at DESC, id DESC LIMIT 10"""
+        ).fetchall()
         alerts = get_db().execute(
             """SELECT a.*, c.sku, c.name FROM stock_alerts a
                JOIN components c ON c.id = a.component_id
                WHERE c.deleted_at IS NULL ORDER BY a.id DESC LIMIT 10"""
         ).fetchall()
         return render_template(
-            "dashboard.html", metrics=metrics, chart_items=chart_items, alerts=alerts,
+            "dashboard.html", metrics=metrics, chart_items=chart_items, category_chart=category_chart,
+            low_stock_items=low_stock_items, alerts=alerts,
         )
 
     @app.route("/login", methods=("GET", "POST"))
@@ -529,7 +550,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.route("/components/new", methods=("GET", "POST"))
     @login_required
-    @admin_required
     def component_new():
         status = 200
         if request.method == "POST":
@@ -562,7 +582,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.route("/components/<int:component_id>/edit", methods=("GET", "POST"))
     @login_required
-    @admin_required
     def component_edit(component_id: int):
         component = get_component_or_404(component_id)
         status = 200
@@ -966,7 +985,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.get("/reports/availability")
     @login_required
-    @admin_required
     def availability_report():
         category_filter, supplier_filter, status_filter = get_availability_report_filters()
         db = get_db()
@@ -1000,7 +1018,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.get("/reports/availability.csv")
     @login_required
-    @admin_required
     def export_availability_report_csv():
         category, supplier, status = get_availability_report_filters()
         rows = get_availability_report_rows(get_db(), category, supplier, status)
@@ -1020,7 +1037,6 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
 
     @app.get("/reports/availability.pdf")
     @login_required
-    @admin_required
     def export_availability_report_pdf():
         category, supplier, status = get_availability_report_filters()
         rows = get_availability_report_rows(get_db(), category, supplier, status)

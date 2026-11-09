@@ -31,7 +31,7 @@ Status key: **Related** = relevant implementation/tests exist but original case 
 | UT-INV-18 | initial availability | Related | tests/test_web_app.py; tests/test_input_security.py |
 | IT-INV-01 | staff creates and duplicates through API | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
 | IT-INV-02 | stored XSS text | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
-| ST-INV-01 | staff adds component via UI | Deviation | specified Staff workflow is Admin-only in current implementation; scripts/browser_compatibility.py |
+| ST-INV-01 | staff adds component via UI | Related | Staff Flask form and three-screen browser flow: `tests/test_web_app.py`, `scripts/browser_compatibility.py`; not original-stack case execution. |
 | UT-INV-07 | price and threshold edit | Related | tests/test_web_app.py; tests/test_input_security.py |
 | UT-INV-08 | threshold changes availability | Related | tests/test_web_app.py; tests/test_input_security.py |
 | UT-INV-09 | duplicate SKU on edit | Related | tests/test_web_app.py; tests/test_input_security.py |
@@ -85,15 +85,15 @@ Status key: **Related** = relevant implementation/tests exist but original case 
 | IT-RPT-01 | filtered report API | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
 | IT-RPT-02 | PDF export API | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
 | IT-RPT-03 | unsupported export format API | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
-| ST-RPT-01 | staff report and export | Deviation | specified Staff workflow is Admin-only in current implementation; scripts/browser_compatibility.py |
+| ST-RPT-01 | staff report and export | Related | Staff Flask report filters and CSV/PDF export: `tests/test_web_app.py`, `scripts/browser_compatibility.py`; not original-stack case execution. |
 | UT-DSH-01 | active component count | Related | tests/test_web_app.py |
 | UT-DSH-02 | stock-value calculation | Related | tests/test_web_app.py |
 | UT-DSH-03 | low/out counts | Related | tests/test_web_app.py |
 | UT-DSH-04 | empty dashboard | Related | tests/test_web_app.py |
 | IT-DSH-01 | dashboard summary API and RBAC | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py |
 | IT-DSH-02 | KPI changes after stock movement | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py |
-| ST-DSH-01 | dashboard UI and category chart | Deviation | dashboard chart is by availability, not category; tests/test_web_app.py |
-| ST-DSH-02 | dashboard load time, 5,000 items | Related | scripts/performance_test.py measures inventory list/search, not dashboard |
+| ST-DSH-01 | dashboard UI and category chart | Related | Flask dashboard has four KPIs and a stock-units-by-category bar chart; `tests/test_web_app.py`; original stack and case execution remain outstanding. |
+| ST-DSH-02 | dashboard load time, 5,000 items | Related | `scripts/dashboard_performance.py` measures ten sequential dashboard loads with 5,000 synthetic components on loopback Flask/SQLite; original deployment and original case execution remain outstanding. |
 | UT-USR-01 | create staff account | Related | tests/test_web_app.py; tests/test_input_security.py |
 | UT-USR-02 | duplicate username/email | Related | tests/test_web_app.py; tests/test_input_security.py |
 | UT-USR-03 | weak password rejection | Related | tests/test_web_app.py; tests/test_input_security.py |

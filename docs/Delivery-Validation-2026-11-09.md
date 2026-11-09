@@ -1,5 +1,7 @@
 # Delivery validation — 9 November 2026
 
+> Historical source revision: Staff permissions and dashboard features changed subsequently. See [latest validation](Staff-Access-Validation-2026-11-09.md) for current behavior and evidence.
+
 This record describes the Flask/SQLite delivery branch, not approval of a substitute for the submitted architecture or evidence of university submission. The original submitted PDFs remain unchanged. Earlier reports are historical records; see the code revision and environment recorded for each run.
 
 ## Changes

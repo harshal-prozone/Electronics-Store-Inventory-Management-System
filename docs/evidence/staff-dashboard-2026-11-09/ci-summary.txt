@@ -1,0 +1,2 @@
+test	Run tests with line and branch coverage	2026-11-09T12:54:20.8371993Z TOTAL                   1105     48    322     29    95%
+test	Run tests with line and branch coverage	2026-11-09T12:54:20.8373543Z 309 passed in 69.06s (0:01:09)
