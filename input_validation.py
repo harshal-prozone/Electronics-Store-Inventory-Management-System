@@ -50,6 +50,12 @@ def account_values(form):
         raise ValueError("Password must contain between 10 and 1024 characters and no null characters.")
     if role not in ("Admin", "Staff"):
         raise ValueError("Select a valid role: Admin or Staff.")
+    validate_email(email)
+    return username, email, password, role
+
+
+def validate_email(email):
+    """Validate an already-normalized email address without sending mail."""
     if email.count("@") != 1:
         raise ValueError("Enter a valid email address.")
     local, domain = email.rsplit("@", 1)
@@ -61,4 +67,4 @@ def account_values(form):
             or re.search(r'[\s<>(),;:\\"\[\]]', local)
             or not re.fullmatch(r"[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?(?:\.[A-Za-z0-9](?:[A-Za-z0-9-]{0,61}[A-Za-z0-9])?)*", domain)):
         raise ValueError("Enter a valid email address.")
-    return username, email, password, role
+    return email

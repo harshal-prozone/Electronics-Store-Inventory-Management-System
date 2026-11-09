@@ -1,0 +1,2 @@
+# Additional tools for the optional Locust load test; install requirements.txt first.
+locust>=2.47,<3

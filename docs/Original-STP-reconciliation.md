@@ -58,7 +58,7 @@ Status key: **Related** = relevant implementation/tests exist but original case 
 | IT-INV-12 | SQL injection search | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
 | IT-INV-13 | invalid API filter | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
 | ST-INV-02 | list, filters and badges | Related | tests/test_web_app.py; tests/test_input_security.py |
-| PERF-01 | five-minute ten-user Locust load | Deviation | scripts/performance_test.py: 100 loopback requests, not five-minute Locust |
+| PERF-01 | five-minute ten-user Locust load | Deviation | `scripts/run_locust_benchmark.py` targets Flask/SQLite loopback, not the original deployed architecture; see delivery validation |
 | UT-STK-01 | reject excess stock-out | Related | tests/test_issue9_transactions.py; tests/test_inventory_workflow_integration.py |
 | UT-STK-02 | availability boundaries | Related | tests/test_issue9_transactions.py; tests/test_inventory_workflow_integration.py |
 | UT-STK-03 | stock-in transaction | Related | tests/test_issue9_transactions.py; tests/test_inventory_workflow_integration.py |
@@ -67,12 +67,12 @@ Status key: **Related** = relevant implementation/tests exist but original case 
 | IT-STK-01 | stock-out API and history | Deviation | DRF endpoint absent; related Flask form tests: tests/test_issue9_transactions.py; tests/test_inventory_workflow_integration.py |
 | IT-STK-02 | concurrent PostgreSQL stock-outs | Deviation | tests/test_issue9_transactions.py uses SQLite locks, not PostgreSQL row locks |
 | IT-STK-03 | rollback on failure | Related | tests/test_issue9_transactions.py; tests/test_inventory_workflow_integration.py |
-| IT-STK-04 | low-stock notifier transition | Missing | no notifier implementation |
+| IT-STK-04 | low-stock notifier transition | Related | Durable SQLite-triggered in-app alerts and `tests/test_supplier_alerts.py`; not the original Django mocked notifier execution |
 | ST-STK-01 | stock-out UI | Related | tests/test_issue9_transactions.py; tests/test_inventory_workflow_integration.py |
 | UT-CAT-01 | category case-insensitive uniqueness | Related | tests/test_web_app.py |
 | UT-CAT-02 | delete unused category | Related | tests/test_web_app.py |
 | UT-CAT-03 | protect in-use category | Related | tests/test_web_app.py |
-| UT-SUP-01 | supplier email validation | Missing | no supplier email field |
+| UT-SUP-01 | supplier email validation | Related | Optional contact email rejects `robu@`; `tests/test_supplier_alerts.py`; not original Django unit execution |
 | UT-SUP-02 | protect in-use supplier | Related | tests/test_web_app.py |
 | IT-CAT-01 | staff cannot create category via API | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py |
 | IT-CAT-02 | category rename via API | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py |
@@ -108,10 +108,10 @@ Status key: **Related** = relevant implementation/tests exist but original case 
 | ST-NFR-04 | service coverage and no business rules in views | Deviation | business logic remains in views; coverage scope excludes portions of application |
 | IT-SEC-01 | API POST missing CSRF token | Deviation | DRF endpoint absent; related Flask form tests: tests/test_audit_logging.py; tests/test_input_security.py |
 | ST-SEC-02 | cross-origin POST | Related | tests/test_input_security.py; HTTPS/origin deployment conditions not established |
-| ST-SEC-03 | Bandit, pip-audit and ZAP scans | Deviation | Bandit and pip-audit run locally; no ZAP/SonarQube or pipeline scans evidenced |
+| ST-SEC-03 | Bandit, pip-audit and ZAP scans | Deviation | Local Bandit/pip-audit and unauthenticated ZAP quick scan only; DOM XSS scanner skipped, no authenticated scan, SonarQube or pipeline scans evidenced; see `Security-Scanner-Review.md` |
 | ST-SEC-04 | security audit trail review | Related | tests/test_audit_logging.py; tests/test_input_security.py |
 | ST-SEC-05 | HTTPS cookie flags and 31-minute idle timeout | External | simulated 30-minute expiry covered in tests/test_account_controls.py; deployed HTTPS observation not recorded |
 
 ## Exit criteria
 
-Original execution results, high-priority pass rate, RTM approval, high-severity defect/security disposition, required scanners, original PostgreSQL concurrency, Locust duration, representative-user UAT and operating-hours availability are not established. The original STP exit criteria cannot be claimed met.
+Original execution results, high-priority pass rate, RTM approval, high-severity defect/security disposition, required scanners, original PostgreSQL concurrency, original-stack Locust execution, representative-user UAT and operating-hours availability are not established. The original STP exit criteria cannot be claimed met.

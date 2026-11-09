@@ -65,4 +65,4 @@ The sampler's success ratio is an estimate from periodic probes, not continuous 
 
 ## Tracker status
 
-GitHub Issue #17 is currently closed, but its body explicitly requires defined-period availability measurement. Reconcile the tracker state with the actual evidence; do not claim the criterion is met without a valid measurement.
+GitHub Issue #17 was reopened on 9 November 2026 because its body explicitly requires defined-period availability measurement; do not claim the criterion is met without a valid measurement.

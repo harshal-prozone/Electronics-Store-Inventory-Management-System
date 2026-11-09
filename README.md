@@ -1,19 +1,19 @@
 # Electronics Store Inventory Management System (ESIMS)
 
-A Flask + SQLite inventory management application for electronics components. Sprint 1 core functionality is merged into `main`; see the validation record for evidence and remaining manual closeout items.
+A Flask + SQLite inventory management application for electronics components. The current delivery branch includes remediation beyond the Sprint 1 baseline; see the validation records for evidence and remaining technical and acceptance gaps.
 
 For complete developer setup, database, application, testing, and troubleshooting instructions, see **[Setup and Testing Guide](docs/SETUP_AND_TESTING.md)**.
 
-For the submitted-baseline differences and outstanding acceptance decisions, see [Architecture and baseline reconciliation](docs/Architecture-and-baseline-reconciliation.md), [Original STP reconciliation](docs/Original-STP-reconciliation.md), [Final engineering validation](docs/Final-Engineering-Validation.md), and the newer [account-security validation](docs/Account-Security-Remediation.md).
+For the submitted-baseline differences and outstanding acceptance decisions, see [Architecture and baseline reconciliation](docs/Architecture-and-baseline-reconciliation.md), [Original STP reconciliation](docs/Original-STP-reconciliation.md), [Final engineering validation](docs/Final-Engineering-Validation.md), [account-security validation](docs/Account-Security-Remediation.md), and [delivery validation](docs/Delivery-Validation-2026-11-09.md).
 
 ## Implemented functionality
 
 - Username/email authentication, Admin and Staff roles, salted password hashing, 30-minute idle sessions, and CSRF protection. After five failed attempts within 15 minutes, that account is locked for 15 minutes. Administrators can disable or re-enable other accounts; disabling and logout revoke existing sessions for that account.
 - Searchable, filtered and paginated component inventory.
 - Admin-only component creation, editing, duplicate-SKU validation, and soft deletion.
-- Admin-managed category and supplier catalogues, including validation, protected deletion, and association-preserving renames.
+- Admin-managed category and supplier catalogues, including optional validated supplier email/phone, protected deletion, and association-preserving renames.
 - Transactional stock-in/stock-out with transaction history; stock-out cannot exceed available quantity.
-- Availability classification derived from quantity and reorder level.
+- Availability classification derived from quantity and reorder level, with durable in-app stock-status alerts on creation or transitions into Low Stock or Out of Stock. No real email is sent.
 - Admins can set or update each component's minimum stock threshold directly on its details page. Thresholds are non-negative whole numbers; positive stock at or below the threshold is Low Stock, and zero is Out of Stock. Changes immediately appear in inventory views and reports and are recorded in the audit log.
 - Component CSV export and an Admin-only availability report with category, supplier, and status filters and CSV/PDF export.
 - Admin-only bulk CSV import with SKU-based creation/updates, row error reports, imported/rejected counts, and audited stock adjustments.

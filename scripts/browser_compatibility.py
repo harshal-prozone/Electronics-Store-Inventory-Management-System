@@ -299,13 +299,30 @@ def run():
         assert cells[1].text == "Adjustment" and cells[4].text == "6"
         passed("CSV template download, mixed create/update/rejection and adjustment history")
 
+        evidence["step"] = "stock alerts on dashboard"
+        driver.get(base + "/")
+        assert "Recent stock alerts" in driver.page_source
+        assert "Browser Smoke Component" in driver.page_source
+        bars = driver.find_elements(By.CSS_SELECTOR, "progress.dashboard-bar-fill")
+        assert len(bars) == 3
+        assert all(0 <= float(bar.get_attribute("value")) <= 100 for bar in bars)
+        assert all(bar.size["width"] > 0 for bar in bars)
+        assert not driver.find_elements(By.CSS_SELECTOR, "[style]")
+        passed("stock alerts and inline-style-free dashboard chart render")
+
         evidence["step"] = "catalogue creation and report downloads"
         for path, singular in [("categories", "category"), ("suppliers", "supplier")]:
             driver.get(base + "/" + path)
             click("Add " + singular, "a")
             fill("name", "Browser Smoke " + singular.title())
+            if singular == "supplier":
+                fill("contact_email", "supplier@example.invalid")
+                fill("phone", "+91 12345")
             click("Save " + singular)
             assert "Browser Smoke " + singular.title() in visible("tbody").text
+            if singular == "supplier":
+                assert "supplier@example.invalid" in visible("tbody").text
+                assert "+91 12345" in visible("tbody").text
         driver.get(base + "/reports/availability")
         Select(visible("select[name=status]")).select_by_visible_text("Out of Stock")
         click("Apply filters")

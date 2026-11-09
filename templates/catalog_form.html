@@ -32,6 +32,18 @@
     >
   </div>
 
+  {% if item_type == 'Supplier' %}
+  <div class="field">
+    <label for="contact_email">Contact email (optional)</label>
+    <input id="contact_email" name="contact_email" type="email" maxlength="254"
+      value="{{ request.form.get('contact_email', item['contact_email'] if item else '') }}">
+  </div>
+  <div class="field">
+    <label for="phone">Phone (optional)</label>
+    <input id="phone" name="phone" type="text" maxlength="40"
+      value="{{ request.form.get('phone', item['phone'] if item else '') }}">
+  </div>
+  {% endif %}
   <div class="form-actions">
     <a class="button button-secondary"
        href="{{ url_for('categories') if item_type == 'Category' else url_for('suppliers') }}">
