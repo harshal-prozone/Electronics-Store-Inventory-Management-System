@@ -55,8 +55,8 @@
            aria-label="{{ item['label'] }}: {{ item['count'] }} components">
         <span class="dashboard-chart-label">{{ item['label'] }}</span>
         <div class="dashboard-bar-track" aria-hidden="true">
-          <div class="dashboard-bar-fill {{ item['class_name'] }}"
-               style="width: {{ item['percentage'] }}%;"></div>
+          <progress class="dashboard-bar-fill {{ item['class_name'] }}"
+                    value="{{ item['percentage'] }}" max="100" aria-hidden="true"></progress>
         </div>
         <strong class="dashboard-chart-count">{{ item['count'] }}</strong>
       </div>

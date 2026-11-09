@@ -274,6 +274,9 @@ def test_headers_and_external_delete_confirmation_preserve_safe_rendering(client
         policy = response.headers["Content-Security-Policy"]
         assert "script-src 'self';" in policy and "object-src 'none'" in policy
         assert "unsafe-inline" not in policy.split("script-src", 1)[1].split(";", 1)[0]
+        assert "unsafe-inline" not in policy.split("style-src", 1)[1].split(";", 1)[0]
+    for path in ("/", "/components/1", "/categories", "/suppliers"):
+        assert b"style=" not in client.get(path).data
     for path in ("/components/1", "/categories", "/suppliers"):
         page = client.get(path)
         parsed = assert_inert_html(page)
