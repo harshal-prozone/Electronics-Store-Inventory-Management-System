@@ -1,7 +1,7 @@
 # Branch Coverage Report
 
-**Generated:** 2026-11-09 11:42 UTC
-**Commit:** `e4bfd6cd48c4df528000dc9135c2cde7cf193f8d`
+**Generated:** 2026-11-09 11:44 UTC
+**Commit:** `768ccd9c73540478e1ca11ecb79ecdff1c8a937c`
 
 | Metric | Covered | Total | Coverage |
 |---|---:|---:|---:|
@@ -16,4 +16,4 @@
 | `inventory_import.py` | 38/38 | 100.00% |
 | `inventory_service.py` | 49/50 | 98.00% |
 
-Files with no measurable branches are N/A, not 100%. Local JSON output is retained at `evidence/engineering-2026-11-09/coverage.json`.
+Files with no measurable branches are N/A, not 100%. Clean-clone JSON output is retained at `evidence/engineering-2026-11-09/coverage.json`.
