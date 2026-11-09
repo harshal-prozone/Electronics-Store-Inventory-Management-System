@@ -181,3 +181,15 @@ def test_disable_rolls_back_when_audit_insert_fails(app):
         client.post(f'/admin/users/{uid}/status', data={'action': 'disable'})
     with sqlite3.connect(app.config['DATABASE']) as db:
         assert db.execute('SELECT is_active, session_version FROM users WHERE id=?', (uid,)).fetchone() == (1, 0)
+
+
+def test_idle_session_refreshes_then_expires_after_thirty_minutes(app, monkeypatch):
+    import app as app_module
+    now = [int(app_module.time.time())]
+    monkeypatch.setattr(app_module.time, 'time', lambda: now[0])
+    client = app.test_client()
+    assert sign_in(client, 'staff1', 'StaffPass123!').status_code == 302
+    now[0] += 1799
+    assert client.get('/components').status_code == 200
+    now[0] += 1801
+    assert client.get('/components').status_code == 302
