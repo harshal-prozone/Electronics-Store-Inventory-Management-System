@@ -4,7 +4,7 @@ Status: **unapproved deviation; not a replacement for the submitted SRS/SAD/STP*
 
 ## Actual system
 
-Browser → Flask/Jinja routes in `app.py` → `inventory_service.py`, `inventory_import.py` and `input_validation.py` → single SQLite database (`schema.sql`). Flask-WTF protects forms; Werkzeug hashes passwords; ReportLab builds PDFs; the dashboard uses server-rendered HTML/CSS rather than Chart.js. Sessions use Flask's signed cookie. SQLite `BEGIN IMMEDIATE` serializes the implemented stock changes; SQLite is not PostgreSQL row locking. Categories and suppliers are stored as names in component records, not foreign keys. `init_db()` creates schema and applies limited startup migrations; it is not a versioned migration framework. See `SETUP_AND_TESTING.md` for installation and backup guidance. GitHub Actions uses pytest, a setup smoke test, a loopback benchmark and Selenium's vendor-stable browser workflows.
+Browser → Flask/Jinja routes in `app.py` → `inventory_service.py`, `inventory_import.py` and `input_validation.py` → single SQLite database (`schema.sql`). Flask-WTF protects forms; Werkzeug hashes passwords; ReportLab builds PDFs; the dashboard uses server-rendered HTML/CSS availability and category charts rather than Chart.js. Sessions use Flask's signed cookie. SQLite `BEGIN IMMEDIATE` serializes the implemented stock changes; SQLite is not PostgreSQL row locking. Categories and suppliers are stored as names in component records, not foreign keys. `init_db()` creates schema and applies limited startup migrations; it is not a versioned migration framework. See `SETUP_AND_TESTING.md` for installation and backup guidance. GitHub Actions uses pytest, a setup smoke test, a loopback benchmark and Selenium's vendor-stable browser workflows.
 
 ## Material differences requiring an authorized decision
 
@@ -12,7 +12,7 @@ Browser → Flask/Jinja routes in `app.py` → `inventory_service.py`, `inventor
 |---|---|---|
 | Django 5, Django REST Framework, JSON endpoints | Flask form routes; no corresponding DRF API | Original API status codes, JSON schemas and Postman/DRF APIClient cases cannot be treated as passed; agree to migration or formally approve deviation. |
 | PostgreSQL 14 and row locking | SQLite single-file database with write-lock serialization | Current concurrency tests support SQLite only; no PostgreSQL locking/deployment proof. |
-| Bootstrap 5, Chart.js; category chart | Custom CSS and server-rendered availability chart | Not the specified framework/chart; assess design and original dashboard case. |
+| Bootstrap 5 and Chart.js | Custom CSS and server-rendered availability and stock-by-category charts | Not the specified UI frameworks; original dashboard case and design acceptance remain to be assessed. |
 | Docker Compose, nginx, HTTPS, restart policies | No delivered Compose/nginx production deployment | TLS, redirect/HSTS, isolation, deployment monitoring and availability require an actual deployment. |
 | Jenkins, Postman, Locust, SonarQube, Bandit, pip-audit, ZAP | GitHub Actions, pytest, Selenium and a local Locust runner; see `Security-Scanner-Review.md` | GitHub Actions is not Jenkins; Flask tests are not Postman; local loopback load is not the original deployed stack; an unauthenticated local ZAP quick scan is not a full deployment or authenticated security assessment. |
 | Staff may create/edit components and generate reports (UC-02/03/08) | Flask forms and reports allow both Staff and Admin; delete, bulk import and administration remain Admin-only. | Role discrepancy for these form workflows addressed; original DRF endpoints and formal case execution remain outstanding. |
@@ -45,7 +45,7 @@ Labels below are summaries only; the PDF remains authoritative for exact text. �
 | FR-014 | supplier CRUD, optional contact fields, validation and tests | Not the original Django/DRF form or endpoint. |
 | FR-015 | report route and tests | Staff and Admin can use the Flask report; no original DRF API. |
 | FR-016 | CSV/PDF routes and tests | API/status expectations differ. |
-| FR-017 | dashboard query and tests | Chart is availability rather than category. |
+| FR-017 | dashboard query and tests | Category-unit bar chart and availability chart use server-rendered progress bars, not Chart.js; original case execution remains. |
 | FR-018 | `inventory_transactions`, service tests | Legacy and concurrent behavior need ongoing verification. |
 | FR-019 | audit log and audit tests | Exact source fields/conditions, including IP, require case-level verification. |
 | NFR-001 | `scripts/performance_test.py` and `scripts/run_locust_benchmark.py` | See delivery validation for local execution; Flask/SQLite loopback is not the original deployed stack. |

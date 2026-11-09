@@ -212,13 +212,28 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 round(item["count"] * 100 / total, 1) if total else 0
             )
 
+        # Aggregate in Python so valid 64-bit quantities across many items cannot
+        # overflow SQLite's integer SUM. Soft-deleted components are excluded.
+        categories = {}
+        for row in get_db().execute(
+            "SELECT category, quantity FROM components WHERE deleted_at IS NULL"
+        ):
+            label = row["category"] or "Uncategorised"
+            categories[label] = categories.get(label, 0) + row["quantity"]
+        max_category_units = max(categories.values(), default=0)
+        category_chart = [
+            {"label": label, "quantity": quantity,
+             "percentage": round(quantity * 100 / max_category_units, 1) if max_category_units else 0}
+            for label, quantity in sorted(categories.items(), key=lambda item: item[0].casefold())
+        ]
+
         alerts = get_db().execute(
             """SELECT a.*, c.sku, c.name FROM stock_alerts a
                JOIN components c ON c.id = a.component_id
                WHERE c.deleted_at IS NULL ORDER BY a.id DESC LIMIT 10"""
         ).fetchall()
         return render_template(
-            "dashboard.html", metrics=metrics, chart_items=chart_items, alerts=alerts,
+            "dashboard.html", metrics=metrics, chart_items=chart_items, category_chart=category_chart, alerts=alerts,
         )
 
     @app.route("/login", methods=("GET", "POST"))

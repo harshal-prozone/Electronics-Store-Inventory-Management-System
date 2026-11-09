@@ -303,12 +303,15 @@ def run():
         driver.get(base + "/")
         assert "Recent stock alerts" in driver.page_source
         assert "Browser Smoke Component" in driver.page_source
-        bars = driver.find_elements(By.CSS_SELECTOR, "progress.dashboard-bar-fill")
+        bars = driver.find_elements(By.CSS_SELECTOR, ".dashboard-layout progress.dashboard-bar-fill")
         assert len(bars) == 3
         assert all(0 <= float(bar.get_attribute("value")) <= 100 for bar in bars)
         assert all(bar.size["width"] > 0 for bar in bars)
+        category_bars = driver.find_elements(By.CSS_SELECTOR, ".category-chart-panel progress")
+        assert category_bars and "Stock by category" in driver.page_source
+        assert all(0 <= float(bar.get_attribute("value")) <= 100 for bar in category_bars)
         assert not driver.find_elements(By.CSS_SELECTOR, "[style]")
-        passed("stock alerts and inline-style-free dashboard chart render")
+        passed("stock alerts and inline-style-free availability and category charts render")
 
         evidence["step"] = "catalogue creation and report downloads"
         for path, singular in [("categories", "category"), ("suppliers", "supplier")]:

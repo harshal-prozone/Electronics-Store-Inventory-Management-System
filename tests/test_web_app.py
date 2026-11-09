@@ -208,6 +208,43 @@ def test_admin_dashboard_metrics_match_active_inventory_and_chart(client, app):
     assert "dashboard-bar-out-of-stock" in page
 
 
+def test_dashboard_category_stock_counts_active_units_and_updates(client, app):
+    sign_in(client)
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.executemany("INSERT INTO components (sku,name,category,supplier,quantity,reorder_level,unit_price,deleted_at) VALUES (?,?,?,?,?,?,?,?)", [
+            ("CAT-CHART-1", "Category one", "Chart test", "Maker Supplies", 9, 1, 1, None),
+            ("CAT-CHART-2", "Category two", "Chart test", "Maker Supplies", 3, 1, 1, None),
+            ("CAT-CHART-DELETED", "Deleted", "Chart test", "Maker Supplies", 100, 1, 1, "2026-01-01"),
+        ])
+        component_id = db.execute("SELECT id FROM components WHERE sku='CAT-CHART-1'").fetchone()[0]
+    def chart_count():
+        import re
+        page = client.get("/").get_data(as_text=True)
+        match = re.search(r'data-testid="category-stock-row">\s*<span class="dashboard-chart-label">Chart test</span>.*?<strong class="dashboard-chart-count">(\d+)</strong>', page, re.S)
+        assert match
+        return int(match.group(1))
+    assert chart_count() == 12
+    response = client.post(f"/components/{component_id}/stock", data={"adjustment": "stock-out", "quantity": "2", "note": "chart test"})
+    assert response.status_code == 302
+    assert chart_count() == 10
+    report = list(csv.DictReader(io.StringIO(client.get("/reports/availability.csv", query_string={"category": "Chart test"}).get_data(as_text=True))))
+    assert sum(int(row["Quantity"]) for row in report) == 10
+
+
+def test_dashboard_category_chart_handles_empty_inventory_and_large_totals(client, app):
+    sign_in(client)
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.execute("UPDATE components SET deleted_at='2026-01-01'")
+    assert "No active inventory to chart." in client.get("/").get_data(as_text=True)
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.executemany("INSERT INTO components (sku,name,category,supplier,quantity,reorder_level,unit_price) VALUES (?,?,?,?,?,?,?)", [
+            ("HUGE-1", "Huge 1", "Large", "Maker Supplies", 2**63-1, 1, 0),
+            ("HUGE-2", "Huge 2", "Large", "Maker Supplies", 2**63-1, 1, 0),
+        ])
+    page = client.get("/").get_data(as_text=True)
+    assert ">18446744073709551614</strong>" in page
+
+
 def test_dashboard_metrics_refresh_after_stock_quantity_changes(client, app):
     sign_in(client)
 
