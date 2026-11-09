@@ -1,5 +1,6 @@
 name: Tests
 
+
 on:
   push:
     branches: [main, 'feature/**']
@@ -19,8 +20,24 @@ jobs:
           cache: pip
       - name: Install dependencies
         run: python -m pip install -r requirements.txt
-      - name: Run tests
-        run: pytest -q
+      - name: Install coverage tooling
+        run: python -m pip install pytest-cov
+      - name: Run tests with line and branch coverage
+        run: pytest -q --cov=app --cov=inventory_service --cov=inventory_import --cov-branch --cov-report=term-missing --cov-report=json:coverage.json --cov-report=html:htmlcov
+      - name: Generate Markdown coverage reports
+        env:
+          GITHUB_SHA: ${{ github.sha }}
+        run: python scripts/generate_coverage_reports.py
+      - name: Upload measured coverage reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: sprint-2-coverage-reports
+          path: |
+            coverage.json
+            htmlcov/
+            docs/Code-Coverage-Report.md
+            docs/Branch-Coverage-Report.md
+          if-no-files-found: error
       - name: Run Sprint 1 performance acceptance test
         run: python scripts/performance_test.py
 
