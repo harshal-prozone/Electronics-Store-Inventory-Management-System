@@ -9,43 +9,43 @@
 
 ## Requirement-to-design-to-test matrix
 
-Requirement text is transcribed from SRS §§5–7 with PDF line breaks normalized to spaces; original wording and IDs are preserved. The design references and representative original case IDs come from SAD §3.8. For the complete original case lists consult STP §13.2; case-level gap classifications and evidence are in [Original STP reconciliation](Original-STP-reconciliation.md). Actual Flask implementation, gaps, and evidence are indexed per requirement in [architecture reconciliation](Architecture-and-baseline-reconciliation.md). None of these links establish original-case passes, design approval or a waiver.
+Requirement text is transcribed from SRS §§5–7 with PDF line breaks normalized to spaces; original wording and IDs are preserved. The design references and representative original case IDs come from SAD §3.8. The final column transcribes the original STP §13.2 case lists; case-level gap classifications and evidence are in [Original STP reconciliation](Original-STP-reconciliation.md). Actual Flask implementation, gaps, and evidence are indexed per requirement in [architecture reconciliation](Architecture-and-baseline-reconciliation.md). None of these links establish original-case passes, design approval or a waiver.
 
-| ID | Original SRS requirement | PDF page | Original SAD component (§3.8) | Representative original cases (§3.8) |
-|---|---|---:|---|---|
-| FR-001 | The system shall allow an administrator to create a user account with a unique username / email. | 11 | AUTH-02 | UT-USR-01, ST-USR-01 |
-| FR-002 | The system shall authenticate a user by username / email and password before granting access. | 11 | AUTH-01 | UT-AUTH-01, ST-AUTH-01 |
-| FR-003 | The system shall enforce role-based access so that Staff cannot perform Administrator-only actions. | 11 | AUTH-02 | IT-USR-01, ST-SEC-01 |
-| FR-004 | The system shall allow an authenticated user to add a component with name, SKU, category, supplier, unit price, quantity and reorder level. | 11 | INV-01 | UT-INV-01, ST-INV-01 |
-| FR-005 | The system shall reject a component whose SKU / code is not unique. | 11 | INV-01 | UT-INV-02, IT-INV-01 |
-| FR-006 | The system shall allow a user to edit the details of an existing component. | 11 | INV-01 | UT-INV-07, ST-INV-03 |
-| FR-007 | The system shall allow an administrator to delete (soft-delete) a component. | 11 | INV-01 | UT-INV-11, ST-INV-05 |
-| FR-008 | The system shall display a paginated, searchable list of components with current quantity and availability status. | 11 | INV-01 | IT-INV-11, ST-INV-02 |
-| FR-009 | The system shall allow filtering of components by category, supplier and availability status. | 11 | INV-01 | UT-INV-16, ST-INV-02 |
-| FR-010 | The system shall allow a user to record a stock-in transaction that increases a component's quantity. | 11 | STK-01 | UT-STK-03, ST-STK-01 |
-| FR-011 | The system shall allow a user to record a stock-out transaction and shall prevent a component's quantity from going below zero. | 11 | STK-01 | UT-STK-01, IT-STK-01 |
-| FR-012 | The system shall automatically set availability to “Low Stock” when quantity ≤ reorder level and “Out of Stock” when quantity = 0. | 11 | STK-02 | UT-STK-02, ST-STK-01 |
-| FR-013 | The system shall allow an administrator to add, edit and delete categories. | 11 | CAT-01 | UT-CAT-01, ST-CAT-01 |
-| FR-014 | The system shall allow an administrator to add, edit and delete suppliers. | 11 | CAT-01 | UT-SUP-01, ST-CAT-01 |
-| FR-015 | The system shall generate an availability report of components, filterable by category, supplier and status. | 11 | RPT-01 | UT-RPT-01, ST-RPT-01 |
-| FR-016 | The system shall allow the availability report to be exported as CSV and / or PDF. | 11 | RPT-01 | UT-RPT-03, ST-RPT-01 |
-| FR-017 | The system shall display a dashboard showing total components, total stock value, low-stock count and out-of-stock count, with at least one chart. | 11 | DSH-01 | UT-DSH-02, ST-DSH-01 |
-| FR-018 | The system shall record every stock transaction with component, type, quantity, user and timestamp. | 11 | STK-01 | IT-STK-01, ST-STK-01 |
-| FR-019 | The system shall log security-relevant events and deletions in an audit log. | 12 | AUD-01 | IT-AUTH-03, ST-SEC-04 |
-| NFR-001 | 95% of inventory list / search requests shall respond within 2 seconds for a catalogue of up to 5,000 components under the defined test load. | 13 | CORE-01, DB-01 | PERF-01 |
-| NFR-002 | The application shall be available at least 99% during store operating hours, excluding planned maintenance. | 13 | CORE-01 | ST-NFR-03 |
-| NFR-003 | A trained staff member shall be able to add a new component in no more than 3 primary screens. | 13 | UI-01 | ST-NFR-02 |
-| NFR-004 | Concurrent stock-out transactions shall never reduce a component's quantity below zero. | 13 | STK-01 | IT-STK-02 |
-| NFR-005 | Business logic shall be organized into identifiable modules / services with automated unit tests. | 13 | all apps | ST-NFR-04 |
-| NFR-006 | The system shall support at least 5,000 components and 10 concurrent users without functional degradation. | 13 | DB-01 | PERF-01 |
-| NFR-007 | The web UI shall function on the latest versions of Chrome, Edge and Firefox. | 13 | UI-01 | ST-NFR-01 |
-| NFR-008 | Core services shall expose testable interfaces independent of the UI. | 13 | all apps | UT-STK-02, ST-NFR-04 |
-| SEC-001 | Passwords shall be stored only as salted hashes, never as plaintext. | 13 | AUTH-01 | UT-AUTH-03, ST-SEC-03 |
-| SEC-002 | Role-based access shall prevent Staff from accessing Administrator functions (delete, user management). | 13 | AUTH-02 | IT-INV-07, ST-SEC-01 |
-| SEC-003 | The system shall validate and sanitize all user-supplied input to prevent SQL injection and XSS. | 13 | CORE-01 | IT-INV-12, ST-SEC-03 |
-| SEC-004 | Authenticated sessions / tokens shall expire, and invalid or expired credentials shall be rejected. | 13 | AUTH-01 | IT-AUTH-02, ST-SEC-05 |
-| SEC-005 | State-changing requests shall be protected against CSRF. | 13 | CORE-01 | IT-SEC-01, ST-SEC-02 |
-| SEC-006 | Security-relevant events (failed login, unauthorized access, deletions) shall be logged. | 13 | AUD-01 | IT-AUTH-03, ST-SEC-04 |
+| ID | Original SRS requirement | PDF page | Original SAD component (§3.8) | Representative original cases (§3.8) | Original STP cases (§13.2) |
+|---|---|---:|---|---|---|
+| FR-001 | The system shall allow an administrator to create a user account with a unique username / email. | 11 | AUTH-02 | UT-USR-01, ST-USR-01 | UT-USR-01, UT-USR-02, ST-USR-01 |
+| FR-002 | The system shall authenticate a user by username / email and password before granting access. | 11 | AUTH-01 | UT-AUTH-01, ST-AUTH-01 | UT-AUTH-01, UT-AUTH-02, UT-AUTH-04, IT-AUTH-01, ST-AUTH-01, ST-AUTH-02 |
+| FR-003 | The system shall enforce role-based access so that Staff cannot perform Administrator-only actions. | 11 | AUTH-02 | IT-USR-01, ST-SEC-01 | ST-AUTH-01, UT-USR-05, IT-USR-01 |
+| FR-004 | The system shall allow an authenticated user to add a component with name, SKU, category, supplier, unit price, quantity and reorder level. | 11 | INV-01 | UT-INV-01, ST-INV-01 | UT-INV-01, UT-INV-04, UT-INV-06, IT-INV-01, ST-INV-01 |
+| FR-005 | The system shall reject a component whose SKU / code is not unique. | 11 | INV-01 | UT-INV-02, IT-INV-01 | UT-INV-02, UT-INV-03, IT-INV-01, UT-INV-09 |
+| FR-006 | The system shall allow a user to edit the details of an existing component. | 11 | INV-01 | UT-INV-07, ST-INV-03 | UT-INV-07, IT-INV-03, ST-INV-03, ST-INV-04 |
+| FR-007 | The system shall allow an administrator to delete (soft-delete) a component. | 11 | INV-01 | UT-INV-11, ST-INV-05 | IT-INV-04, UT-INV-11, UT-INV-12, IT-INV-06, IT-INV-08, IT-INV-09, ST-INV-05 |
+| FR-008 | The system shall display a paginated, searchable list of components with current quantity and availability status. | 11 | INV-01 | IT-INV-11, ST-INV-02 | UT-INV-14, UT-INV-15, IT-INV-11, ST-INV-02 |
+| FR-009 | The system shall allow filtering of components by category, supplier and availability status. | 11 | INV-01 | UT-INV-16, ST-INV-02 | UT-INV-16, UT-INV-17, IT-INV-10, IT-INV-13, ST-INV-02 |
+| FR-010 | The system shall allow a user to record a stock-in transaction that increases a component's quantity. | 11 | STK-01 | UT-STK-03, ST-STK-01 | UT-STK-03, UT-STK-04, ST-STK-01 |
+| FR-011 | The system shall allow a user to record a stock-out transaction and shall prevent a component's quantity from going below zero. | 11 | STK-01 | UT-STK-01, IT-STK-01 | UT-STK-01, UT-STK-04, UT-STK-05, IT-STK-01, ST-STK-01 |
+| FR-012 | The system shall automatically set availability to “Low Stock” when quantity ≤ reorder level and “Out of Stock” when quantity = 0. | 11 | STK-02 | UT-STK-02, ST-STK-01 | UT-INV-18, UT-INV-08, UT-STK-02, UT-STK-05, IT-STK-04, ST-STK-01 |
+| FR-013 | The system shall allow an administrator to add, edit and delete categories. | 11 | CAT-01 | UT-CAT-01, ST-CAT-01 | UT-CAT-01, UT-CAT-02, IT-CAT-02, ST-CAT-01 |
+| FR-014 | The system shall allow an administrator to add, edit and delete suppliers. | 11 | CAT-01 | UT-SUP-01, ST-CAT-01 | UT-SUP-01, ST-CAT-01 |
+| FR-015 | The system shall generate an availability report of components, filterable by category, supplier and status. | 11 | RPT-01 | UT-RPT-01, ST-RPT-01 | UT-RPT-01, UT-RPT-02, IT-RPT-01, ST-RPT-01 |
+| FR-016 | The system shall allow the availability report to be exported as CSV and / or PDF. | 11 | RPT-01 | UT-RPT-03, ST-RPT-01 | UT-RPT-03, IT-RPT-02, IT-RPT-03, ST-RPT-01 |
+| FR-017 | The system shall display a dashboard showing total components, total stock value, low-stock count and out-of-stock count, with at least one chart. | 11 | DSH-01 | UT-DSH-02, ST-DSH-01 | UT-DSH-01, UT-DSH-02, UT-DSH-03, UT-DSH-04, IT-DSH-01, IT-DSH-02, ST-DSH-01 |
+| FR-018 | The system shall record every stock transaction with component, type, quantity, user and timestamp. | 11 | STK-01 | IT-STK-01, ST-STK-01 | UT-INV-10, UT-INV-13, IT-STK-01, IT-STK-03 |
+| FR-019 | The system shall log security-relevant events and deletions in an audit log. | 12 | AUD-01 | IT-AUTH-03, ST-SEC-04 | IT-AUTH-03, IT-INV-03, IT-INV-06, ST-SEC-04 |
+| NFR-001 | 95% of inventory list / search requests shall respond within 2 seconds for a catalogue of up to 5,000 components under the defined test load. | 13 | CORE-01, DB-01 | PERF-01 | PERF-01, ST-DSH-02 |
+| NFR-002 | The application shall be available at least 99% during store operating hours, excluding planned maintenance. | 13 | CORE-01 | ST-NFR-03 | ST-NFR-03 |
+| NFR-003 | A trained staff member shall be able to add a new component in no more than 3 primary screens. | 13 | UI-01 | ST-NFR-02 | ST-INV-01, ST-NFR-02 |
+| NFR-004 | Concurrent stock-out transactions shall never reduce a component's quantity below zero. | 13 | STK-01 | IT-STK-02 | IT-STK-02 |
+| NFR-005 | Business logic shall be organized into identifiable modules / services with automated unit tests. | 13 | all apps | ST-NFR-04 | ST-NFR-04 |
+| NFR-006 | The system shall support at least 5,000 components and 10 concurrent users without functional degradation. | 13 | DB-01 | PERF-01 | PERF-01 |
+| NFR-007 | The web UI shall function on the latest versions of Chrome, Edge and Firefox. | 13 | UI-01 | ST-NFR-01 | ST-NFR-01 |
+| NFR-008 | Core services shall expose testable interfaces independent of the UI. | 13 | all apps | UT-STK-02, ST-NFR-04 | UT-STK-02 |
+| SEC-001 | Passwords shall be stored only as salted hashes, never as plaintext. | 13 | AUTH-01 | UT-AUTH-03, ST-SEC-03 | UT-AUTH-03, UT-USR-03, ST-SEC-03 |
+| SEC-002 | Role-based access shall prevent Staff from accessing Administrator functions (delete, user management). | 13 | AUTH-02 | IT-INV-07, ST-SEC-01 | IT-INV-07, ST-INV-05, IT-CAT-01, IT-DSH-01, IT-USR-01, ST-SEC-01 |
+| SEC-003 | The system shall validate and sanitize all user-supplied input to prevent SQL injection and XSS. | 13 | CORE-01 | IT-INV-12, ST-SEC-03 | IT-INV-02, IT-INV-05, IT-INV-12, UT-RPT-04, ST-SEC-03 |
+| SEC-004 | Authenticated sessions / tokens shall expire, and invalid or expired credentials shall be rejected. | 13 | AUTH-01 | IT-AUTH-02, ST-SEC-05 | IT-AUTH-02, IT-AUTH-04, UT-USR-04, ST-SEC-05 |
+| SEC-005 | State-changing requests shall be protected against CSRF. | 13 | CORE-01 | IT-SEC-01, ST-SEC-02 | IT-SEC-01, ST-SEC-02 |
+| SEC-006 | Security-relevant events (failed login, unauthorized access, deletions) shall be logged. | 13 | AUD-01 | IT-AUTH-03, ST-SEC-04 | IT-AUTH-03, IT-USR-01, ST-SEC-04 |
 
 ## Review and coverage
 
