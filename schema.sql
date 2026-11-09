@@ -6,6 +6,11 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT NOT NULL UNIQUE COLLATE NOCASE,
     password_hash TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('Admin', 'Staff')),
+    is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1)),
+    session_version INTEGER NOT NULL DEFAULT 0 CHECK (session_version >= 0),
+    failed_login_count INTEGER NOT NULL DEFAULT 0 CHECK (failed_login_count >= 0),
+    first_failed_login_at INTEGER,
+    locked_until INTEGER,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

@@ -13,6 +13,7 @@ import os
 import re
 import secrets
 import sqlite3
+import time
 from datetime import date
 from functools import wraps
 from pathlib import Path
@@ -70,7 +71,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         SESSION_COOKIE_SECURE=os.environ.get("COOKIE_SECURE", "1" if environment == "production" else "0") == "1",
-        PERMANENT_SESSION_LIFETIME=60 * 60,
+        PERMANENT_SESSION_LIFETIME=30 * 60,
         WTF_CSRF_TIME_LIMIT=None,
         MAX_CONTENT_LENGTH=2 * 1024 * 1024,
         MAX_FORM_MEMORY_SIZE=128 * 1024,
@@ -145,8 +146,13 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         user_id = session.get("user_id")
         valid_id = isinstance(user_id, int) and not isinstance(user_id, bool) and 0 < user_id <= 9223372036854775807
         g.user = get_db().execute(
-            "SELECT id, username, email, role FROM users WHERE id = ?", (user_id,)
+            "SELECT id, username, email, role, is_active, session_version FROM users WHERE id = ?", (user_id,)
         ).fetchone() if valid_id else None
+        version = session.get("session_version", 0)
+        if g.user is not None and (not g.user["is_active"] or
+                isinstance(version, bool) or not isinstance(version, int) or
+                version != g.user["session_version"]):
+            g.user = None
         if user_id and g.user is None:
             session.clear()
             write_audit(None, "session-rejected", security_request_details())
@@ -226,28 +232,54 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             if not password or len(password) > 1024:
                 flash("Enter a password of at most 1024 characters.", "error")
                 return render_template("login.html"), 400
-            user = get_db().execute(
-                "SELECT * FROM users WHERE username = ? OR email = ?",
-                (identity, identity),
+            db = get_db()
+            candidate = db.execute(
+                "SELECT * FROM users WHERE username = ? OR email = ?", (identity, identity)
             ).fetchone()
-            if user is None or not check_password_hash(user["password_hash"], password):
+            # Hash verification is intentionally outside the SQLite write lock.
+            password_ok = bool(candidate and candidate["is_active"] and
+                               check_password_hash(candidate["password_hash"], password))
+            now = int(time.time())
+            authenticated = None
+            with db:
+                db.execute("BEGIN IMMEDIATE")
+                user = db.execute("SELECT * FROM users WHERE id = ?", (candidate["id"],)).fetchone() if candidate else None
+                locked = user is not None and user["locked_until"] is not None and user["locked_until"] > now
+                if (user is not None and user["is_active"] and not locked and password_ok
+                        and candidate["password_hash"] == user["password_hash"]):
+                    db.execute("UPDATE users SET failed_login_count=0, first_failed_login_at=NULL, locked_until=NULL WHERE id=?", (user["id"],))
+                    write_audit(user["id"], "login-success", f"username={user['username']}", commit=False)
+                    authenticated = user
+                else:
+                    if user is not None and user["is_active"] and not locked:
+                        first = user["first_failed_login_at"]
+                        if first is None or now < first or now - first >= 900:
+                            first, count = now, 1
+                        else:
+                            count = user["failed_login_count"] + 1
+                        until = now + 900 if count >= 5 else None
+                        db.execute("UPDATE users SET failed_login_count=?, first_failed_login_at=?, locked_until=? WHERE id=?",
+                                   (count, first, until, user["id"]))
+                    write_audit(None, "login-failed", f"identity={identity[:120]}", commit=False)
+            if authenticated is None:
                 flash("Invalid username/email or password.", "error")
-                write_audit(None, "login-failed", f"identity={identity[:120]}")
                 return render_template("login.html"), 401
-            else:
-                write_audit(user["id"], "login-success", f"username={user['username']}")
-                session.clear()
-                session.permanent = True
-                session["user_id"] = user["id"]
-                flash(f"Welcome back, {user['username']}.", "success")
-                return redirect(url_for("components"))
+            session.clear()
+            session.permanent = True
+            session["user_id"] = authenticated["id"]
+            session["session_version"] = authenticated["session_version"]
+            flash(f"Welcome back, {authenticated['username']}.", "success")
+            return redirect(url_for("components"))
         return render_template("login.html")
 
     @app.post("/logout")
     def logout():
         user_id = audit_actor_id()
         if user_id:
-            write_audit(user_id, "logout", "user logged out")
+            db = get_db()
+            with db:
+                db.execute("UPDATE users SET session_version = session_version + 1 WHERE id = ?", (user_id,))
+                write_audit(user_id, "logout", "user logged out", commit=False)
         session.clear()
         flash("You have been signed out.", "success")
         return redirect(url_for("login"))
@@ -328,11 +360,38 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                     )
 
         users = db.execute(
-            """SELECT id, username, email, role, created_at
+            """SELECT id, username, email, role, is_active, created_at
                FROM users ORDER BY username COLLATE NOCASE"""
         ).fetchall()
 
         return render_template("user_management.html", users=users), status
+
+    @app.post("/admin/users/<int:user_id>/status")
+    @login_required
+    @admin_required
+    def user_status(user_id: int):
+        action = request.form.get("action", "")
+        if action not in ("enable", "disable"):
+            abort(400, description="Select a valid account action.")
+        if action == "disable" and user_id == g.user["id"]:
+            abort(400, description="An administrator cannot disable their own account.")
+        db = get_db()
+        with db:
+            db.execute("BEGIN IMMEDIATE")
+            user = db.execute("SELECT id, is_active FROM users WHERE id = ?", (user_id,)).fetchone()
+            if user is None:
+                abort(404)
+            active = 1 if action == "enable" else 0
+            if user["is_active"] != active:
+                # Disabling revokes all existing signed-cookie sessions, including
+                # cookies replayed after an account is re-enabled.
+                db.execute("UPDATE users SET is_active = ?, session_version = session_version + ? WHERE id = ?",
+                           (active, 1 if action == "disable" else 0, user_id))
+                write_audit(g.user["id"], "user-" + ("enabled" if active else "disabled"),
+                            f"user_id={user_id}", commit=False)
+        flash("Account " + ("enabled" if active else "disabled") + ".", "success")
+        return redirect(url_for("manage_users"))
+
     @app.get("/components")
     @login_required
     def components():
@@ -1101,6 +1160,20 @@ def init_db() -> None:
 
     with open(ROOT / "schema.sql", encoding="utf-8") as schema_file:
         db.executescript(schema_file.read())
+
+    # Add account-control fields to pre-existing databases without replacing users.
+    user_columns = {row["name"] for row in db.execute("PRAGMA table_info(users)").fetchall()}
+    if "is_active" not in user_columns:
+        db.execute("ALTER TABLE users ADD COLUMN is_active INTEGER NOT NULL DEFAULT 1 CHECK (is_active IN (0, 1))")
+    if "session_version" not in user_columns:
+        db.execute("ALTER TABLE users ADD COLUMN session_version INTEGER NOT NULL DEFAULT 0 CHECK (session_version >= 0)")
+
+    if "failed_login_count" not in user_columns:
+        db.execute("ALTER TABLE users ADD COLUMN failed_login_count INTEGER NOT NULL DEFAULT 0 CHECK (failed_login_count >= 0)")
+    if "first_failed_login_at" not in user_columns:
+        db.execute("ALTER TABLE users ADD COLUMN first_failed_login_at INTEGER")
+    if "locked_until" not in user_columns:
+        db.execute("ALTER TABLE users ADD COLUMN locked_until INTEGER")
 
     # SQLite CHECK constraints require rebuilding the table to add a type.
     transaction_sql = db.execute(

@@ -82,7 +82,9 @@
                     <th>Username</th>
                     <th>Email</th>
                     <th>Role</th>
+                    <th>Status</th>
                     <th>Created</th>
+                    <th>Action</th>
                 </tr>
             </thead>
             <tbody>
@@ -91,10 +93,21 @@
                     <td>{{ user["username"] }}</td>
                     <td>{{ user["email"] }}</td>
                     <td>{{ user["role"] }}</td>
+                    <td>{{ "Active" if user["is_active"] else "Disabled" }}</td>
                     <td>{{ user["created_at"] }}</td>
+                    <td>
+                        {% if user["id"] != g.user["id"] %}
+                        <form method="post" action="{{ url_for('user_status', user_id=user['id']) }}">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                            <button name="action" value="{{ 'disable' if user['is_active'] else 'enable' }}">
+                                {{ 'Disable' if user['is_active'] else 'Enable' }}
+                            </button>
+                        </form>
+                        {% else %}Current account{% endif %}
+                    </td>
                 </tr>
                 {% else %}
-                <tr><td colspan="4">No users found.</td></tr>
+                <tr><td colspan="6">No users found.</td></tr>
                 {% endfor %}
             </tbody>
         </table>
