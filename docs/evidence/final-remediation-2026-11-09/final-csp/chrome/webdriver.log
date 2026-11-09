@@ -113,31 +113,31 @@
 DevTools listening on ws://127.0.0.1:44991/devtools/browser/a5dcc20f-f4f8-4f27-bfdc-10feb139bc8c
 [15216:15216:1109/121923.878436:WARNING:ui/aura/window.cc:1499] StackChildLayerRelativeTo called with unmanaged layer(s). child=WebContentsViewAura child_managed=0 target=WebContentsViewAura target_managed=0
 [15216:15216:1109/121923.878497:WARNING:ui/aura/window.cc:1499] StackChildLayerRelativeTo called with unmanaged layer(s). child=WebContentsViewAura child_managed=0 target=WebContentsViewAura target_managed=0
-[15216:15216:1109/121923.898464:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[15216:15216:1109/121923.898464:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
 [15216:15216:1109/121923.898544:WARNING:device/bluetooth/dbus/bluez_dbus_manager.cc:209] Floss manager service not available, cannot set Floss enable/disable.
-[15216:15216:1109/121923.898631:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[15216:15216:1109/121923.898631:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
 [15216:15228:1109/121923.901477:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
 [15216:15228:1109/121923.901510:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[15216:15216:1109/121923.907415:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[15216:15216:1109/121923.907415:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
 [15216:15228:1109/121923.907497:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
 [15216:15228:1109/121923.941610:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
 [15216:15228:1109/121923.941695:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
-[15216:15216:1109/121923.942437:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
-[15216:15216:1109/121923.942463:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[15216:15216:1109/121923.942437:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
+[15216:15216:1109/121923.942463:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
 [15216:15228:1109/121923.942497:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[15216:15216:1109/121923.945084:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[15216:15216:1109/121923.945084:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
 [15216:15216:1109/121923.956439:WARNING:dbus/property.cc:94] Failed to connect to PropertiesChangedsignal.
-[15216:15216:1109/121923.956471:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: unknown error type: 
+[15216:15216:1109/121923.956471:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.Properties.GetAll: object_path= /org/freedesktop/UPower/devices/DisplayDevice: unknown error type:
 [15216:15216:1109/121923.956477:WARNING:dbus/property.cc:174] GetAll request failed for: org.freedesktop.UPower.Device
-[15216:15216:1109/121923.956568:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[15216:15216:1109/121923.956568:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
 [15216:15228:1109/121923.956640:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
 [1794226763.958][INFO]: resolved localhost to ["127.0.0.1"]
-[15216:15216:1109/121923.969849:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[15216:15216:1109/121923.969849:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
 [15216:15228:1109/121923.974514:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Could not parse server address: Unknown address type (examples of valid types are "tcp" and on UNIX "unix")
-[15216:15216:1109/121923.992032:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type: 
+[15216:15216:1109/121923.992032:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.DBus.NameHasOwner: object_path= /org/freedesktop/DBus: unknown error type:
 [15216:15216:1109/121923.992059:WARNING:ui/base/idle/idle_linux.cc:111] None of the known D-Bus ScreenSaver services could be used.
 [15216:15228:1109/121923.992170:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
-[15216:15216:1109/121923.999968:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.NetworkManager.GetDevices: object_path= /org/freedesktop/NetworkManager: unknown error type: 
+[15216:15216:1109/121923.999968:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.NetworkManager.GetDevices: object_path= /org/freedesktop/NetworkManager: unknown error type:
 [15216:15216:1109/121923.999997:WARNING:services/device/geolocation/wifi_data_provider_linux.cc:171] Failed to get the device list
 [1794226764.039][INFO]: [80e24b019ea3f04ac9390e71bcca1d13] RESPONSE InitSession {
    "capabilities": {
@@ -242,7 +242,7 @@ DevTools listening on ws://127.0.0.1:44991/devtools/browser/a5dcc20f-f4f8-4f27-b
 }
 [1794226765.017][INFO]: Waiting for pending navigations...
 [1794226765.018][INFO]: Done waiting for pending navigations. Status: ok
-[1794226765.048][INFO]: 
+[1794226765.048][INFO]:
 	=== NOTE: ===
 	The Clear command in ChromeDriver 2.43 and above
 	has been updated to conform to the current standard,
@@ -2953,7 +2953,7 @@ DevTools listening on ws://127.0.0.1:44991/devtools/browser/a5dcc20f-f4f8-4f27-b
 [1794226773.670][INFO]: Done waiting for pending navigations. Status: ok
 [1794226773.670][INFO]: [80e24b019ea3f04ac9390e71bcca1d13] RESPONSE ClickElement
 [15216:15228:1109/121933.974371:ERROR:dbus/bus.cc:406] Failed to connect to the bus: Failed to connect to socket /run/dbus/system_bus_socket: No such file or directory
-[15216:15216:1109/121933.974417:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.NetworkManager.GetDevices: object_path= /org/freedesktop/NetworkManager: unknown error type: 
+[15216:15216:1109/121933.974417:ERROR:dbus/object_proxy.cc:572] Failed to call method: org.freedesktop.NetworkManager.GetDevices: object_path= /org/freedesktop/NetworkManager: unknown error type:
 [15216:15216:1109/121933.974433:WARNING:services/device/geolocation/wifi_data_provider_linux.cc:171] Failed to get the device list
 [1794226774.172][INFO]: [80e24b019ea3f04ac9390e71bcca1d13] COMMAND FindElement {
    "using": "css selector",

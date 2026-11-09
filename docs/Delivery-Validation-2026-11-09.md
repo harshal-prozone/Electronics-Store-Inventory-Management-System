@@ -12,7 +12,7 @@ This record describes the Flask/SQLite delivery branch, not approval of a substi
 
 ## Verification
 
-The final application/test source revision for the checks below is `1509f497adc3caa1ca20ca1e41e93dddc247536c`. A later documentation-only commit may contain these reports. Raw artifacts are retained in `evidence/`.
+The final application/test source revision for the checks below is `1509f497adc3caa1ca20ca1e41e93dddc247536c`. A later documentation-only commit may contain these reports. Artifacts are retained in `evidence/`. For text artifacts requiring whitespace normalization, original bytes are preserved in `evidence/final-remediation-2026-11-09/original-text-evidence.zip`.
 
 - Fresh local Git clone; installed `requirements.txt` and `pytest-cov` in a new Python 3.13.15 virtual environment. Full suite: **300 passed, 0 failed, 235 warnings, 76.62 seconds**. Tests ran concurrently with browser and ZAP checks; duration is not a performance measurement. Many warnings report SQLite connections not explicitly closed; the test code uses connection context managers, which do not close connections, but allocation tracing was not completed. These warnings remain to be triaged rather than suppressed. A separate existing-database migration test verifies preservation and repeat initialization.
 - Fresh SQLite initialization, test administrator creation and repeat initialization succeeded. The clean clone started the Flask development server and served `/health/ready` over loopback HTTP 200; SQLite `integrity_check` returned `ok` and `foreign_key_check` returned no rows. Local-only checks do not establish real-store availability or independent teammate verification.
