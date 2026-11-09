@@ -109,6 +109,17 @@
   <div class="dashboard-chart-note">Bar lengths are relative to the category with the most units. Soft-deleted components are excluded.</div>
   {% else %}<p class="dashboard-chart-note">No active inventory to chart.</p>{% endif %}
 </section>
+<section class="panel dashboard-current-low-stock">
+  <div class="panel-header"><div><h2>Current low-stock items</h2><p class="muted">Up to ten active low-stock components, most recently updated first.</p></div></div>
+  {% if low_stock_items %}
+  <div class="table-wrap"><table class="inventory-table">
+    <thead><tr><th>Component</th><th>Quantity</th><th>Reorder level</th></tr></thead>
+    <tbody>{% for item in low_stock_items %}
+      <tr><td><a href="{{ url_for('component_detail', component_id=item['id']) }}">{{ item['sku'] }} — {{ item['name'] }}</a></td><td>{{ item['quantity'] }}</td><td>{{ item['reorder_level'] }}</td></tr>
+    {% endfor %}</tbody>
+  </table></div>
+  {% else %}<p class="dashboard-chart-note">No current low-stock items.</p>{% endif %}
+</section>
 <section class="panel">
   <h2>Recent stock alerts</h2>
   <p class="muted">Recent status transitions; historical alerts may not reflect current stock.</p>

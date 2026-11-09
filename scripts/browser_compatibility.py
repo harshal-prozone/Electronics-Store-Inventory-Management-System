@@ -303,6 +303,7 @@ def run():
         driver.get(base + "/")
         assert "Recent stock alerts" in driver.page_source
         assert "Browser Smoke Component" in driver.page_source
+        assert "Current low-stock items" in driver.page_source
         bars = driver.find_elements(By.CSS_SELECTOR, ".dashboard-layout progress.dashboard-bar-fill")
         assert len(bars) == 3
         assert all(0 <= float(bar.get_attribute("value")) <= 100 for bar in bars)

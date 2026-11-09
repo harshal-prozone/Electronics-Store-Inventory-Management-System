@@ -227,13 +227,19 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
             for label, quantity in sorted(categories.items(), key=lambda item: item[0].casefold())
         ]
 
+        low_stock_items = get_db().execute(
+            """SELECT id, sku, name, quantity, reorder_level FROM components
+               WHERE deleted_at IS NULL AND quantity > 0 AND quantity <= reorder_level
+               ORDER BY updated_at DESC, id DESC LIMIT 10"""
+        ).fetchall()
         alerts = get_db().execute(
             """SELECT a.*, c.sku, c.name FROM stock_alerts a
                JOIN components c ON c.id = a.component_id
                WHERE c.deleted_at IS NULL ORDER BY a.id DESC LIMIT 10"""
         ).fetchall()
         return render_template(
-            "dashboard.html", metrics=metrics, chart_items=chart_items, category_chart=category_chart, alerts=alerts,
+            "dashboard.html", metrics=metrics, chart_items=chart_items, category_chart=category_chart,
+            low_stock_items=low_stock_items, alerts=alerts,
         )
 
     @app.route("/login", methods=("GET", "POST"))

@@ -139,3 +139,5 @@
 .dashboard-bar-category { color: var(--blue); }
 .category-chart-row { grid-template-columns: minmax(100px, 2fr) minmax(0, 4fr) minmax(32px, auto); }
 .category-chart-row .dashboard-chart-label { overflow-wrap: anywhere; }
+
+.dashboard-current-low-stock { margin-bottom: 22px; }

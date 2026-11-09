@@ -245,6 +245,28 @@ def test_dashboard_category_chart_handles_empty_inventory_and_large_totals(clien
     assert ">18446744073709551614</strong>" in page
 
 
+def test_dashboard_low_stock_list_shows_current_active_items(client, app):
+    sign_in(client)
+    with sqlite3.connect(app.config["DATABASE"]) as db:
+        db.executemany("""INSERT INTO components
+            (sku,name,category,supplier,quantity,reorder_level,unit_price,deleted_at)
+            VALUES (?,?,?,?,?,?,?,?)""", [
+            ("CURRENT-LOW", "Current low item", "Microcontrollers", "Maker Supplies", 2, 5, 1, None),
+            ("CURRENT-OUT", "Out item", "Microcontrollers", "Maker Supplies", 0, 5, 1, None),
+            ("CURRENT-OK", "Healthy item", "Microcontrollers", "Maker Supplies", 8, 5, 1, None),
+            ("CURRENT-DELETED", "Deleted low item", "Microcontrollers", "Maker Supplies", 1, 5, 1, "2026-01-01"),
+        ])
+        item_id = db.execute("SELECT id FROM components WHERE sku='CURRENT-LOW'").fetchone()[0]
+    def low_section():
+        page = client.get("/").get_data(as_text=True)
+        return page.split('<section class="panel dashboard-current-low-stock">', 1)[1].split('</section>', 1)[0]
+    section = low_section()
+    assert "Current low item" in section
+    assert "Out item" not in section and "Healthy item" not in section and "Deleted low item" not in section
+    assert client.post(f"/components/{item_id}/stock", data={"adjustment": "stock-in", "quantity": "5", "note": "resupply"}).status_code == 302
+    assert "Current low item" not in low_section()
+
+
 def test_dashboard_metrics_refresh_after_stock_quantity_changes(client, app):
     sign_in(client)
 
