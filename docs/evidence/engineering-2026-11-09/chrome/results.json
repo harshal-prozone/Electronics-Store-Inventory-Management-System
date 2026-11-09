@@ -1,0 +1,94 @@
+{
+  "browser": "chrome",
+  "started_at_utc": "2026-11-09T11:40:36.672696+00:00",
+  "platform": "Linux-6.18.56-x86_64-with-glibc2.34",
+  "python": "3.13.15",
+  "result": "PASS",
+  "commit": "e4bfd6cd48c4df528000dc9135c2cde7cf193f8d",
+  "runner_sha256": "8addf0404cf12732a875c8a1f9d0f4f105ab6147cec5c3809212b0addb33bebb",
+  "chromium_no_sandbox": true,
+  "webdriver_log": "webdriver.log",
+  "checks": [
+    "login, search, combined filters and pagination",
+    "component creation in three primary screens; keyboard focus and persisted low-stock status",
+    "editing, stock-in/out, resulting balances and oversell rejection",
+    "CSV template download, mixed create/update/rejection and adjustment history",
+    "category/supplier creation and filtered CSV/PDF downloads",
+    "required-field validation and narrow inventory/form/detail layout",
+    "staff search/detail/stock operations and Admin-only access restrictions",
+    "stored/reflected XSS remains inert; delete confirmation cancel/accept works under CSP",
+    "Admin-only audit review, event/user filters and attributed component deletion"
+  ],
+  "primary_screens": [
+    "/components",
+    "/components/new",
+    "/components/20"
+  ],
+  "screenshots": [
+    "01-inventory-desktop.png",
+    "02-component-form-desktop.png",
+    "03-component-details-desktop.png",
+    "07-csv-import-results.png",
+    "04-inventory-narrow.png",
+    "05-component-form-narrow.png",
+    "06-component-details-narrow.png",
+    "08-audit-log-desktop.png",
+    "09-audit-log-narrow.png"
+  ],
+  "layout_checks": [
+    {
+      "screen": "01-inventory-desktop",
+      "documentWidth": 1350,
+      "height": 800,
+      "width": 1365
+    },
+    {
+      "screen": "02-component-form-desktop",
+      "documentWidth": 1350,
+      "height": 800,
+      "width": 1365
+    },
+    {
+      "screen": "03-component-details-desktop",
+      "documentWidth": 1350,
+      "height": 800,
+      "width": 1365
+    },
+    {
+      "screen": "04-inventory-narrow",
+      "documentWidth": 485,
+      "height": 800,
+      "width": 500
+    },
+    {
+      "screen": "05-component-form-narrow",
+      "documentWidth": 485,
+      "height": 800,
+      "width": 500
+    },
+    {
+      "screen": "06-component-details-narrow",
+      "documentWidth": 485,
+      "height": 800,
+      "width": 500
+    },
+    {
+      "screen": "08-audit-log-desktop",
+      "documentWidth": 1365,
+      "height": 800,
+      "width": 1365
+    },
+    {
+      "screen": "09-audit-log-narrow",
+      "documentWidth": 485,
+      "height": 800,
+      "width": 500
+    }
+  ],
+  "step": "Admin audit review and recorded deletion",
+  "expected_stable_version": "157.0.8103.38",
+  "release_source": "https://googlechromelabs.github.io/chrome-for-testing/last-known-good-versions.json",
+  "browser_version": "157.0.8103.38",
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36",
+  "finished_at_utc": "2026-11-09T11:41:06.198928+00:00"
+}

@@ -113,7 +113,7 @@ def adjust_stock(
     try:
         db.execute("BEGIN IMMEDIATE")
         component = db.execute(
-            "SELECT id, quantity FROM components WHERE id = ?", (component_id,)
+            "SELECT id, quantity FROM components WHERE id = ? AND deleted_at IS NULL", (component_id,)
         ).fetchone()
         if component is None:
             raise LookupError("component not found")

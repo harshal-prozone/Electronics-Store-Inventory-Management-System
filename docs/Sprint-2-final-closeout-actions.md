@@ -1,12 +1,14 @@
 # Sprint 2 final closeout — consolidated action register
 
 **Repository:** `harshal-prozone/Electronics-Store-Inventory-Management-System`
-**Latest audited commit:** `0968b16` (`docs: finalize Sprint 2 evidence and closeout package`)
+**Historical audited commit:** `0968b16` (`docs: finalize Sprint 2 evidence and closeout package`)
 **Audit date:** 8 November 2026
+
+> Historical audit record; superseded by [Final engineering validation](Final-Engineering-Validation.md), [Architecture reconciliation](Architecture-and-baseline-reconciliation.md), and [Original STP reconciliation](Original-STP-reconciliation.md). Technical gaps and unapproved architectural deviations remain as well as human/deployment activities.
 
 ## Executive status
 
-The Sprint 2 implementation baseline and remaining-evidence pack are committed. The remaining items are evidence and acceptance activities that require real people, a real recording, or a defined operational observation. They must not be marked complete merely because templates or scripts exist.
+The Sprint 2 implementation baseline and remaining-evidence pack are committed. The historical register below focuses on evidence and acceptance activities requiring real people, a real recording, or a defined operational observation; it is not an exhaustive current technical gap list. They must not be marked complete merely because templates or scripts exist.
 
 | Item | Current evidence | Actual remaining action | Owner |
 |---|---|---|---|
@@ -15,7 +17,7 @@ The Sprint 2 implementation baseline and remaining-evidence pack are committed. 
 | Issue #17 — 99% availability | `/health`, health tests, sampler script and measurement procedure | Obtain SRS measurement conditions; run in the required environment for the full approved period; retain raw CSV/logs; calculate using the SRS method | Deployment/operator |
 | Sprint 2 demo | Run sheet exists; no verified recording URL found | Record the actual demonstration, review it, upload it, and add the verified URL/date/duration | Presenter |
 | Peer/mentor sign-off | No formal reviewer approval found | Conduct review and have reviewer complete `Sprint-2-review-signoff.md` | Reviewer/mentor |
-| Formal SRS/SAD/Test Plan traceability | Issue-based matrix exists | Attach the approved source documents and complete line-by-line mapping/sign-off | Team + reviewer |
+| Formal SRS/SAD/Test Plan traceability | Issue-based matrix exists | Review the submitted combined PDF and the preliminary requirement/case reconciliation; complete case execution and reviewer sign-off | Team + reviewer |
 
 ## Evidence already present
 
@@ -27,12 +29,12 @@ The Sprint 2 implementation baseline and remaining-evidence pack are committed. 
 
 ## Important qualifications
 
-1. **Issue #24 is open.** Its explicit independent teammate criterion is not met by the owner's own clean-clone run or by CI automation.
+1. **Issue #24 is closed in GitHub as of 9 November 2026, but is not fully accepted.** Its explicit independent teammate criterion is not met by the owner's own clean-clone run or by CI automation.
 2. **Issue #17 is closed in GitHub but its >=99% defined-period availability criterion is not demonstrated.** A health endpoint response is not uptime evidence. Correct the tracker status if required by the team's process.
 3. **Issue #13's existing participant result is self-reported and incomplete in metadata.** Do not invent the participant's identity, timestamp, environment, or screenshots.
 4. **A demo run sheet is not a demo recording.**
 5. **A sign-off template is not approval.**
-6. The formal SRS/SAD/Test Plan PDFs were not available during this audit, so formal requirement-by-requirement traceability remains unverified.
+6. The combined SRS/SAD/STP PDF is present. The earlier audit did not inspect it; see [original STP reconciliation](Original-STP-reconciliation.md). Formal reviewer sign-off remains outstanding.
 
 ## Completion rule
 

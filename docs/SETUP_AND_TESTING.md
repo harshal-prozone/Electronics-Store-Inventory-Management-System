@@ -120,7 +120,7 @@ flask --app app create-admin --username admin --email admin@example.local
 
 Alternatively, the application can seed an administrator on first initialization if `ADMIN_PASSWORD`, `ADMIN_USERNAME`, and `ADMIN_EMAIL` are set before initialization. The interactive command is preferred. Changing these variables later does not reset an existing password.
 
-Importing `app.py` creates the Flask application and initializes its configured database. The explicit `init-db` CLI command is also available. Initialization is not a command to erase user data.
+Importing `app.py` creates the Flask application and initializes its configured database. The explicit `init-db` CLI command is also available. Initialization is not a command to erase user data. The supported startup migration adds account activity, session-version and failed-login lockout columns to older `users` tables without replacing accounts. Back up the SQLite file before upgrading; test the upgrade on a copy first.
 
 ## 5. Run the application
 

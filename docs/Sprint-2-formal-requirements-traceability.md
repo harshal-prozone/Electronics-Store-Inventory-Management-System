@@ -1,6 +1,6 @@
 # Sprint 2 formal SRS / SAD / Test Plan traceability review
 
-> Complete against the approved, submitted source documents. This template is not a substitute for those documents or reviewer approval.
+> The submitted combined SRS/SAD/STP PDF is present. See [architecture and requirement index](Architecture-and-baseline-reconciliation.md) and [99-case STP reconciliation](Original-STP-reconciliation.md). These are preliminary and not reviewer approval; the original RTM and exact requirement wording remain in the PDF. Complete the approval fields below.
 
 ## Source-document control
 

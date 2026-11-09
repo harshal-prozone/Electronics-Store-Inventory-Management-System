@@ -1,0 +1,15 @@
+{
+  "active_components": 5000,
+  "concurrent_users": 10,
+  "http_requests": 100,
+  "successful_requests": 100,
+  "failed_requests": 0,
+  "p50_ms": 87.12,
+  "p95_ms": 488.93,
+  "max_ms": 540.21,
+  "requests_within_2s_percent": 100.0,
+  "acceptance_target": "at least 95% of listing/search requests complete within 2 seconds",
+  "result": "PASS",
+  "error_samples": [],
+  "environment_note": "loopback threaded Flask WSGI server with temporary SQLite database"
+}

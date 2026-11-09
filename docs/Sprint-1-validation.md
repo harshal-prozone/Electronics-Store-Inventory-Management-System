@@ -11,8 +11,8 @@
 
 - Historical GitHub Actions baseline: [run 40113760398](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/actions/runs/40113760398), with 65 tests passed on Python 3.12 and the original performance acceptance step passed.
 - Owner-run fresh-clone verification: commit [`38eec1d`](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/commit/38eec1d), Python 3.12.16, **271 tests passed in 21.73 seconds**. This was run by the repository owner; it is not the independent teammate verification required by Issue #24 and is not a GitHub Actions run.
-- Latest audited GitHub Actions workflow run #75 passed the backend suite, clean-setup smoke test, and stable Chrome, Edge, and Firefox jobs. Link the exact workflow run from GitHub when recording final submission evidence.
-- Latest audited performance run #75: 5,000 active components, 10 concurrent workers, 100 listing/search/filter requests, 100 successes, 0 failures, p95 215.05 ms, and 100% completed within the 2-second threshold (acceptance threshold: at least 95%).
+- Previously audited GitHub Actions workflow run #75 passed the backend suite, clean-setup smoke test, and stable Chrome, Edge, and Firefox jobs. Link the exact workflow run from GitHub when recording final submission evidence.
+- Previously audited performance run #75: 5,000 active components, 10 concurrent workers, 100 listing/search/filter requests, 100 successes, 0 failures, p95 215.05 ms, and 100% completed within the 2-second threshold (acceptance threshold: at least 95%).
 - Environment qualification: the performance test uses a temporary SQLite database and loopback threaded Flask WSGI server. It is a coursework acceptance test, not a production-network load test or proof of 99% availability.
 
 ## Sprint 1 issue acceptance map
@@ -30,7 +30,7 @@
 ## Additional quality gates added by the closeout change
 
 - **Clean setup smoke:** a fresh CI job installs `requirements.txt`, initializes a new database, creates an administrator, starts Flask and requests `/health`. Actual pass/fail is recorded by the pull-request workflow.
-- **Cross-browser smoke:** `scripts/browser_compatibility.py` is the vendor-stable Selenium runner. It resolves stable Chrome, Edge, and regular Firefox releases and retains browser versions, JSON results, screenshots, and WebDriver logs. The latest audited run #75 passed all three browser jobs. The separate `scripts/browser_acceptance.py` is an optional legacy Playwright smoke test. Do not conflate the two runners.
+- **Cross-browser smoke:** `scripts/browser_compatibility.py` is the vendor-stable Selenium runner. It resolves stable Chrome, Edge, and regular Firefox releases and retains browser versions, JSON results, screenshots, and WebDriver logs. The previously audited run #75 passed all three browser jobs. The separate `scripts/browser_acceptance.py` is an optional legacy Playwright smoke test. Do not conflate the two runners.
 - Existing unit/integration tests remain the principal automated regression suite.
 
 ## Issue tracking reconciliation
