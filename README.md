@@ -4,11 +4,11 @@ A Flask + SQLite inventory management application for electronics components. Sp
 
 For complete developer setup, database, application, testing, and troubleshooting instructions, see **[Setup and Testing Guide](docs/SETUP_AND_TESTING.md)**.
 
-For the submitted-baseline differences and outstanding acceptance decisions, see [Architecture and baseline reconciliation](docs/Architecture-and-baseline-reconciliation.md), [Original STP reconciliation](docs/Original-STP-reconciliation.md), and [Final engineering validation](docs/Final-Engineering-Validation.md).
+For the submitted-baseline differences and outstanding acceptance decisions, see [Architecture and baseline reconciliation](docs/Architecture-and-baseline-reconciliation.md), [Original STP reconciliation](docs/Original-STP-reconciliation.md), and [Final engineering validation](docs/Final-Engineering-Validation.md), and the newer [account-security validation](docs/Account-Security-Remediation.md).
 
 ## Implemented functionality
 
-- Username/email authentication, Admin and Staff roles, password hashing, session expiry, and CSRF protection.
+- Username/email authentication, Admin and Staff roles, salted password hashing, 30-minute idle sessions, and CSRF protection. After five failed attempts within 15 minutes, that account is locked for 15 minutes. Administrators can disable or re-enable other accounts; disabling and logout revoke existing sessions for that account.
 - Searchable, filtered and paginated component inventory.
 - Admin-only component creation, editing, duplicate-SKU validation, and soft deletion.
 - Admin-managed category and supplier catalogues, including validation, protected deletion, and association-preserving renames.

@@ -15,11 +15,11 @@ Status key: **Related** = relevant implementation/tests exist but original case 
 | UT-AUTH-01 | valid login | Related | tests/test_web_app.py; tests/test_input_security.py |
 | UT-AUTH-02 | invalid password | Related | tests/test_web_app.py; tests/test_input_security.py |
 | UT-AUTH-03 | Django PBKDF2-format salted password hashes | Deviation | Werkzeug salted password hashes, not Django PBKDF2-format hashes; tests/test_web_app.py |
-| UT-AUTH-04 | disabled account rejected | Missing | no account-disabled state |
+| UT-AUTH-04 | disabled account rejected | Related | tests/test_account_controls.py; original Django service not executed |
 | IT-AUTH-01 | DRF login API, JSON and role | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
 | IT-AUTH-02 | idle expiry via API | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
 | IT-AUTH-03 | failed-login audit | Related | tests/test_web_app.py; tests/test_input_security.py |
-| IT-AUTH-04 | five-failure account lockout | Missing | no account lockout |
+| IT-AUTH-04 | five-failure account lockout | Deviation | tests/test_account_controls.py; Flask returns generic 401, not original DRF 423 |
 | ST-AUTH-01 | role-based landing pages | Related | tests/test_web_app.py; tests/test_input_security.py |
 | ST-AUTH-02 | blank login fields | Related | tests/test_web_app.py; tests/test_input_security.py |
 | UT-INV-01 | valid create | Related | tests/test_web_app.py; tests/test_input_security.py |
@@ -97,8 +97,8 @@ Status key: **Related** = relevant implementation/tests exist but original case 
 | UT-USR-01 | create staff account | Related | tests/test_web_app.py; tests/test_input_security.py |
 | UT-USR-02 | duplicate username/email | Related | tests/test_web_app.py; tests/test_input_security.py |
 | UT-USR-03 | weak password rejection | Related | tests/test_web_app.py; tests/test_input_security.py |
-| UT-USR-04 | disable account and invalidate sessions | Missing | no account-disable mechanism |
-| UT-USR-05 | prevent self-disable | Missing | no account-disable mechanism |
+| UT-USR-04 | disable account and invalidate sessions | Related | tests/test_account_controls.py; original service/API case not executed |
+| UT-USR-05 | prevent self-disable | Related | tests/test_account_controls.py; original service/API case not executed |
 | IT-USR-01 | staff user-creation API denied | Deviation | DRF endpoint absent; related Flask form tests: tests/test_web_app.py; tests/test_input_security.py |
 | ST-SEC-01 | staff opens admin URL | Related | tests/test_audit_logging.py; tests/test_input_security.py |
 | ST-USR-01 | create staff then log in | Related | tests/test_web_app.py; tests/test_input_security.py |
@@ -110,7 +110,7 @@ Status key: **Related** = relevant implementation/tests exist but original case 
 | ST-SEC-02 | cross-origin POST | Related | tests/test_input_security.py; HTTPS/origin deployment conditions not established |
 | ST-SEC-03 | Bandit, pip-audit and ZAP scans | Deviation | Bandit and pip-audit run locally; no ZAP/SonarQube or pipeline scans evidenced |
 | ST-SEC-04 | security audit trail review | Related | tests/test_audit_logging.py; tests/test_input_security.py |
-| ST-SEC-05 | HTTPS cookie flags and 31-minute idle timeout | External | HTTPS deployment and idle-timeout observation not recorded |
+| ST-SEC-05 | HTTPS cookie flags and 31-minute idle timeout | External | simulated 30-minute expiry covered in tests/test_account_controls.py; deployed HTTPS observation not recorded |
 
 ## Exit criteria
 

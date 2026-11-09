@@ -1,0 +1,94 @@
+{
+  "browser": "edge",
+  "started_at_utc": "2026-11-09T11:58:25.590367+00:00",
+  "platform": "Linux-6.18.56-x86_64-with-glibc2.34",
+  "python": "3.13.15",
+  "result": "PASS",
+  "commit": "87f14512c8bc595bfa0010cfbfbd8bc37b5754a4",
+  "runner_sha256": "8addf0404cf12732a875c8a1f9d0f4f105ab6147cec5c3809212b0addb33bebb",
+  "chromium_no_sandbox": true,
+  "webdriver_log": "webdriver.log",
+  "checks": [
+    "login, search, combined filters and pagination",
+    "component creation in three primary screens; keyboard focus and persisted low-stock status",
+    "editing, stock-in/out, resulting balances and oversell rejection",
+    "CSV template download, mixed create/update/rejection and adjustment history",
+    "category/supplier creation and filtered CSV/PDF downloads",
+    "required-field validation and narrow inventory/form/detail layout",
+    "staff search/detail/stock operations and Admin-only access restrictions",
+    "stored/reflected XSS remains inert; delete confirmation cancel/accept works under CSP",
+    "Admin-only audit review, event/user filters and attributed component deletion"
+  ],
+  "primary_screens": [
+    "/components",
+    "/components/new",
+    "/components/20"
+  ],
+  "screenshots": [
+    "01-inventory-desktop.png",
+    "02-component-form-desktop.png",
+    "03-component-details-desktop.png",
+    "07-csv-import-results.png",
+    "04-inventory-narrow.png",
+    "05-component-form-narrow.png",
+    "06-component-details-narrow.png",
+    "08-audit-log-desktop.png",
+    "09-audit-log-narrow.png"
+  ],
+  "layout_checks": [
+    {
+      "screen": "01-inventory-desktop",
+      "documentWidth": 1342,
+      "height": 869,
+      "width": 1357
+    },
+    {
+      "screen": "02-component-form-desktop",
+      "documentWidth": 1342,
+      "height": 869,
+      "width": 1357
+    },
+    {
+      "screen": "03-component-details-desktop",
+      "documentWidth": 1342,
+      "height": 869,
+      "width": 1357
+    },
+    {
+      "screen": "04-inventory-narrow",
+      "documentWidth": 477,
+      "height": 869,
+      "width": 492
+    },
+    {
+      "screen": "05-component-form-narrow",
+      "documentWidth": 477,
+      "height": 869,
+      "width": 492
+    },
+    {
+      "screen": "06-component-details-narrow",
+      "documentWidth": 477,
+      "height": 869,
+      "width": 492
+    },
+    {
+      "screen": "08-audit-log-desktop",
+      "documentWidth": 1357,
+      "height": 869,
+      "width": 1357
+    },
+    {
+      "screen": "09-audit-log-narrow",
+      "documentWidth": 477,
+      "height": 869,
+      "width": 492
+    }
+  ],
+  "step": "Admin audit review and recorded deletion",
+  "expected_stable_version": "157.0.4341.42",
+  "release_source": "https://edgeupdates.microsoft.com/api/products?view=enterprise",
+  "browser_version": "157.0.4341.42",
+  "user_agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/157.0.0.0 Safari/537.36 Edg/157.0.0.0",
+  "finished_at_utc": "2026-11-09T11:58:53.652150+00:00"
+}

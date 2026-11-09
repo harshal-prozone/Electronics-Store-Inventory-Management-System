@@ -1,5 +1,7 @@
 # Engineering validation and closeout status
 
+> Historical validation for the earlier code state. Account security was subsequently changed; see `Account-Security-Remediation.md` and the newer coverage reports.
+
 **Date:** 9 November 2026. **Latest clean-clone test commit:** `768ccd9c73540478e1ca11ecb79ecdff1c8a937c`. Browser-tested code commit `e4bfd6cd48c4df528000dc9135c2cde7cf193f8d` has identical application and test source. Baseline `main`: `2047dd805687892636c9dd49bc670835ac58c597`. This is an engineering record, not formal acceptance, an independent teammate verification, or a production deployment assessment.
 
 ## Local execution

@@ -16,8 +16,9 @@ Browser â†’ Flask/Jinja routes in `app.py` â†’ `inventory_service.py`, `inventor
 | Docker Compose, nginx, HTTPS, restart policies | No delivered Compose/nginx production deployment | TLS, redirect/HSTS, isolation, deployment monitoring and availability require an actual deployment. |
 | Jenkins, Postman, Locust, SonarQube, Bandit, pip-audit, ZAP | GitHub Actions, pytest and Selenium; local scanner results in `Final-Engineering-Validation.md` | GitHub Actions is not Jenkins, Flask tests are not Postman, short loopback benchmark is not five-minute Locust; local scans are not configured per-build or an OWASP ZAP assessment. |
 | Staff may create/edit components and generate reports (UC-02/03/08) | Current application restricts these actions to Admin | Material authorization difference, not an equivalent security implementation; obtain owner/course decision before changing access policy. |
-| Account disable, five-failure lockout, supplier email, notifier | No corresponding mechanisms | Cases cannot pass as specified; implementation or explicit waiver required. |
-| Django PBKDF2 hash format, idle timeout | Werkzeug default salted hashing, Flask permanent signed sessions | Salted hashing is supported, but exact format and specified idle/session behavior are not established equivalent. |
+| Account disable and five-failure lockout | Flask account status, session revocation and lockout are implemented; see `tests/test_account_controls.py` | Original DRF API/423 responses differ; formal case execution and approval remain. |
+| Supplier email and notifier | No corresponding mechanisms | Original cases cannot pass as specified; implementation or explicit waiver required. |
+| Django PBKDF2 hash format, idle timeout | Werkzeug default salted hashing, Flask permanent signed sessions with a simulated 30-minute idle-expiry test | Hash format differs; deployed HTTPS session behavior remains unverified. |
 | One category/supplier references and in-use deletion rules | Stored text, application-level checks; no database foreign keys from components to catalogues | Application writes now use a serialized check/write sequence, but external writers bypass these checks; deleted-component reference semantics differ from baseline. |
 
 Migration to the original stack would be a substantial new design and data migration, not a safe change inferred from a passing test suite. No authorized waiver has been supplied. An owner/faculty reviewer must either approve each deviation and acceptance basis or require implementation/migration and repeat applicable original cases. Preserve the original documents and record the dated decision and reviewer identity.
@@ -28,8 +29,8 @@ Labels below are summaries only; the PDF remains authoritative for exact text. â
 
 | Requirement | Actual implementation / related evidence | Principal qualification |
 |---|---|---|
-| FR-001 | `app.py` manage users; `tests/test_web_app.py` | Disable functionality absent from UC-10. |
-| FR-002 | login route and authentication tests | Disabled accounts and lockout not implemented. |
+| FR-001 | `app.py` manage users and `tests/test_account_controls.py` | Flask form, not original API; original case execution remains. |
+| FR-002 | login route and account-control tests | Disabled accounts and lockout implemented; original API and status codes differ. |
 | FR-003 | role decorators and authorization tests | Staff access differs from source use cases. |
 | FR-004 | component creation and tests | Admin-only rather than authenticated Staff. |
 | FR-005 | SQLite unique SKU, normalization and tests | SKU reserved after soft deletion. |
@@ -58,7 +59,7 @@ Labels below are summaries only; the PDF remains authoritative for exact text. â
 | SEC-001 | Werkzeug salted hashes and tests | Not original exact Django hash format. |
 | SEC-002 | decorators, direct-access tests | Original API and access model not equivalent. |
 | SEC-003 | validators, parameterized SQL and security tests | Scanner and manual penetration evidence incomplete. |
-| SEC-004 | session and invalid-login tests | Lockout, disabled accounts and exact idle-timeout evidence absent. |
+| SEC-004 | account-control tests cover lockout, account disabling and simulated 30-minute idle expiry | HTTPS deployment and original API/423 behavior remain unverified or different. |
 | SEC-005 | Flask-WTF CSRF and tests | Original API response and deployed HTTPS cross-origin case differ. |
 | SEC-006 | `audit_log` and security-event tests | Full original actor/IP/event evidence requires further validation. |
 
