@@ -1,0 +1,7 @@
+1794224225361	geckodriver	INFO	Listening on 127.0.0.1:58005
+1794224225395	mozrunner::runner	INFO	Running command: MOZ_CRASHREPORTER="1" MOZ_CRASHREPORTER_NO_REPORT="1" MOZ_CRASHREPORTER_SHUTDOWN="1" "/vercel/sandbox/data/e ... ss" "--remote-debugging-port" "57231" "--remote-allow-hosts" "localhost" "-no-remote" "-profile" "/tmp/rust_mozprofileAMjSuy"
+XPCOMGlueLoad error for file /vercel/sandbox/data/esims/instance/selenium-cache/firefox/linux64/159.0.1/libmozgtk.so:
+libgtk-3.so.0: cannot open shared object file: No such file or directory
+Couldn't load XPCOM.
+1794224225500	geckodriver::browser	WARN	Couldn't read files from minidumps folder '/tmp/rust_mozprofileAMjSuy/minidumps'
+1794224225502	webdriver::server	INFO	Shutting down

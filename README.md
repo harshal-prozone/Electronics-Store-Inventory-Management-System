@@ -4,6 +4,8 @@ A Flask + SQLite inventory management application for electronics components. Sp
 
 For complete developer setup, database, application, testing, and troubleshooting instructions, see **[Setup and Testing Guide](docs/SETUP_AND_TESTING.md)**.
 
+For the submitted-baseline differences and outstanding acceptance decisions, see [Architecture and baseline reconciliation](docs/Architecture-and-baseline-reconciliation.md), [Original STP reconciliation](docs/Original-STP-reconciliation.md), and [Final engineering validation](docs/Final-Engineering-Validation.md).
+
 ## Implemented functionality
 
 - Username/email authentication, Admin and Staff roles, password hashing, session expiry, and CSRF protection.
@@ -82,11 +84,11 @@ pytest -q
 git diff --check
 ```
 
-Historical baseline: GitHub Actions run [40113760398](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/actions/runs/40113760398) passed 65 tests and the original performance acceptance check. A later owner-run fresh-clone verification at commit [`38eec1d`](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/commit/38eec1d) passed **271 tests in 21.73 seconds** using Python 3.12.16. The latest audited workflow run #75 passed the backend suite, clean-setup smoke test, and stable Chrome, Edge, and Firefox jobs. Use the run attached to the exact commit/PR as authoritative CI evidence; do not treat the local clone run as a GitHub Actions result. A requirement-to-test map is in [`docs/Sprint-1-requirement-traceability.md`](docs/Sprint-1-requirement-traceability.md).
+Historical baseline: GitHub Actions run [40113760398](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/actions/runs/40113760398) passed 65 tests and the original performance acceptance check. A later owner-run fresh-clone verification at commit [`38eec1d`](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/commit/38eec1d) passed **271 tests in 21.73 seconds** using Python 3.12.16. The previously audited workflow run #75 passed the backend suite, clean-setup smoke test, and stable Chrome, Edge, and Firefox jobs. Use the run attached to the exact commit/PR as authoritative CI evidence; do not treat the local clone run as a GitHub Actions result. A requirement-to-test map is in [`docs/Sprint-1-requirement-traceability.md`](docs/Sprint-1-requirement-traceability.md).
 
 ## Sprint 1 performance acceptance evidence
 
-The current passing run tested a temporary SQLite database with 5,000 active components, 10 concurrent workers, and 100 listing/search/filter requests:
+A historical passing run tested a temporary SQLite database with 5,000 active components, 10 concurrent workers, and 100 listing/search/filter requests:
 
 | Metric | Result |
 |---|---:|
@@ -114,7 +116,7 @@ SQLite is suitable for coursework and light single-instance use. The Sprint 1 be
 
 ## Sprint 1 closeout status
 
-The core Sprint 1 feature integration is merged. The owner-run fresh-clone verification at commit `38eec1d` passed 271 tests in 21.73 seconds; the latest audited GitHub Actions run #75 passed the backend, clean-setup, Chrome, Edge, and Firefox jobs. These results do not replace the remaining human/coursework evidence tracked in [`docs/Sprint-1-validation.md`](docs/Sprint-1-validation.md): independent teammate setup verification for Issue #24, formal peer review, final comparison against the submitted SRS/SAD/Test Plan, and the actual demo recording.
+The core Sprint 1 feature integration is merged. The owner-run fresh-clone verification at commit `38eec1d` passed 271 tests in 21.73 seconds; the previously audited GitHub Actions run #75 passed the backend, clean-setup, Chrome, Edge, and Firefox jobs. These results do not replace the remaining human/coursework evidence tracked in [`docs/Sprint-1-validation.md`](docs/Sprint-1-validation.md): independent teammate setup verification for Issue #24, formal peer review, final comparison against the submitted SRS/SAD/Test Plan, and the actual demo recording.
 
 ## Contributor workflow
 

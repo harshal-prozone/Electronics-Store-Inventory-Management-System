@@ -1,18 +1,18 @@
 # Code Coverage Report
 
-**Generated:** 2026-11-09 10:21 UTC  
-**Commit:** `2cd52cb3186d078a57f8cb3415af509efbd5e8f1`
+**Generated:** 2026-11-09 11:42 UTC
+**Commit:** `e4bfd6cd48c4df528000dc9135c2cde7cf193f8d`
 
 | Metric | Covered | Total | Coverage |
 |---|---:|---:|---:|
-| Executable statements | 959 | 1010 | 94.95% |
+| Executable statements | 976 | 1029 | 94.85% |
 
 ## Per-file results
 
 | Source file | Covered/total statements | Line coverage |
 |---|---:|---:|
-| `app.py` | 746/796 | 93.72% |
+| `app.py` | 763/815 | 93.62% |
 | `inventory_import.py` | 121/121 | 100.00% |
 | `inventory_service.py` | 92/93 | 98.92% |
 
-Detailed HTML/JSON output is retained as a workflow artifact.
+Local JSON output is retained at `evidence/engineering-2026-11-09/coverage.json`.

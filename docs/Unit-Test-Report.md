@@ -19,4 +19,4 @@ The suite covers authentication/authorization, CSRF, component CRUD and validati
 
 Detailed case-to-module mapping: [Sprint 2 Test Cases](Sprint-2-Test-Cases.md).
 
-**Date-window limitation:** this verified CI run is from 9 November, not 2–6 November. Earlier local test evidence is not a substitute for a dated CI run in that requested window. The original approved Test Plan was not found in the repository audit, so completeness against that document cannot yet be certified.
+**Date-window limitation:** this verified CI run is from 9 November, not 2–6 November. Earlier local test evidence is not a substitute for a dated CI run in that requested window. The submitted original Test Plan is in the combined PDF; the earlier audit did not inspect it. See `Original-STP-reconciliation.md`. Approval and completion against it cannot yet be certified.

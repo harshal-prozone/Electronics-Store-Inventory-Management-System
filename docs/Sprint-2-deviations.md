@@ -22,13 +22,13 @@
 | [Issue #20](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/20) — custom low-stock thresholds | Per-component reorder thresholds and availability classification are implemented; see application and service tests. | Issue closed |
 | [Issue #21](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/21) — component transaction history | Component-level transaction history, date/type filters and resulting balances are documented and implemented. | Issue closed |
 | [Issue #23](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/23) — integration testing | Inventory workflow integration tests cover persistence, stock movement, history and error/rollback scenarios; see `tests/test_inventory_workflow_integration.py`. | Issue closed |
-| [Issue #24](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/24) — setup/testing documentation | Setup, database initialization, application startup, test execution and troubleshooting are documented in `docs/SETUP_AND_TESTING.md`. Owner-run fresh-clone test passed, but the issue explicitly requires another team member to verify the instructions. | **Open / partial** — independent teammate verification remains outstanding |
+| [Issue #24](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/24) — setup/testing documentation | Setup, database initialization, application startup, test execution and troubleshooting are documented in `docs/SETUP_AND_TESTING.md`. Owner-run fresh-clone test passed, but the issue explicitly requires another team member to verify the instructions. | **Closed in tracker / partial** — independent teammate verification remains outstanding |
 
 ## Deviations and scope changes
 
 | Date / period | Planned item | Observed deviation or qualification | Reason / decision owner | Impact |
 |---|---|---|---|---|
-| 26–30 October 2026 (working window; confirm approved plan) | Sprint 2 tracked issues | Issue #24 remains open because its independent teammate verification criterion has not been met. | No independent verification record was found; no decision owner/deferment approval recorded. | Setup documentation is delivered, but Issue #24 acceptance is incomplete. |
+| 26–30 October 2026 (working window; confirm approved plan) | Sprint 2 tracked issues | Issue #24 is closed in GitHub, but its independent teammate verification criterion has not been met. | No independent verification record was found; no decision owner/deferment approval recorded. | Setup documentation is delivered, but Issue #24 acceptance is incomplete. |
 | By 8 November 2026 | Issue #13 usability sign-off | The repository contains a participant-reported successful three-screen test, but participant/session metadata and screenshots were not supplied. | Participant report; formal evidence owner/approval not recorded. | Browser automation is documented; representative-user evidence remains limited. |
 | By 8 November 2026 | Issue #17 availability target | Health checks exist, but no operational observation period demonstrating 99% availability was found. | No measurement period or availability decision record found. | Do not claim the 99% availability NFR was validated, even though the issue is closed in GitHub. |
 
@@ -37,8 +37,8 @@
 - No open application defect is asserted here without a linked reproduction record.
 - **Availability evidence gap:** `/health` is a health-check endpoint, not proof of 99% uptime. A local diagnostic sampled 6 successful probes out of 6 over 30 seconds (100% sampled availability); this does not establish the required operating-period target. See [Issue #17](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/issues/17).
 - **Usability evidence gap:** Issue #13's participant report lacks a supplied participant name, exact session time/environment and screenshots. See `docs/Issue-13-usability-compatibility.md`.
-- **Setup acceptance gap:** Issue #24 remains open pending an independent teammate fresh-clone verification.
-- The formal SRS/SAD/Test Plan PDFs were not available in the repository audit for signed-off line-by-line traceability; `docs/Sprint-1-requirement-traceability.md` is issue-based and explicitly not a formal PDF sign-off.
+- **Setup acceptance gap:** Issue #24 is closed in GitHub but remains incomplete pending an independent teammate fresh-clone verification.
+- The earlier audit did not inspect the SRS/SAD/Test Plan PDFs present in the repository; `docs/Sprint-1-requirement-traceability.md` is issue-based and explicitly not a formal PDF sign-off.
 
 ## Development freeze
 
