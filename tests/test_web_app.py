@@ -1,5 +1,6 @@
 import csv
 import io
+from contextlib import closing
 import sqlite3
 from datetime import timedelta
 
@@ -43,7 +44,7 @@ def create_catalog_entry(client, category="Test Category", supplier="Test Suppli
 
 @pytest.fixture()
 def history(app):
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         component_id = db.execute("SELECT id FROM components ORDER BY id").fetchone()[0]
         user_id = db.execute("SELECT id FROM users ORDER BY id").fetchone()[0]
         for kind, quantity, previous, balance, timestamp, note in [
@@ -95,7 +96,7 @@ def test_component_history_rejects_invalid_filters(client, history, query):
 
 
 def test_component_history_pagination_and_empty_results(client, app, history):
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         for index in range(22):
             db.execute("""INSERT INTO inventory_transactions
                 (component_id, user_id, transaction_type, quantity, previous_quantity,
@@ -124,7 +125,7 @@ def test_history_migration_preserves_existing_transactions(app, history):
     from app import ROOT
 
     # Recreate the old table constraint around existing stock-in/out history.
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         db.execute("DELETE FROM inventory_transactions WHERE transaction_type = 'adjustment'")
         original = db.execute('SELECT * FROM inventory_transactions ORDER BY id').fetchall()
         db.execute('ALTER TABLE inventory_transactions RENAME TO legacy_transactions')
@@ -134,7 +135,7 @@ def test_history_migration_preserves_existing_transactions(app, history):
         db.execute('DROP TABLE legacy_transactions')
     create_app(dict(app.config))
     create_app(dict(app.config))
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         assert db.execute('SELECT * FROM inventory_transactions ORDER BY id').fetchall() == original
         assert db.execute("PRAGMA foreign_key_check").fetchall() == []
         db.execute("""INSERT INTO inventory_transactions
@@ -159,7 +160,7 @@ def test_admin_dashboard_metrics_match_active_inventory_and_chart(client, app):
     sign_in(client)
 
     # Add records with known stock states and prices to the isolated test database.
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.executemany(
             """
             INSERT INTO components
@@ -210,7 +211,7 @@ def test_admin_dashboard_metrics_match_active_inventory_and_chart(client, app):
 
 def test_dashboard_category_stock_counts_active_units_and_updates(client, app):
     sign_in(client)
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.executemany("INSERT INTO components (sku,name,category,supplier,quantity,reorder_level,unit_price,deleted_at) VALUES (?,?,?,?,?,?,?,?)", [
             ("CAT-CHART-1", "Category one", "Chart test", "Maker Supplies", 9, 1, 1, None),
             ("CAT-CHART-2", "Category two", "Chart test", "Maker Supplies", 3, 1, 1, None),
@@ -233,10 +234,10 @@ def test_dashboard_category_stock_counts_active_units_and_updates(client, app):
 
 def test_dashboard_category_chart_handles_empty_inventory_and_large_totals(client, app):
     sign_in(client)
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.execute("UPDATE components SET deleted_at='2026-01-01'")
     assert "No active inventory to chart." in client.get("/").get_data(as_text=True)
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.executemany("INSERT INTO components (sku,name,category,supplier,quantity,reorder_level,unit_price) VALUES (?,?,?,?,?,?,?)", [
             ("HUGE-1", "Huge 1", "Large", "Maker Supplies", 2**63-1, 1, 0),
             ("HUGE-2", "Huge 2", "Large", "Maker Supplies", 2**63-1, 1, 0),
@@ -247,7 +248,7 @@ def test_dashboard_category_chart_handles_empty_inventory_and_large_totals(clien
 
 def test_dashboard_low_stock_list_shows_current_active_items(client, app):
     sign_in(client)
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.executemany("""INSERT INTO components
             (sku,name,category,supplier,quantity,reorder_level,unit_price,deleted_at)
             VALUES (?,?,?,?,?,?,?,?)""", [
@@ -270,7 +271,7 @@ def test_dashboard_low_stock_list_shows_current_active_items(client, app):
 def test_dashboard_metrics_refresh_after_stock_quantity_changes(client, app):
     sign_in(client)
 
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.execute(
             """
             INSERT INTO components
@@ -287,7 +288,7 @@ def test_dashboard_metrics_refresh_after_stock_quantity_changes(client, app):
         .replace("₹", "").replace(",", "")
     )
 
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.execute(
             "UPDATE components SET quantity = 0 WHERE sku = ?",
             ("DASH-REFRESH-001",),
@@ -307,7 +308,7 @@ def test_dashboard_metrics_refresh_after_stock_quantity_changes(client, app):
 def test_staff_cannot_view_admin_dashboard(client, app):
     from werkzeug.security import generate_password_hash
 
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.execute(
             """
             INSERT INTO users (username, email, password_hash, role)
@@ -817,7 +818,7 @@ def test_soft_deleted_component_is_hidden_from_inventory_and_csv(client, app):
 def test_staff_can_create_edit_but_not_delete_components(client, app):
     from werkzeug.security import generate_password_hash
 
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.execute("INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
                    ("crudstaff", "crudstaff@example.com", generate_password_hash("SecureStaff123!"), "Staff"))
     client.post("/login", data={"identity": "crudstaff", "password": "SecureStaff123!"})
@@ -839,7 +840,7 @@ def test_staff_can_create_edit_but_not_delete_components(client, app):
     payload.update(name="Staff Edited", reorder_level="8", quantity="999")
     assert client.post(path + "/edit", data=payload).status_code == 302
     assert client.post(path + "/delete").status_code == 403
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         row = db.execute("SELECT id, name, quantity, reorder_level, deleted_at FROM components WHERE sku=?", ("STAFF-001",)).fetchone()
         assert row[1:] == ("Staff Edited", 7, 8, None)
         events = db.execute("SELECT event_type FROM audit_log a JOIN users u ON u.id=a.user_id WHERE u.username=? AND a.details LIKE ?", ("crudstaff", f"%component_id={row[0]};%")).fetchall()
@@ -911,7 +912,7 @@ def test_availability_report_pdf_is_valid_download(client):
 
 def test_staff_can_filter_and_export_availability_reports(client, app):
     from werkzeug.security import generate_password_hash
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.execute("INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
                    ("reportstaff", "reportstaff@example.com", generate_password_hash("SecureStaff123!"), "Staff"))
     client.post("/login", data={"identity": "reportstaff", "password": "SecureStaff123!"})
@@ -930,7 +931,7 @@ def test_staff_can_filter_and_export_availability_reports(client, app):
 def test_staff_component_forms_enforce_csrf(client, app):
     import re
     from werkzeug.security import generate_password_hash
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.execute("INSERT INTO users (username, email, password_hash, role) VALUES (?, ?, ?, ?)",
                    ("csrfstaff", "csrfstaff@example.com", generate_password_hash("SecureStaff123!"), "Staff"))
     client.post("/login", data={"identity": "csrfstaff", "password": "SecureStaff123!"})
@@ -1435,7 +1436,7 @@ def test_inventory_pagination_and_filters_preserve_query_state(client, app):
 
 @pytest.fixture()
 def threshold_component(app):
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         return db.execute("SELECT id FROM components WHERE sku = 'MCU-ARD-001'").fetchone()[0]
 
 
@@ -1458,7 +1459,7 @@ def test_admin_updates_threshold_and_availability_views(client, app, threshold_c
         record = next(row for row in records if row['SKU'] == 'MCU-ARD-001')
         assert record['Reorder Level'] == str(threshold)
         assert record['Availability'] == status
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         assert db.execute('SELECT quantity, reorder_level FROM components WHERE id = ?', (component_id,)).fetchone() == (12, 0)
         assert db.execute('SELECT COUNT(*) FROM inventory_transactions WHERE component_id = ?', (component_id,)).fetchone()[0] == 0
         assert db.execute("SELECT COUNT(*) FROM audit_log WHERE event_type = 'threshold-updated'").fetchone()[0] == 2
@@ -1470,14 +1471,14 @@ def test_invalid_threshold_leaves_inventory_unchanged(client, app, threshold_com
     response = client.post(f'/components/{threshold_component}/threshold', data={'reorder_level': value}, follow_redirects=True)
     assert response.status_code == 400
     assert 'must be a non-negative whole number' in response.get_data(as_text=True)
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         assert db.execute('SELECT quantity, reorder_level FROM components WHERE id = ?', (threshold_component,)).fetchone() == (12, 5)
         assert db.execute("SELECT COUNT(*) FROM audit_log WHERE event_type = 'threshold-updated'").fetchone()[0] == 0
 
 
 @pytest.mark.parametrize('quantity, threshold, expected', [(12, 12, 'Low Stock'), (0, 0, 'Out of Stock'), (0, 10, 'Out of Stock')])
 def test_threshold_status_boundaries(client, app, threshold_component, quantity, threshold, expected):
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         db.execute('UPDATE components SET quantity = ? WHERE id = ?', (quantity, threshold_component))
     sign_in(client)
     response = client.post(f'/components/{threshold_component}/threshold', data={'reorder_level': str(threshold)}, follow_redirects=True)
@@ -1487,14 +1488,14 @@ def test_threshold_status_boundaries(client, app, threshold_component, quantity,
 def test_threshold_requires_admin(client, app, threshold_component):
     path = f'/components/{threshold_component}/threshold'
     assert client.post(path, data={'reorder_level': '20'}).status_code == 302
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         db.execute("INSERT INTO users (username, email, password_hash, role) VALUES ('thresholdstaff', 'thresholdstaff@example.com', 'unused', 'Staff')")
         user_id = db.execute("SELECT id FROM users WHERE username = 'thresholdstaff'").fetchone()[0]
     with client.session_transaction() as session:
         session['user_id'] = user_id
     assert 'Save threshold' not in client.get(f'/components/{threshold_component}').get_data(as_text=True)
     assert client.post(path, data={'reorder_level': '20'}).status_code == 403
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         assert db.execute('SELECT reorder_level FROM components WHERE id = ?', (threshold_component,)).fetchone()[0] == 5
 
 
@@ -1517,7 +1518,7 @@ def test_edit_does_not_overwrite_concurrent_stock_movement(client, app, monkeypa
     from inventory_service import adjust_stock
 
     sign_in(client)
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         component = db.execute('SELECT id, sku, name, description, category, supplier, quantity, reorder_level, unit_price FROM components ORDER BY id').fetchone()
         user_id = db.execute('SELECT id FROM users WHERE username = ?', ('admin',)).fetchone()[0]
     cid, sku, name, description, category, supplier, quantity, reorder, price = component
@@ -1525,7 +1526,7 @@ def test_edit_does_not_overwrite_concurrent_stock_movement(client, app, monkeypa
 
     def validate_after_stock_change(form):
         result = original(form)
-        with sqlite3.connect(app.config['DATABASE']) as db:
+        with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
             db.row_factory = sqlite3.Row
             db.execute('PRAGMA foreign_keys = ON')
             adjust_stock(db, component_id=cid, user_id=user_id, adjustment='stock-in', quantity=3)
@@ -1537,7 +1538,7 @@ def test_edit_does_not_overwrite_concurrent_stock_movement(client, app, monkeypa
         'supplier': supplier, 'reorder_level': str(reorder), 'unit_price': str(price),
     })
     assert response.status_code == 302
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         assert db.execute('SELECT quantity FROM components WHERE id=?', (cid,)).fetchone()[0] == quantity + 3
         assert db.execute('SELECT previous_quantity, new_quantity FROM inventory_transactions WHERE component_id=? ORDER BY id DESC', (cid,)).fetchone() == (quantity, quantity + 3)
 
@@ -1546,14 +1547,14 @@ def test_edit_does_not_update_component_deleted_during_validation(client, app, m
     import app as app_module
 
     sign_in(client)
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         cid, sku, name, description, category, supplier, quantity, reorder, price = db.execute(
             'SELECT id, sku, name, description, category, supplier, quantity, reorder_level, unit_price FROM components ORDER BY id').fetchone()
     original = app_module.validate_component_form
 
     def validate_after_delete(form):
         result = original(form)
-        with sqlite3.connect(app.config['DATABASE']) as db:
+        with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
             db.execute('UPDATE components SET deleted_at=CURRENT_TIMESTAMP WHERE id=?', (cid,))
         return result
 
@@ -1563,7 +1564,7 @@ def test_edit_does_not_update_component_deleted_during_validation(client, app, m
         'supplier': supplier, 'reorder_level': str(reorder), 'unit_price': str(price),
     })
     assert response.status_code == 404
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         assert db.execute('SELECT name FROM components WHERE id=?', (cid,)).fetchone()[0] == name
         assert db.execute("SELECT COUNT(*) FROM audit_log WHERE event_type='component-updated' AND details LIKE ?", (f'component_id={cid};%',)).fetchone()[0] == 0
 
@@ -1571,7 +1572,7 @@ def test_edit_does_not_update_component_deleted_during_validation(client, app, m
 @pytest.mark.parametrize('kind', ['category', 'supplier'])
 def test_component_catalogue_names_are_canonical_and_protect_deletion(client, app, kind):
     sign_in(client)
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         category = db.execute('SELECT name FROM categories ORDER BY id').fetchone()[0]
         supplier = db.execute('SELECT name FROM suppliers ORDER BY id').fetchone()[0]
         table = 'categories' if kind == 'category' else 'suppliers'
@@ -1583,10 +1584,10 @@ def test_component_catalogue_names_are_canonical_and_protect_deletion(client, ap
         'quantity': '1', 'reorder_level': '0', 'unit_price': '1',
     })
     assert response.status_code == 302
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         assert db.execute("SELECT category, supplier FROM components WHERE sku='CANON-TEST'").fetchone() == (category, supplier)
     assert client.post(f'/{table}/{catalogue_id}/delete').status_code == 302
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         assert db.execute(f'SELECT name FROM {table} WHERE id=?', (catalogue_id,)).fetchone() == (name,)
 
 
@@ -1594,13 +1595,13 @@ def test_component_catalogue_names_are_canonical_and_protect_deletion(client, ap
 def test_component_create_rejects_catalogue_deleted_during_validation(client, app, monkeypatch, kind):
     import app as app_module
     sign_in(client)
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         category = db.execute('SELECT name FROM categories ORDER BY id').fetchone()[0]
         supplier = db.execute('SELECT name FROM suppliers ORDER BY id').fetchone()[0]
     original = app_module.validate_component_form
     def validate_after_deletion(form):
         result = original(form)
-        with sqlite3.connect(app.config['DATABASE']) as db:
+        with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
             table, name = ('categories', category) if kind == 'category' else ('suppliers', supplier)
             db.execute(f'DELETE FROM {table} WHERE name=?', (name,))
         return result
@@ -1611,7 +1612,7 @@ def test_component_create_rejects_catalogue_deleted_during_validation(client, ap
         'reorder_level': '0', 'unit_price': '1',
     })
     assert response.status_code == 400
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         assert db.execute("SELECT COUNT(*) FROM components WHERE sku='RACE-CATALOG'").fetchone()[0] == 0
 
 
@@ -1622,7 +1623,7 @@ def test_concurrent_catalogue_change_and_component_create_remain_consistent(app,
     from concurrent.futures import ThreadPoolExecutor
     from threading import Barrier
 
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         uid = db.execute("SELECT id FROM users WHERE username='admin'").fetchone()[0]
         db.execute("INSERT INTO categories(name) VALUES ('Race Category')")
         db.execute("INSERT INTO suppliers(name) VALUES ('Race Supplier')")
@@ -1656,7 +1657,7 @@ def test_concurrent_catalogue_change_and_component_create_remain_consistent(app,
         a, b = pool.submit(create), pool.submit(change)
         assert a.result() in (302, 400)
         assert b.result() == 302
-    with sqlite3.connect(app.config['DATABASE']) as db:
+    with closing(sqlite3.connect(app.config['DATABASE'])) as db, db:
         record = db.execute(f"SELECT {kind} FROM components WHERE sku='RACE-THREAD'").fetchone()
         if record:
             assert db.execute(f'SELECT 1 FROM {table} WHERE name=? COLLATE NOCASE', (record[0],)).fetchone()

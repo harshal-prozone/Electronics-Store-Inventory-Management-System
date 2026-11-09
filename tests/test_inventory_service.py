@@ -55,7 +55,7 @@ def _transaction_test_db():
             new_quantity INTEGER NOT NULL, note TEXT NOT NULL DEFAULT ''
         );
         CREATE TABLE audit_log (
-            id INTEGER PRIMARY KEY, user_id INTEGER, event_type TEXT, details TEXT
+            id INTEGER PRIMARY KEY, user_id INTEGER, event_type TEXT, details TEXT, ip_address TEXT
         );
         INSERT INTO users (id, username) VALUES (1, 'tester');
         INSERT INTO components (id, quantity) VALUES (1, 5);

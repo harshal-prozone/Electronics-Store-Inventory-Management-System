@@ -1,5 +1,7 @@
 # Sprint 2 System Validation Report
 
+> Historical run #81 record. For the later engineering verification and outstanding acceptance decisions, see [verification cleanup](Verification-Cleanup-2026-11-09.md).
+
 **Execution:** [GitHub Actions run #81](https://github.com/harshal-prozone/Electronics-Store-Inventory-Management-System/actions/runs/42583324982)
 **Commit:** `39d64370c37ef3b8fb0f539a7d5da430fbcf4e11`
 **Date:** 9 November 2026

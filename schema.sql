@@ -72,6 +72,7 @@ CREATE TABLE IF NOT EXISTS audit_log (
     user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
     event_type TEXT NOT NULL,
     details TEXT NOT NULL,
+    ip_address TEXT,
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 

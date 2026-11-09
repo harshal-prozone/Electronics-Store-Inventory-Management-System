@@ -1,6 +1,7 @@
 import csv
 import io
 import re
+from contextlib import closing
 import sqlite3
 import threading
 from concurrent.futures import ThreadPoolExecutor
@@ -54,7 +55,7 @@ def upload(client, content, filename="inventory.csv", **fields):
 
 
 def snapshot(app):
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         return [db.execute(f"SELECT * FROM {table} ORDER BY id").fetchall()
                 for table in ("components", "inventory_transactions", "audit_log")]
 
@@ -68,7 +69,7 @@ def test_import_creates_updates_and_records_balances(client, app):
     assert response.status_code == 200
     page = response.get_data(as_text=True)
     assert "3 imported" in page and "2 created, 1 updated" in page and "0 rejected" in page
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         assert db.execute("SELECT COUNT(*) FROM components").fetchone()[0] == 6
         assert db.execute("SELECT category, supplier, quantity FROM components WHERE sku='IMPORT-001'").fetchone() == (
             "Microcontrollers", "Maker Supplies", 7,
@@ -93,7 +94,7 @@ def test_import_repeat_does_not_duplicate_components_or_stock_history(client, ap
     upload(client, content)
     response = upload(client, content)
     assert "0 created, 1 updated" in response.get_data(as_text=True)
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         assert db.execute("SELECT COUNT(*) FROM components WHERE sku='IMPORT-001'").fetchone()[0] == 1
         assert db.execute("SELECT COUNT(*) FROM inventory_transactions").fetchone()[0] == 1
 
@@ -114,7 +115,7 @@ def test_mixed_rows_report_lines_and_leave_rejected_inventory_unchanged(client, 
         assert f"<td>{line}</td>" in page
     for message in ("whole numbers", "Duplicate SKU", "valid category", "valid supplier"):
         assert message in page
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         assert db.execute("SELECT COUNT(*) FROM components").fetchone()[0] == 6
         assert db.execute("SELECT quantity FROM components WHERE sku='MCU-ARD-001'").fetchone()[0] == 12
         assert db.execute("SELECT quantity, description FROM components WHERE sku='IMPORT-001'").fetchone() == (
@@ -154,7 +155,7 @@ def test_invalid_values_are_rejected_without_writing_components(client, app, ove
 
 
 def test_deleted_skus_stay_reserved_and_invalid_first_duplicates_are_rejected(client, app):
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.execute("UPDATE components SET deleted_at=CURRENT_TIMESTAMP WHERE id=1")
     response = upload(client, csv_bytes(
         record(sku="mcu-ard-001"), record(name=""), record(sku="import-001"),
@@ -162,7 +163,7 @@ def test_deleted_skus_stay_reserved_and_invalid_first_duplicates_are_rejected(cl
     page = response.get_data(as_text=True)
     assert "0 imported" in page and "3 rejected" in page
     assert "deleted component" in page and "Duplicate SKU" in page
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         assert db.execute("SELECT COUNT(*) FROM components").fetchone()[0] == 4
         assert db.execute("SELECT quantity, deleted_at IS NOT NULL FROM components WHERE id=1").fetchone() == (12, 1)
 
@@ -173,7 +174,7 @@ def test_export_headers_bom_reordered_columns_and_blank_lines(client, app):
     content = b"\xef\xbb\xbf" + csv_bytes(row, headers=headers) + b"\r\n,,,,,,,\r\n"
     response = upload(client, content, filename="Inventory.CSV")
     assert "1 imported" in response.get_data(as_text=True)
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         assert db.execute("SELECT name, description, quantity FROM components WHERE sku='IMPORT-001'").fetchone() == (
             "Caf\u00e9 board", "", 0,
         )
@@ -223,7 +224,7 @@ def test_record_and_request_limits_reject_without_writes(client, app):
     assert response.status_code == 413
     assert "Upload is too large" in response.get_data(as_text=True)
     assert snapshot(app)[:2] == before[:2]
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         assert db.execute("SELECT event_type, user_id FROM audit_log ORDER BY id DESC LIMIT 1").fetchone() == ("request-rejected", 1)
 
 
@@ -245,7 +246,7 @@ def test_admin_only_pages_upload_and_template(client, app):
     for path in ("/components/import", "/components/import/template.csv"):
         assert anonymous.get(path).status_code == 302
     assert upload(anonymous, csv_bytes(record())).status_code == 302
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.execute("INSERT INTO users (username,email,password_hash,role) VALUES ('staff','staff@example.test','unused','Staff')")
         staff_id = db.execute("SELECT id FROM users WHERE username='staff'").fetchone()[0]
     with client.session_transaction() as session:
@@ -256,7 +257,7 @@ def test_admin_only_pages_upload_and_template(client, app):
     assert upload(client, csv_bytes(record())).status_code == 403
     assert 'href="/components/import"' not in client.get("/components").get_data(as_text=True)
     assert snapshot(app)[:2] == before[:2]
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         assert db.execute("SELECT COUNT(*) FROM audit_log WHERE event_type='access-denied' AND user_id=?", (staff_id,)).fetchone()[0] == 3
 
 
@@ -266,7 +267,7 @@ def test_upload_requires_valid_csrf_token(client, app):
     assert upload(client, csv_bytes(record())).status_code == 400
     assert upload(client, csv_bytes(record()), csrf_token="invalid").status_code == 400
     assert snapshot(app)[:2] == before[:2]
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         assert db.execute("SELECT COUNT(*) FROM audit_log WHERE event_type='csrf-rejected' AND user_id=1").fetchone()[0] == 2
     page = client.get("/components/import").get_data(as_text=True)
     token = re.search(r'name="csrf_token" value="([^"]+)"', page).group(1)
@@ -287,7 +288,7 @@ def test_report_escapes_untrusted_sku_and_header(client):
     ("audit_log", "NEW.details LIKE '%IMPORT-FAIL%'"),
 ])
 def test_database_failure_rolls_back_components_history_and_audit(client, app, table, condition):
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.execute(f"""CREATE TRIGGER fail_csv BEFORE INSERT ON {table}
                        WHEN {condition} BEGIN SELECT RAISE(ABORT, 'simulated import failure'); END""")
     before = snapshot(app)
@@ -301,7 +302,7 @@ def test_import_serializes_with_stock_movements(app):
     barrier = threading.Barrier(2)
 
     def update(importing):
-        with sqlite3.connect(app.config["DATABASE"], timeout=10) as db:
+        with closing(sqlite3.connect(app.config["DATABASE"], timeout=10)) as db, db:
             db.row_factory = sqlite3.Row
             db.execute("PRAGMA foreign_keys = ON")
             barrier.wait(timeout=5)
@@ -313,7 +314,7 @@ def test_import_serializes_with_stock_movements(app):
         futures = [pool.submit(update, importing) for importing in (True, False)]
         for future in futures:
             future.result(timeout=15)
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         movements = db.execute("SELECT previous_quantity,new_quantity FROM inventory_transactions ORDER BY id").fetchall()
         assert len(movements) == 2
         assert movements[0][0] == 12
@@ -355,7 +356,7 @@ def test_parse_inventory_csv_returns_row_errors_without_rejecting_valid_rows():
 
 
 def test_import_inventory_csv_directly_returns_import_result(app):
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys = ON")
 
@@ -381,7 +382,7 @@ def test_import_inventory_csv_directly_returns_import_result(app):
 
 
 def test_import_inventory_csv_rolls_back_on_database_failure(app):
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         before_components = db.execute(
             "SELECT COUNT(*) FROM components"
         ).fetchone()[0]
@@ -401,7 +402,7 @@ def test_import_inventory_csv_rolls_back_on_database_failure(app):
             END
         """)
 
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.row_factory = sqlite3.Row
         db.execute("PRAGMA foreign_keys = ON")
 

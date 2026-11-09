@@ -1,0 +1,291 @@
+{
+  "errors": [],
+  "generated_at": "2026-11-09T13:17:16Z",
+  "metrics": {
+    "./app.py": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 1,
+      "CONFIDENCE.MEDIUM": 7,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
+      "SEVERITY.MEDIUM": 7,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 1299,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./audit_address.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 14,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./input_validation.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 60,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./inventory_import.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 1,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 1,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 161,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "./inventory_service.py": {
+      "CONFIDENCE.HIGH": 0,
+      "CONFIDENCE.LOW": 0,
+      "CONFIDENCE.MEDIUM": 0,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 0,
+      "SEVERITY.MEDIUM": 0,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 131,
+      "nosec": 0,
+      "skipped_tests": 0
+    },
+    "_totals": {
+      "CONFIDENCE.HIGH": 1,
+      "CONFIDENCE.LOW": 2,
+      "CONFIDENCE.MEDIUM": 7,
+      "CONFIDENCE.UNDEFINED": 0,
+      "SEVERITY.HIGH": 0,
+      "SEVERITY.LOW": 2,
+      "SEVERITY.MEDIUM": 8,
+      "SEVERITY.UNDEFINED": 0,
+      "loc": 1665,
+      "nosec": 0,
+      "skipped_tests": 0
+    }
+  },
+  "results": [
+    {
+      "code": "33 from reportlab.platypus import Paragraph, SimpleDocTemplate, Spacer, Table, TableStyle\n34 from xml.sax.saxutils import escape\n35 from werkzeug.security import check_password_hash, generate_password_hash\n",
+      "col_offset": 0,
+      "end_col_offset": 35,
+      "filename": "./app.py",
+      "issue_confidence": "HIGH",
+      "issue_cwe": {
+        "id": 20,
+        "link": "https://cwe.mitre.org/data/definitions/20.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Using escape to parse untrusted XML data is known to be vulnerable to XML attacks. Replace escape with the equivalent defusedxml package, or make sure defusedxml.defuse_stdlib() is called.",
+      "line_number": 34,
+      "line_range": [
+        34
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/blacklists/blacklist_imports.html#b406-import-xml-sax",
+      "test_id": "B406",
+      "test_name": "blacklist"
+    },
+    {
+      "code": "332         clause = \" WHERE \" + \" AND \".join(where) if where else \"\"\n333         total = db.execute(\"SELECT COUNT(*) FROM audit_log a\" + clause, params).fetchone()[0]\n334         pages = max(1, (total + 24) // 25)\n",
+      "col_offset": 27,
+      "end_col_offset": 61,
+      "filename": "./app.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 333,
+      "line_range": [
+        333
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "336         records = db.execute(\n337             \"\"\"SELECT a.*, u.username FROM audit_log a LEFT JOIN users u ON u.id = a.user_id\"\"\"\n338             + clause + \" ORDER BY a.created_at DESC, a.id DESC LIMIT 25 OFFSET ?\",\n339             [*params, (page - 1) * 25],\n",
+      "col_offset": 12,
+      "end_col_offset": 95,
+      "filename": "./app.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 337,
+      "line_range": [
+        337,
+        338
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "455         where_sql = \" WHERE \" + \" AND \".join(where) if where else \"\"\n456         total = db.execute(\"SELECT COUNT(*) FROM components\" + where_sql, params).fetchone()[0]\n457         rows = db.execute(\n",
+      "col_offset": 27,
+      "end_col_offset": 60,
+      "filename": "./app.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 456,
+      "line_range": [
+        456
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "457         rows = db.execute(\n458             \"SELECT * FROM components\" + where_sql +\n459             \" ORDER BY name COLLATE NOCASE LIMIT ? OFFSET ?\",\n",
+      "col_offset": 12,
+      "end_col_offset": 38,
+      "filename": "./app.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 458,
+      "line_range": [
+        458
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "660         total = db.execute(\n661             \"SELECT COUNT(*) FROM inventory_transactions t WHERE \" + where, params,\n662         ).fetchone()[0]\n",
+      "col_offset": 12,
+      "end_col_offset": 66,
+      "filename": "./app.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 661,
+      "line_range": [
+        661
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "669         transactions = db.execute(\n670             \"\"\"SELECT t.*, u.username FROM inventory_transactions t\n671                LEFT JOIN users u ON u.id = t.user_id WHERE \"\"\" + where +\n672             \" ORDER BY t.created_at DESC, t.id DESC LIMIT 20 OFFSET ?\",\n",
+      "col_offset": 12,
+      "end_col_offset": 62,
+      "filename": "./app.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 670,
+      "line_range": [
+        670,
+        671
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "1254         if current_app.config.get(\"TESTING\"):\n1255             admin_password = \"ChangeMe123!\"\n1256         else:\n",
+      "col_offset": 29,
+      "end_col_offset": 43,
+      "filename": "./app.py",
+      "issue_confidence": "MEDIUM",
+      "issue_cwe": {
+        "id": 259,
+        "link": "https://cwe.mitre.org/data/definitions/259.html"
+      },
+      "issue_severity": "LOW",
+      "issue_text": "Possible hardcoded password: 'ChangeMe123!'",
+      "line_number": 1255,
+      "line_range": [
+        1255
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b105_hardcoded_password_string.html",
+      "test_id": "B105",
+      "test_name": "hardcoded_password_string"
+    },
+    {
+      "code": "1349 \n1350     sql = \"\"\"\n1351         SELECT sku, name, category, supplier, quantity, reorder_level, unit_price\n1352         FROM components\n1353         WHERE \"\"\" + \" AND \".join(conditions) + \"\"\"\n1354         ORDER BY name COLLATE NOCASE\n",
+      "col_offset": 10,
+      "end_col_offset": 17,
+      "filename": "./app.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 1350,
+      "line_range": [
+        1350,
+        1351,
+        1352,
+        1353
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    },
+    {
+      "code": "129                 missing = \"category\" if category_row is None else \"supplier\"\n130                 result.errors.append(RowError(line, sku, f\"Select a valid {missing} from the catalogue.\"))\n131                 continue\n",
+      "col_offset": 59,
+      "end_col_offset": 74,
+      "filename": "./inventory_import.py",
+      "issue_confidence": "LOW",
+      "issue_cwe": {
+        "id": 89,
+        "link": "https://cwe.mitre.org/data/definitions/89.html"
+      },
+      "issue_severity": "MEDIUM",
+      "issue_text": "Possible SQL injection vector through string-based query construction.",
+      "line_number": 130,
+      "line_range": [
+        130
+      ],
+      "more_info": "https://bandit.readthedocs.io/en/1.9.4/plugins/b608_hardcoded_sql_expressions.html",
+      "test_id": "B608",
+      "test_name": "hardcoded_sql_expressions"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import sqlite3
 from dataclasses import dataclass, field
 from typing import Any
 
+from audit_address import normalize_audit_ip
 from inventory_service import validate_component_form
 
 CSV_COLUMNS = (
@@ -108,7 +109,9 @@ def parse_inventory_csv(content: bytes) -> tuple[list[tuple[int, tuple[Any, ...]
     return records, errors
 
 
-def import_inventory_csv(db: sqlite3.Connection, *, user_id: int, content: bytes) -> ImportResult:
+def import_inventory_csv(db: sqlite3.Connection, *, user_id: int, content: bytes,
+                         ip_address: str | None = None) -> ImportResult:
+    ip_address = normalize_audit_ip(ip_address)
     records, errors = parse_inventory_csv(content)
     result = ImportResult(errors=errors)
     try:
@@ -162,15 +165,15 @@ def import_inventory_csv(db: sqlite3.Connection, *, user_id: int, content: bytes
                      f"CSV inventory import, line {line}"),
                 )
             db.execute(
-                "INSERT INTO audit_log (user_id, event_type, details) VALUES (?, ?, ?)",
+                "INSERT INTO audit_log (user_id, event_type, details, ip_address) VALUES (?, ?, ?, ?)",
                 (user_id, "component-imported",
-                 f"{action} component_id={component_id}; sku={sku}; line={line}; quantity={previous}->{quantity}"),
+                 f"{action} component_id={component_id}; sku={sku}; line={line}; quantity={previous}->{quantity}", ip_address),
             )
         result.errors.sort(key=lambda error: error.line)
         db.execute(
-            "INSERT INTO audit_log (user_id, event_type, details) VALUES (?, ?, ?)",
+            "INSERT INTO audit_log (user_id, event_type, details, ip_address) VALUES (?, ?, ?, ?)",
             (user_id, "inventory-imported",
-             f"created={result.created}; updated={result.updated}; rejected={result.rejected}"),
+             f"created={result.created}; updated={result.updated}; rejected={result.rejected}", ip_address),
         )
         db.commit()
     except Exception:

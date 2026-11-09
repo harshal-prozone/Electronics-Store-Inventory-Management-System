@@ -1,6 +1,7 @@
 """SEC-003: malicious input remains data; invalid input cannot change inventory."""
 import csv
 import io
+from contextlib import closing
 import sqlite3
 from html.parser import HTMLParser
 
@@ -33,7 +34,7 @@ def component(**changes):
 
 
 def snapshot(app):
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         return {table: db.execute(f"SELECT * FROM {table} ORDER BY id").fetchall()
                 for table in ("components", "categories", "suppliers", "users", "inventory_transactions")}
 
@@ -90,12 +91,12 @@ def test_sql_payload_is_bound_in_search_filters_and_writes(client, app, payload)
     assert snapshot(app) == before
     response = client.post("/categories/new", data={"name": payload}, follow_redirects=True)
     assert response.status_code == 200
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         assert db.execute("SELECT COUNT(*) FROM categories WHERE name=?", (payload,)).fetchone()[0] == 1
         assert db.execute("SELECT COUNT(*) FROM components").fetchone()[0] == len(before["components"])
     response = client.post("/components/new", data=component(name=payload), follow_redirects=True)
     assert response.status_code == 200
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         assert db.execute("SELECT name FROM components WHERE sku='SEC-001'").fetchone()[0] == payload
 
 
@@ -105,7 +106,7 @@ def test_stored_component_and_stock_note_are_escaped(client, app, payload):
     assert response.status_code == 200
     parsed = assert_inert_html(response)
     assert payload in "".join(parsed.text)
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         row = db.execute("SELECT id,name,description FROM components WHERE sku='SEC-001'").fetchone()
     assert row[1:] == (payload, payload)
     response = client.post(f"/components/{row[0]}/stock", data={"adjustment": "stock-in", "quantity": "1", "note": payload}, follow_redirects=True)
@@ -163,7 +164,7 @@ def test_csv_xss_content_and_error_report_are_inert(client, app):
     assert response.status_code == 200
     assert "1 imported" in response.get_data(as_text=True) and "1 rejected" in response.get_data(as_text=True)
     assert_inert_html(response)
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         component_id = db.execute("SELECT id FROM components WHERE sku='SEC-CSV'").fetchone()[0]
     assert_inert_html(client.get(f"/components/{component_id}"))
 
@@ -179,7 +180,7 @@ def test_malformed_stock_quantity_returns_400_without_writes(client, app, value)
 
 
 def test_stock_balance_overflow_rolls_back_and_service_also_rejects_it(client, app):
-    with sqlite3.connect(app.config["DATABASE"]) as db:
+    with closing(sqlite3.connect(app.config["DATABASE"])) as db, db:
         db.execute("UPDATE components SET quantity=? WHERE id=1", (MAX_SQLITE_INTEGER,))
     before = snapshot(app)
     response = client.post("/components/1/stock", data={"adjustment": "stock-in", "quantity": "1"})
@@ -304,3 +305,29 @@ def test_cli_uses_account_validation_before_database_writes(app):
     result = app.test_cli_runner().invoke(args=["create-admin", "--username", "bad\nname", "--email", "bad@@mail", "--password", "ValidPassword123!"])
     assert result.exit_code != 0
     assert snapshot(app) == before
+
+@pytest.mark.parametrize("path", ["/components", "/reports/availability"])
+def test_filter_option_attributes_remain_inert_for_stored_catalogue_values(client, app, path):
+    # Exercise the option-value hotspots identified by an authenticated ZAP scan.
+    payload = '" autofocus onfocus="alert(1)'
+    with app.app_context():
+        db = get_db()
+        db.execute("INSERT INTO components (sku,name,category,supplier,quantity,reorder_level,unit_price) VALUES (?,?,?,?,?,?,?)",
+                   ("XSS-FILTER", "Filter test", payload, payload, 1, 0, 1))
+        db.commit()
+    response = client.get(path, query_string={"category": payload, "supplier": payload, "status": "In Stock"})
+    assert response.status_code == 200
+    parsed = assert_inert_html(response)
+    assert sum(1 for tag, attrs in parsed.tags if tag == "option" and attrs.get("value") == payload) == 2
+
+
+def test_audit_event_filter_option_is_escaped(client, app):
+    # Event names are application-owned, but retain safety if historical data differs.
+    from app import write_audit
+    payload = '" autofocus onfocus="alert(1)'
+    with app.app_context():
+        write_audit(1, payload, "test event")
+    response = client.get("/admin/audit-log", query_string={"event_type": payload})
+    assert response.status_code == 200
+    parsed = assert_inert_html(response)
+    assert any(tag == "option" and attrs.get("value") == payload for tag, attrs in parsed.tags)

@@ -40,7 +40,8 @@ def make_db(path, initial_quantity=5):
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             user_id INTEGER,
             event_type TEXT NOT NULL,
-            details TEXT NOT NULL
+            details TEXT NOT NULL,
+            ip_address TEXT
         );
 
         INSERT INTO users (id, username) VALUES (1, 'tester');

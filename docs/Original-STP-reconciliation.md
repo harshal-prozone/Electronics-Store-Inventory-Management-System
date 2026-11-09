@@ -108,7 +108,7 @@ Status key: **Related** = relevant implementation/tests exist but original case 
 | ST-NFR-04 | service coverage and no business rules in views | Deviation | business logic remains in views; coverage scope excludes portions of application |
 | IT-SEC-01 | API POST missing CSRF token | Deviation | DRF endpoint absent; related Flask form tests: tests/test_audit_logging.py; tests/test_input_security.py |
 | ST-SEC-02 | cross-origin POST | Related | tests/test_input_security.py; HTTPS/origin deployment conditions not established |
-| ST-SEC-03 | Bandit, pip-audit and ZAP scans | Deviation | Local Bandit/pip-audit and unauthenticated ZAP quick scan only; DOM XSS scanner skipped, no authenticated scan, SonarQube or pipeline scans evidenced; see `Security-Scanner-Review.md` |
+| ST-SEC-03 | Bandit, pip-audit and ZAP scans | Deviation | Local Bandit/pip-audit and synthetic Admin-session ZAP quick scans have been run, including a DOM-XSS rule retry; no original deployment scan, SonarQube or pipeline scans evidenced; see `Security-Scanner-Review.md` |
 | ST-SEC-04 | security audit trail review | Related | tests/test_audit_logging.py; tests/test_input_security.py |
 | ST-SEC-05 | HTTPS cookie flags and 31-minute idle timeout | External | simulated 30-minute expiry covered in tests/test_account_controls.py; deployed HTTPS observation not recorded |
 
