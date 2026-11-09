@@ -36,7 +36,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 
 from inventory_service import adjust_stock, availability_status, validate_component_form
 from inventory_import import CSV_COLUMNS, MAX_CSV_BYTES, import_inventory_csv
-from input_validation import CONTROL_CHARACTERS, MAX_SQLITE_INTEGER, account_values, text_value, whole_number
+from input_validation import CONTROL_CHARACTERS, MAX_SQLITE_INTEGER, account_values, text_value, whole_number, validate_email
 
 ROOT = Path(__file__).resolve().parent
 DEFAULT_DB = ROOT / "instance" / "inventory.db"
@@ -212,10 +212,13 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 round(item["count"] * 100 / total, 1) if total else 0
             )
 
+        alerts = get_db().execute(
+            """SELECT a.*, c.sku, c.name FROM stock_alerts a
+               JOIN components c ON c.id = a.component_id
+               WHERE c.deleted_at IS NULL ORDER BY a.id DESC LIMIT 10"""
+        ).fetchall()
         return render_template(
-            "dashboard.html",
-            metrics=metrics,
-            chart_items=chart_items,
+            "dashboard.html", metrics=metrics, chart_items=chart_items, alerts=alerts,
         )
 
     @app.route("/login", methods=("GET", "POST"))
@@ -847,6 +850,10 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         if request.method == "POST":
             try:
                 name = text_value(request.form.get("name", ""), "Supplier name", 120, required=True)
+                email = text_value(request.form.get("contact_email", ""), "Contact email", 254)
+                if email:
+                    validate_email(email)
+                phone = text_value(request.form.get("phone", ""), "Phone", 40)
             except ValueError as exc:
                 flash(str(exc), "error")
                 status = 400
@@ -854,7 +861,7 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                 try:
                     db = get_db()
                     cursor = db.execute(
-                        "INSERT INTO suppliers (name) VALUES (?)", (name,)
+                        "INSERT INTO suppliers (name, contact_email, phone) VALUES (?, ?, ?)", (name, email, phone)
                     )
                     write_audit(g.user["id"], "supplier-created", f"supplier_id={cursor.lastrowid}; name={name}")
                     flash("Supplier created successfully.", "success")
@@ -880,6 +887,10 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
         if request.method == "POST":
             try:
                 name = text_value(request.form.get("name", ""), "Supplier name", 120, required=True)
+                email = text_value(request.form.get("contact_email", ""), "Contact email", 254)
+                if email:
+                    validate_email(email)
+                phone = text_value(request.form.get("phone", ""), "Phone", 40)
             except ValueError as exc:
                 flash(str(exc), "error")
                 status = 400
@@ -892,8 +903,8 @@ def create_app(test_config: dict[str, Any] | None = None) -> Flask:
                         abort(404)
                     old_name = current["name"]
                     db.execute(
-                        "UPDATE suppliers SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
-                        (name, supplier_id),
+                        "UPDATE suppliers SET name = ?, contact_email = ?, phone = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?",
+                        (name, email, phone, supplier_id),
                     )
                     db.execute(
                         "UPDATE components SET supplier = ? WHERE supplier = ? COLLATE NOCASE",
@@ -1201,6 +1212,17 @@ def init_db() -> None:
     }
     if "deleted_at" not in columns:
         db.execute("ALTER TABLE components ADD COLUMN deleted_at TEXT DEFAULT NULL")
+
+    # Preserve legacy suppliers while adding optional contact details.
+    supplier_columns = {row["name"] for row in db.execute("PRAGMA table_info(suppliers)")}
+    if "contact_email" not in supplier_columns:
+        db.execute("ALTER TABLE suppliers ADD COLUMN contact_email TEXT NOT NULL DEFAULT ''")
+    if "phone" not in supplier_columns:
+        db.execute("ALTER TABLE suppliers ADD COLUMN phone TEXT NOT NULL DEFAULT ''")
+
+    # Install only after legacy components have acquired deleted_at.
+    with open(ROOT / "stock_alert_triggers.sql", encoding="utf-8") as trigger_file:
+        db.executescript(trigger_file.read())
 
     user_count = db.execute("SELECT COUNT(*) FROM users").fetchone()[0]
     if user_count == 0:

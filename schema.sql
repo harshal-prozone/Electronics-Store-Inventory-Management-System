@@ -24,6 +24,8 @@ CREATE TABLE IF NOT EXISTS categories (
 CREATE TABLE IF NOT EXISTS suppliers (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL UNIQUE COLLATE NOCASE,
+    contact_email TEXT NOT NULL DEFAULT '',
+    phone TEXT NOT NULL DEFAULT '',
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
@@ -41,6 +43,16 @@ CREATE TABLE IF NOT EXISTS components (
     created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
     deleted_at TEXT DEFAULT NULL
+);
+
+-- Durable in-app notifications, atomically created with inventory changes.
+CREATE TABLE IF NOT EXISTS stock_alerts (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    component_id INTEGER NOT NULL REFERENCES components(id) ON DELETE RESTRICT,
+    status TEXT NOT NULL CHECK (status IN ('Low Stock', 'Out of Stock')),
+    quantity INTEGER NOT NULL CHECK (quantity >= 0),
+    reorder_level INTEGER NOT NULL CHECK (reorder_level >= 0),
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 CREATE TABLE IF NOT EXISTS inventory_transactions (

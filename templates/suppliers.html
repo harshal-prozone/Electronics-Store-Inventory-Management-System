@@ -16,12 +16,14 @@
     <div class="table-wrap">
       <table>
         <thead>
-          <tr><th>Supplier</th><th>Actions</th></tr>
+          <tr><th>Supplier</th><th>Contact email</th><th>Phone</th><th>Actions</th></tr>
         </thead>
         <tbody>
           {% for supplier in suppliers %}
           <tr>
             <td>{{ supplier['name'] }}</td>
+            <td>{{ supplier['contact_email'] }}</td>
+            <td>{{ supplier['phone'] }}</td>
             <td>
               <a href="{{ url_for('supplier_edit', supplier_id=supplier['id']) }}">Edit</a>
               <form method="post"
